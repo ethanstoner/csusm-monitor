@@ -135,10 +135,19 @@
                 // Setup HLS
                 const video = document.getElementById(`video-${cam.id}`);
                 if (Hls.isSupported()) {
-                    const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+                    const hls = new Hls({
+                        enableWorker: true,
+                        liveSyncDurationCount: 3,
+                        liveMaxLatencyDurationCount: 6,
+                        maxBufferLength: 15,
+                        maxMaxBufferLength: 30,
+                    });
                     hls.loadSource(cam.stream_url);
                     hls.attachMedia(video);
                     hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
+                    hls.on(Hls.Events.ERROR, (_, data) => {
+                        if (data.fatal) { hls.startLoad(); }
+                    });
                 } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                     video.src = cam.stream_url;
                     video.addEventListener('loadedmetadata', () => { video.play().catch(() => {}); });
@@ -190,14 +199,14 @@
         // Load detection log
         async function loadDetectionLog() {
             const filter = document.getElementById('log-camera-filter').value;
-            const url = filter ? `/api/detection-log?camera=${filter}&limit=50` : '/api/detection-log?limit=50';
+            const url = filter ? `/api/detection-log?camera=${filter}&limit=20` : '/api/detection-log?limit=20';
             try {
                 const resp = await fetch(url);
                 const data = await resp.json();
                 const logEl = document.getElementById('detection-log');
                 const countEl = document.getElementById('log-count');
                 if (data.detections.length === 0) {
-                    logEl.innerHTML = '<div class="detection-empty">No people detected yet. Detections will appear here when YOLO spots someone.</div>';
+                    logEl.innerHTML = '<div class="detection-empty">No detections yet. Snapshots will appear here when Frigate detects someone.</div>';
                     countEl.textContent = '';
                     return;
                 }
