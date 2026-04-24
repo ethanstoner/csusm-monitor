@@ -1,7 +1,7 @@
 import logging
 import threading
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -9,10 +9,11 @@ import httpx
 from fastapi import FastAPI, Query
 from fastapi.responses import FileResponse, HTMLResponse, Response
 
-from backend.config import CAMERAS, DB_PATH, HEALTH_TIMEOUT, RETENTION_DAYS, TIMEZONE, SNAPSHOTS_DIR
+from backend.config import CAMERAS, DB_PATH, FRIGATE_HOST, FRIGATE_PORT, HEALTH_TIMEOUT, RETENTION_DAYS, TIMEZONE
 from backend.database import (
     cleanup_old_data,
     get_heatmap_data,
+    get_hourly_averages,
     get_latest_counts,
     get_timeline_data,
     init_db,
@@ -27,6 +28,7 @@ TZ = ZoneInfo(TIMEZONE)
 _db_conn = None
 _workers = []
 _http_client: httpx.AsyncClient | None = None
+_frigate_listener = None  # FrigateListener | None — set during lifespan startup
 
 
 def get_db():
@@ -35,7 +37,7 @@ def get_db():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _db_conn, _http_client
+    global _db_conn, _http_client, _frigate_listener
     _http_client = httpx.AsyncClient(timeout=10)
     _db_conn = init_db(DB_PATH)
     logger.info("Database initialized at %s", DB_PATH)
@@ -45,13 +47,12 @@ async def lifespan(app: FastAPI):
     if deleted:
         logger.info("Cleaned up %d old detection rows", deleted)
 
-    # Start detection workers
+    # Start Frigate MQTT listener
     if START_WORKERS:
-        from backend.detector import DetectionWorker
-        for cam_id, cam in CAMERAS.items():
-            worker = DetectionWorker(cam_id, cam["stream_url"], _db_conn)
-            worker.start()
-            _workers.append(worker)
+        from backend.frigate_listener import FrigateListener
+        _frigate_listener = FrigateListener(_db_conn)
+        _frigate_listener.start()
+        _workers.append(_frigate_listener)
 
     # Start daily cleanup thread
     import time as _time
@@ -109,10 +110,15 @@ async def get_status():
             healthy = (now_naive - last_ts).total_seconds() < HEALTH_TIMEOUT
         else:
             healthy = False
+        # Use live count from FrigateListener if available, fall back to last DB value
+        live_count = r["count"] or 0
+        if _frigate_listener is not None:
+            with _frigate_listener._counts_lock:
+                live_count = _frigate_listener.latest_counts.get(r["id"], live_count)
         cameras.append({
             "id": r["id"],
             "name": r["name"],
-            "count": r["count"] or 0,
+            "count": live_count,
             "timestamp": r["timestamp"],
             "healthy": healthy,
         })
@@ -146,64 +152,45 @@ async def get_cameras():
 
 @app.get("/api/detection-log")
 async def get_detection_log(camera: str = Query(default=None), limit: int = Query(default=50)):
-    """Return list of saved detection snapshots (only when people were detected)."""
-    if not SNAPSHOTS_DIR.exists():
+    """Return recent detection events with snapshots from Frigate."""
+    params = {"label": "person", "limit": limit, "has_snapshot": 1}
+    if camera:
+        params["cameras"] = camera
+    try:
+        resp = await _http_client.get(
+            f"http://{FRIGATE_HOST}:{FRIGATE_PORT}/api/events", params=params
+        )
+        resp.raise_for_status()
+        events = resp.json()
+    except Exception:
+        logger.exception("Failed to fetch events from Frigate")
         return {"detections": []}
-    snaps = sorted(SNAPSHOTS_DIR.glob("*.jpg"), key=lambda p: p.stat().st_mtime, reverse=True)
-    results = []
-    for snap in snaps:
-        # Filename format: camera_YYYYMMDD_HHMMSS_Np.jpg
-        parts = snap.stem.split("_")
-        cam_id = parts[0]
-        if camera and cam_id != camera:
-            continue
-        date_str = parts[1]  # YYYYMMDD
-        time_str = parts[2]  # HHMMSS
-        count_str = parts[3] if len(parts) > 3 else "0p"
-        ts = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:8]} {time_str[:2]}:{time_str[2:4]}:{time_str[4:6]}"
-        results.append({
-            "filename": snap.name,
-            "camera": cam_id,
+
+    detections = []
+    for ev in events:
+        ts = datetime.fromtimestamp(ev["start_time"], TZ).strftime("%Y-%m-%d %H:%M:%S")
+        detections.append({
+            "filename": ev["id"],
+            "camera": ev["camera"],
             "timestamp": ts,
-            "count": int(count_str.replace("p", "")),
-            "url": f"/api/detection-log/image/{snap.name}",
+            "count": 1,
+            "url": f"/api/detection-log/image/{ev['id']}",
         })
-        if len(results) >= limit:
-            break
-    return {"detections": results}
+    return {"detections": detections}
 
 
-@app.get("/api/detection-log/image/{filename}")
-async def get_detection_image(filename: str):
-    """Serve a saved detection snapshot image."""
-    filepath = SNAPSHOTS_DIR / filename
-    if not filepath.exists() or not filepath.suffix == ".jpg":
+@app.get("/api/detection-log/image/{event_id}")
+async def get_detection_image(event_id: str):
+    """Proxy a detection snapshot from Frigate."""
+    try:
+        resp = await _http_client.get(
+            f"http://{FRIGATE_HOST}:{FRIGATE_PORT}/api/events/{event_id}/snapshot.jpg"
+        )
+        if resp.status_code != 200:
+            return Response(status_code=404, content="Not found")
+        return Response(content=resp.content, media_type="image/jpeg")
+    except Exception:
         return Response(status_code=404, content="Not found")
-    return FileResponse(filepath, media_type="image/jpeg")
-
-
-@app.get("/api/snapshot/{camera_id}")
-async def get_snapshot(camera_id: str):
-    """Return the latest analyzed frame with detection boxes drawn on it as JPEG."""
-    import cv2
-    from backend.detector import latest_detections, _detections_lock
-    with _detections_lock:
-        data = latest_detections.get(camera_id)
-    if not data or data["frame"] is None:
-        return Response(status_code=404, content="No snapshot available yet")
-    frame = data["frame"].copy()
-    for box in data["boxes"]:
-        x1, y1, x2, y2 = box["x1"], box["y1"], box["x2"], box["y2"]
-        conf = box["confidence"]
-        # Green box
-        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        # Label with confidence
-        label = f"Person {conf:.0%}"
-        (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
-        cv2.rectangle(frame, (x1, y1 - th - 8), (x1 + tw + 4, y1), (0, 255, 0), -1)
-        cv2.putText(frame, label, (x1 + 2, y1 - 4), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2)
-    _, jpeg = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
-    return Response(content=jpeg.tobytes(), media_type="image/jpeg")
 
 
 @app.get("/api/stream/{camera_id}/{path:path}")
@@ -269,6 +256,13 @@ def _trim_manifest(manifest: str) -> bytes:
 async def get_heatmap(camera: str = Query(...), days: int = Query(default=7)):
     data = get_heatmap_data(_db_conn, camera, days)
     return {"camera": camera, "days": days, "data": data}
+
+
+@app.get("/api/history/hourly")
+async def get_hourly(camera: str = Query(...), day_type: str = Query(default="all"), days: int = Query(default=30)):
+    """Average people count by hour, filtered by weekday/weekend/all."""
+    data = get_hourly_averages(_db_conn, camera, day_type, days)
+    return {"camera": camera, "day_type": day_type, "data": data}
 
 
 @app.get("/api/history/timeline")

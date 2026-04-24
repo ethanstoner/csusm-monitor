@@ -98,6 +98,25 @@ def get_timeline_data(conn: sqlite3.Connection, camera: str, date: str) -> list[
     return [{"time": r[0], "avg_count": round(r[1], 1)} for r in rows]
 
 
+def get_hourly_averages(conn: sqlite3.Connection, camera: str, day_type: str = "all", days: int = 30) -> list[dict]:
+    """Average count by hour of day, filtered by weekday/weekend/all."""
+    cutoff = (datetime.now(TZ) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+    if day_type == "weekday":
+        dow_filter = "AND day_of_week < 5"
+    elif day_type == "weekend":
+        dow_filter = "AND day_of_week >= 5"
+    else:
+        dow_filter = ""
+    rows = conn.execute(f"""
+        SELECT hour, AVG(count) as avg_count
+        FROM detections
+        WHERE camera = ? AND timestamp >= ? {dow_filter}
+        GROUP BY hour
+        ORDER BY hour
+    """, (camera, cutoff)).fetchall()
+    return [{"hour": r[0], "avg_count": round(r[1], 1)} for r in rows]
+
+
 def cleanup_old_data(conn: sqlite3.Connection, retention_days: int = RETENTION_DAYS) -> int:
     """Delete detections older than retention_days. Returns number of rows deleted."""
     cutoff = (datetime.now(TZ) - timedelta(days=retention_days)).strftime("%Y-%m-%d %H:%M:%S")
