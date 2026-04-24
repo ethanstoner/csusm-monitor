@@ -10,9 +10,11 @@ import httpx
 from fastapi import FastAPI, Query
 from fastapi.responses import FileResponse, HTMLResponse, Response
 
-from backend.config import CAMERAS, DB_PATH, FRIGATE_HOST, FRIGATE_PORT, HEALTH_TIMEOUT, RETENTION_DAYS, TIMEZONE
+from backend.config import CAMERAS, DB_PATH, FRIGATE_HOST, FRIGATE_PORT, HEALTH_TIMEOUT, RETENTION_DAYS, SNAPSHOTS_DIR, TIMEZONE
 from backend.database import (
     cleanup_old_data,
+    get_best_times,
+    get_daily_totals,
     get_heatmap_data,
     get_hourly_averages,
     get_latest_counts,
@@ -50,12 +52,22 @@ async def lifespan(app: FastAPI):
     if deleted:
         logger.info("Cleaned up %d old detection rows", deleted)
 
-    # Start Frigate MQTT listener
     if START_WORKERS:
-        from backend.frigate_listener import FrigateListener
-        _frigate_listener = FrigateListener(_db_conn)
-        _frigate_listener.start()
-        _workers.append(_frigate_listener)
+        # Start local YOLO detection workers for each camera
+        from backend.detector import DetectionWorker
+        for cam_id, cam in CAMERAS.items():
+            worker = DetectionWorker(cam_id, cam["stream_url"], _db_conn)
+            worker.start()
+            _workers.append(worker)
+
+        # Optionally start Frigate MQTT listener (non-fatal if unavailable)
+        try:
+            from backend.frigate_listener import FrigateListener
+            _frigate_listener = FrigateListener(_db_conn)
+            _frigate_listener.start()
+            _workers.append(_frigate_listener)
+        except Exception:
+            logger.info("Frigate listener not available, using local YOLO detection only")
 
     # Start daily cleanup thread
     import time as _time
@@ -113,11 +125,16 @@ async def get_status():
             healthy = (now_naive - last_ts).total_seconds() < HEALTH_TIMEOUT
         else:
             healthy = False
-        # Use live count from FrigateListener if available, fall back to last DB value
+        # Use live count from local detector or FrigateListener, fall back to last DB value
         live_count = r["count"] or 0
+        from backend.detector import latest_detections, _detections_lock
+        with _detections_lock:
+            if r["id"] in latest_detections:
+                live_count = latest_detections[r["id"]]["count"]
         if _frigate_listener is not None:
             with _frigate_listener._counts_lock:
-                live_count = _frigate_listener.latest_counts.get(r["id"], live_count)
+                if r["id"] in _frigate_listener.latest_counts:
+                    live_count = _frigate_listener.latest_counts[r["id"]]
         cameras.append({
             "id": r["id"],
             "name": r["name"],
@@ -154,46 +171,81 @@ async def get_cameras():
 
 
 @app.get("/api/detection-log")
-async def get_detection_log(camera: str = Query(default=None), limit: int = Query(default=50)):
-    """Return recent detection events with snapshots from Frigate."""
-    params = {"label": "person", "limit": limit, "has_snapshot": 1}
-    if camera:
-        params["cameras"] = camera
+async def get_detection_log(camera: str = Query(default=None), limit: int = Query(default=20)):
+    """Return recent detection snapshots. Tries Frigate first, falls back to local snapshots."""
+    # Try Frigate API first
     try:
+        params = {"label": "person", "limit": limit, "has_snapshot": 1}
+        if camera:
+            params["cameras"] = camera
         resp = await _http_client.get(
             f"http://{FRIGATE_HOST}:{FRIGATE_PORT}/api/events", params=params
         )
         resp.raise_for_status()
         events = resp.json()
+        detections = []
+        for ev in events:
+            ts = datetime.fromtimestamp(ev["start_time"], TZ).strftime("%Y-%m-%d %H:%M:%S")
+            detections.append({
+                "filename": ev["id"],
+                "camera": ev["camera"],
+                "timestamp": ts,
+                "count": 1,
+                "url": f"/api/detection-log/image/{ev['id']}",
+            })
+        return {"detections": detections}
     except Exception:
-        logger.exception("Failed to fetch events from Frigate")
-        return {"detections": []}
+        pass
 
+    # Fall back to local snapshots
+    if not SNAPSHOTS_DIR.exists():
+        return {"detections": []}
+    snaps = sorted(SNAPSHOTS_DIR.glob("*.jpg"), key=lambda p: p.stat().st_mtime, reverse=True)
+    if camera:
+        snaps = [s for s in snaps if s.name.startswith(f"{camera}_")]
+    snaps = snaps[:limit]
     detections = []
-    for ev in events:
-        ts = datetime.fromtimestamp(ev["start_time"], TZ).strftime("%Y-%m-%d %H:%M:%S")
+    for s in snaps:
+        parts = s.stem.split("_")
+        cam_id = parts[0]
+        count = int(parts[-1].replace("p", "")) if parts[-1].endswith("p") else 1
+        ts_str = f"{parts[1][:4]}-{parts[1][4:6]}-{parts[1][6:8]} {parts[2][:2]}:{parts[2][2:4]}:{parts[2][4:6]}"
         detections.append({
-            "filename": ev["id"],
-            "camera": ev["camera"],
-            "timestamp": ts,
-            "count": 1,
-            "url": f"/api/detection-log/image/{ev['id']}",
+            "filename": s.name,
+            "camera": cam_id,
+            "timestamp": ts_str,
+            "count": count,
+            "url": f"/api/detection-log/image/{s.name}",
         })
     return {"detections": detections}
 
 
-@app.get("/api/detection-log/image/{event_id}")
-async def get_detection_image(event_id: str):
-    """Proxy a detection snapshot from Frigate."""
+@app.get("/api/detection-log/image/{image_name:path}")
+async def get_detection_image(image_name: str):
+    """Serve a detection snapshot — tries Frigate first, falls back to local file."""
+    # Try Frigate proxy
     try:
         resp = await _http_client.get(
-            f"http://{FRIGATE_HOST}:{FRIGATE_PORT}/api/events/{event_id}/snapshot.jpg"
+            f"http://{FRIGATE_HOST}:{FRIGATE_PORT}/api/events/{image_name}/snapshot.jpg"
         )
-        if resp.status_code != 200:
-            return Response(status_code=404, content="Not found")
-        return Response(content=resp.content, media_type="image/jpeg")
+        if resp.status_code == 200:
+            return Response(
+                content=resp.content,
+                media_type="image/jpeg",
+                headers={"Cache-Control": "public, max-age=86400, immutable"},
+            )
     except Exception:
-        return Response(status_code=404, content="Not found")
+        pass
+
+    # Fall back to local snapshot file
+    local_path = SNAPSHOTS_DIR / image_name
+    if local_path.exists() and local_path.is_file() and SNAPSHOTS_DIR in local_path.resolve().parents:
+        return FileResponse(
+            local_path,
+            media_type="image/jpeg",
+            headers={"Cache-Control": "public, max-age=86400, immutable"},
+        )
+    return Response(status_code=404, content="Not found")
 
 
 @app.get("/api/stream/{camera_id}/{path:path}")
@@ -281,3 +333,15 @@ async def get_timeline(camera: str = Query(...), date: str = Query(default=None)
         date = datetime.now(TZ).strftime("%Y-%m-%d")
     data = get_timeline_data(_db_conn, camera, date)
     return {"camera": camera, "date": date, "data": data}
+
+
+@app.get("/api/history/best-times")
+async def best_times(camera: str = Query(...), days: int = Query(default=7)):
+    data = get_best_times(_db_conn, camera, days)
+    return {"camera": camera, "days": days, "data": data}
+
+
+@app.get("/api/history/daily")
+async def get_daily(camera: str = Query(...), days: int = Query(default=30)):
+    data = get_daily_totals(_db_conn, camera, days)
+    return {"camera": camera, "days": days, "data": data}
