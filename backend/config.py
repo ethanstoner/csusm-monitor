@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 DETECTION_INTERVAL = 5  # seconds between detection cycles
@@ -12,6 +13,11 @@ RETENTION_DAYS = 30     # days to keep raw detection data
 DB_PATH = Path(__file__).parent.parent / "data" / "history.db"
 SNAPSHOTS_DIR = Path(__file__).parent.parent / "data" / "snapshots"
 MAX_SNAPSHOTS = 200  # keep last 200 detection images
+
+MQTT_HOST = os.getenv("MQTT_HOST", "localhost")
+MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
+FRIGATE_HOST = os.getenv("FRIGATE_HOST", "localhost")
+FRIGATE_PORT = int(os.getenv("FRIGATE_PORT", "5000"))
 
 CAMERAS = {
     "starbucks": {
