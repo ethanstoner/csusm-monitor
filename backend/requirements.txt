@@ -1,6 +1,6 @@
 fastapi==0.115.12
 uvicorn==0.34.2
-ultralytics==8.3.145
-opencv-python-headless==4.11.0.86
+paho-mqtt>=2.0
 pytest==8.3.5
 httpx==0.28.1
+respx>=0.21
