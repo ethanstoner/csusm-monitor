@@ -76,25 +76,41 @@ def get_latest_counts(conn: sqlite3.Connection) -> list[dict]:
 def get_heatmap_data(conn: sqlite3.Connection, camera: str, days: int = 7) -> list[dict]:
     """Get average count by day_of_week and hour for the given lookback period."""
     cutoff = (datetime.now(TZ) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
-    rows = conn.execute("""
-        SELECT day_of_week, hour, AVG(count) as avg_count
-        FROM detections
-        WHERE camera = ? AND timestamp >= ?
-        GROUP BY day_of_week, hour
-        ORDER BY day_of_week, hour
-    """, (camera, cutoff)).fetchall()
+    if camera == "_all":
+        rows = conn.execute("""
+            SELECT day_of_week, hour, SUM(count) * 1.0 / COUNT(DISTINCT date(timestamp)) as avg_count
+            FROM detections WHERE timestamp >= ?
+            GROUP BY day_of_week, hour
+            ORDER BY day_of_week, hour
+        """, (cutoff,)).fetchall()
+    else:
+        rows = conn.execute("""
+            SELECT day_of_week, hour, AVG(count) as avg_count
+            FROM detections
+            WHERE camera = ? AND timestamp >= ?
+            GROUP BY day_of_week, hour
+            ORDER BY day_of_week, hour
+        """, (camera, cutoff)).fetchall()
     return [{"day_of_week": r[0], "hour": r[1], "avg_count": round(r[2], 1)} for r in rows]
 
 
 def get_timeline_data(conn: sqlite3.Connection, camera: str, date: str) -> list[dict]:
     """Get 1-minute averaged time series for a specific date."""
-    rows = conn.execute("""
-        SELECT strftime('%H:%M', timestamp) as time_min, AVG(count) as avg_count
-        FROM detections
-        WHERE camera = ? AND date(timestamp) = ?
-        GROUP BY time_min
-        ORDER BY time_min
-    """, (camera, date)).fetchall()
+    if camera == "_all":
+        rows = conn.execute("""
+            SELECT strftime('%H:%M', timestamp) as time_min, SUM(count) as avg_count
+            FROM detections WHERE date(timestamp) = ?
+            GROUP BY time_min
+            ORDER BY time_min
+        """, (date,)).fetchall()
+    else:
+        rows = conn.execute("""
+            SELECT strftime('%H:%M', timestamp) as time_min, AVG(count) as avg_count
+            FROM detections
+            WHERE camera = ? AND date(timestamp) = ?
+            GROUP BY time_min
+            ORDER BY time_min
+        """, (camera, date)).fetchall()
     return [{"time": r[0], "avg_count": round(r[1], 1)} for r in rows]
 
 
@@ -115,6 +131,38 @@ def get_hourly_averages(conn: sqlite3.Connection, camera: str, day_type: str = "
         ORDER BY hour
     """, (camera, cutoff)).fetchall()
     return [{"hour": r[0], "avg_count": round(r[1], 1)} for r in rows]
+
+
+def get_best_times(conn: sqlite3.Connection, camera: str, days: int = 7) -> list[dict]:
+    """Return hours ranked by lowest average people count (best times to visit)."""
+    cutoff = (datetime.now(TZ) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+    rows = conn.execute("""
+        SELECT hour, AVG(count) as avg_count, COUNT(*) as samples
+        FROM detections
+        WHERE camera = ? AND timestamp >= ?
+        GROUP BY hour
+        HAVING samples >= 3
+        ORDER BY avg_count ASC
+    """, (camera, cutoff)).fetchall()
+    return [{"hour": r[0], "avg_count": round(r[1], 1), "samples": r[2]} for r in rows]
+
+
+def get_daily_totals(conn: sqlite3.Connection, camera: str, days: int = 30) -> list[dict]:
+    """Return daily total/average people counts for the given lookback."""
+    cutoff = (datetime.now(TZ) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+    if camera == "_all":
+        rows = conn.execute("""
+            SELECT date(timestamp) as day, SUM(count) as total, AVG(count) as avg_count, COUNT(*) as samples
+            FROM detections WHERE timestamp >= ?
+            GROUP BY day ORDER BY day
+        """, (cutoff,)).fetchall()
+    else:
+        rows = conn.execute("""
+            SELECT date(timestamp) as day, SUM(count) as total, AVG(count) as avg_count, COUNT(*) as samples
+            FROM detections WHERE camera = ? AND timestamp >= ?
+            GROUP BY day ORDER BY day
+        """, (camera, cutoff)).fetchall()
+    return [{"date": r[0], "total": r[1], "avg_count": round(r[2], 1), "samples": r[3]} for r in rows]
 
 
 def cleanup_old_data(conn: sqlite3.Connection, retention_days: int = RETENTION_DAYS) -> int:

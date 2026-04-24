@@ -6,6 +6,7 @@
     <title>CSUSM Campus Monitor</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #0f0f0f; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 20px; }
@@ -24,14 +25,32 @@
 
         .section { margin-top: 30px; }
         .section h2 { font-size: 1.3rem; margin-bottom: 16px; color: #fff; }
-        .trend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .trend-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         .trend-card { background: #1a1a1a; border-radius: 12px; padding: 20px; border: 1px solid #2a2a2a; }
         .trend-card h3 { font-size: 1rem; margin-bottom: 12px; color: #aaa; }
         .heatmap-grid { display: grid; grid-template-columns: 60px repeat(24, 1fr); gap: 2px; font-size: 0.7rem; }
         .heatmap-cell { aspect-ratio: 1; border-radius: 3px; display: flex; align-items: center; justify-content: center; }
         .heatmap-label { display: flex; align-items: center; font-size: 0.75rem; color: #888; }
         .heatmap-hour { text-align: center; color: #888; font-size: 0.65rem; padding: 2px 0; }
-        select { background: #2a2a2a; color: #e0e0e0; border: 1px solid #3a3a3a; border-radius: 6px; padding: 4px 8px; font-size: 0.85rem; margin-bottom: 12px; }
+        select { background: #2a2a2a; color: #e0e0e0; border: 1px solid #3a3a3a; border-radius: 6px; padding: 4px 8px; font-size: 0.85rem; }
+        .trend-controls { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+        .view-tabs { display: flex; gap: 4px; }
+        .view-tab { background: #2a2a2a; color: #888; border: 1px solid #3a3a3a; border-radius: 6px; padding: 5px 12px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+        .view-tab.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+        .view-tab:hover:not(.active) { color: #e0e0e0; }
+        .best-times-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+        .best-time-card { background: #222; border-radius: 10px; padding: 16px; border: 1px solid #2a2a2a; }
+        .best-time-card h4 { font-size: 0.95rem; color: #fff; margin-bottom: 12px; }
+        .best-time-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #2a2a2a; }
+        .best-time-row:last-child { border-bottom: none; }
+        .best-time-hour { font-size: 0.9rem; color: #e0e0e0; }
+        .best-time-count { font-size: 0.85rem; padding: 2px 8px; border-radius: 10px; }
+        .best-time-count.low { background: rgba(34,197,94,0.2); color: #22c55e; }
+        .best-time-count.medium { background: rgba(250,204,21,0.2); color: #facc15; }
+        .best-time-count.high { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .chart-hint { font-size: 0.7rem; color: #555; text-align: right; margin-top: 4px; }
+        .zoom-reset { background: #2a2a2a; color: #888; border: 1px solid #3a3a3a; border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer; }
+        .zoom-reset:hover { color: #e0e0e0; }
 
         /* Detection Log */
         .detection-log { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
@@ -44,6 +63,12 @@
         .detection-meta .det-time { font-size: 0.75rem; color: #666; }
         .detection-empty { color: #555; font-style: italic; padding: 20px; text-align: center; }
         .log-controls { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+        .section-toggle { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px; }
+        .section-toggle:hover { color: #ccc; }
+        .toggle-arrow { font-size: 0.8rem; transition: transform 0.2s; }
+        .toggle-arrow.collapsed { transform: rotate(-90deg); }
+        .collapsible { overflow: hidden; transition: max-height 0.3s ease; max-height: 2000px; }
+        .collapsible.collapsed { max-height: 0; }
 
         /* Lightbox */
         .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; cursor: pointer; }
@@ -65,31 +90,43 @@
     <div class="feeds" id="feeds"></div>
 
     <div class="section">
-        <h2>Detection Log</h2>
-        <div class="log-controls">
-            <label>Filter: </label>
-            <select id="log-camera-filter">
-                <option value="">All Cameras</option>
-            </select>
-            <span style="color:#555; font-size:0.8rem;" id="log-count"></span>
+        <h2 class="section-toggle" onclick="toggleSection('detection-log-section')">Detection Log <span id="detection-log-section-arrow" class="toggle-arrow">&#9660;</span></h2>
+        <div id="detection-log-section" class="collapsible">
+            <div class="log-controls">
+                <label>Filter: </label>
+                <select id="log-camera-filter">
+                    <option value="">All Cameras</option>
+                </select>
+                <span style="color:#555; font-size:0.8rem;" id="log-count"></span>
+            </div>
+            <div class="detection-log" id="detection-log"></div>
         </div>
-        <div class="detection-log" id="detection-log"></div>
     </div>
 
     <div class="section">
-        <h2>Trends</h2>
-        <div style="margin-bottom: 12px;">
-            <label>Camera: </label>
+        <h2>Best Times to Visit</h2>
+        <div id="best-times-container" class="best-times-grid"></div>
+    </div>
+
+    <div class="section">
+        <h2>Activity</h2>
+        <div class="trend-controls">
+            <label>Camera:</label>
             <select id="trend-camera"></select>
+            <div class="view-tabs">
+                <button class="view-tab active" data-view="today" onclick="switchView('today')">Today</button>
+                <button class="view-tab" data-view="hourly" onclick="switchView('hourly')">Hourly Avg</button>
+                <button class="view-tab" data-view="daily" onclick="switchView('daily')">Daily</button>
+                <button class="view-tab" data-view="heatmap" onclick="switchView('heatmap')">Heatmap</button>
+            </div>
+            <button class="zoom-reset" onclick="resetZoom()">Reset Zoom</button>
         </div>
         <div class="trend-grid">
             <div class="trend-card">
-                <h3>Best Times (last 7 days)</h3>
-                <div id="heatmap-container"></div>
-            </div>
-            <div class="trend-card">
-                <h3>Today's Activity</h3>
+                <h3 id="chart-title">Today's Activity</h3>
                 <canvas id="timeline-chart"></canvas>
+                <div id="heatmap-container" style="display:none;"></div>
+                <div class="chart-hint">Scroll to zoom, drag to pan</div>
             </div>
         </div>
     </div>
@@ -101,8 +138,10 @@
     <script>
         const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
         const CAM_NAMES = {};
-        let timelineChart = null;
+        let activityChart = null;
+        let currentView = 'today';
         let cameras = [];
+        let lastDetectionIds = '';
 
         async function init() {
             const resp = await fetch('/api/cameras');
@@ -113,11 +152,13 @@
             const logFilterEl = document.getElementById('log-camera-filter');
             feedsEl.innerHTML = '';
             selectEl.innerHTML = '';
+            const allOpt = document.createElement('option');
+            allOpt.value = '_all';
+            allOpt.textContent = 'All Cameras';
+            selectEl.appendChild(allOpt);
 
             cameras.forEach(cam => {
                 CAM_NAMES[cam.id] = cam.name;
-
-                // Camera card
                 const card = document.createElement('div');
                 card.className = 'camera-card';
                 card.innerHTML = `
@@ -131,57 +172,41 @@
                     <div class="camera-label">${cam.name}</div>
                 `;
                 feedsEl.appendChild(card);
-
-                // Setup HLS
                 const video = document.getElementById(`video-${cam.id}`);
                 if (Hls.isSupported()) {
-                    const hls = new Hls({
-                        enableWorker: true,
-                        liveSyncDurationCount: 3,
-                        liveMaxLatencyDurationCount: 6,
-                        maxBufferLength: 15,
-                        maxMaxBufferLength: 30,
-                    });
+                    const hls = new Hls({ enableWorker: true, liveSyncDurationCount: 3, liveMaxLatencyDurationCount: 6, maxBufferLength: 15, maxMaxBufferLength: 30 });
                     hls.loadSource(cam.stream_url);
                     hls.attachMedia(video);
                     hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
-                    hls.on(Hls.Events.ERROR, (_, data) => {
-                        if (data.fatal) { hls.startLoad(); }
-                    });
+                    hls.on(Hls.Events.ERROR, (_, data) => { if (data.fatal) hls.startLoad(); });
                 } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                     video.src = cam.stream_url;
                     video.addEventListener('loadedmetadata', () => { video.play().catch(() => {}); });
                 }
-
-                // Dropdown options
                 const opt1 = document.createElement('option');
-                opt1.value = cam.id;
-                opt1.textContent = cam.name;
+                opt1.value = cam.id; opt1.textContent = cam.name;
                 selectEl.appendChild(opt1);
-
                 const opt2 = document.createElement('option');
-                opt2.value = cam.id;
-                opt2.textContent = cam.name;
+                opt2.value = cam.id; opt2.textContent = cam.name;
                 logFilterEl.appendChild(opt2);
             });
 
-            // Lightbox
             document.getElementById('lightbox').addEventListener('click', () => {
                 document.getElementById('lightbox').classList.remove('active');
             });
-
-            selectEl.addEventListener('change', () => { updateTrends(); });
+            selectEl.addEventListener('change', () => { loadView(); });
             logFilterEl.addEventListener('change', () => { loadDetectionLog(); });
 
             pollStatus();
             setInterval(pollStatus, 3000);
-            updateTrends();
-            setInterval(updateTrends, 60000);
+            loadBestTimes();
+            loadView();
+            setInterval(loadView, 60000);
+            setInterval(loadBestTimes, 120000);
             loadDetectionLog();
             setInterval(loadDetectionLog, 10000);
         }
 
-        // Poll /api/status
         async function pollStatus() {
             try {
                 const resp = await fetch('/api/status');
@@ -196,7 +221,6 @@
             } catch (e) { console.error('Status poll failed:', e); }
         }
 
-        // Load detection log
         async function loadDetectionLog() {
             const filter = document.getElementById('log-camera-filter').value;
             const url = filter ? `/api/detection-log?camera=${filter}&limit=20` : '/api/detection-log?limit=20';
@@ -206,11 +230,15 @@
                 const logEl = document.getElementById('detection-log');
                 const countEl = document.getElementById('log-count');
                 if (data.detections.length === 0) {
-                    logEl.innerHTML = '<div class="detection-empty">No detections yet. Snapshots will appear here when Frigate detects someone.</div>';
+                    logEl.innerHTML = '<div class="detection-empty">No detections yet. Snapshots appear here when people are detected.</div>';
                     countEl.textContent = '';
+                    lastDetectionIds = '';
                     return;
                 }
                 countEl.textContent = `${data.detections.length} detections`;
+                const newIds = data.detections.map(d => `${d.camera}:${d.filename}`).join(',');
+                if (newIds === lastDetectionIds) return;
+                lastDetectionIds = newIds;
                 logEl.innerHTML = data.detections.map(d => `
                     <div class="detection-entry" onclick="openLightbox('${d.url}')">
                         <img src="${d.url}" loading="lazy" />
@@ -229,31 +257,108 @@
             document.getElementById('lightbox').classList.add('active');
         }
 
-        // Trends
-        async function updateTrends() {
+        // Best times
+        async function loadBestTimes() {
+            const container = document.getElementById('best-times-container');
+            const camIds = cameras.map(c => c.id);
+            try {
+                const results = await Promise.all(camIds.map(id =>
+                    fetch(`/api/history/best-times?camera=${id}&days=7`).then(r => r.json())
+                ));
+                container.innerHTML = results.map((res, i) => {
+                    const cam = cameras[i];
+                    const top5 = res.data.slice(0, 5);
+                    if (top5.length === 0) return `<div class="best-time-card"><h4>${cam.name}</h4><div style="color:#555;font-style:italic;">Not enough data yet</div></div>`;
+                    const maxAvg = Math.max(...res.data.map(d => d.avg_count), 1);
+                    return `<div class="best-time-card"><h4>${cam.name}</h4>${top5.map(t => {
+                        const pct = t.avg_count / maxAvg;
+                        const cls = pct < 0.33 ? 'low' : pct < 0.66 ? 'medium' : 'high';
+                        const h = t.hour;
+                        const label = h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? '12 PM' : `${h-12} PM`;
+                        return `<div class="best-time-row"><span class="best-time-hour">${label}</span><span class="best-time-count ${cls}">avg ${t.avg_count} people</span></div>`;
+                    }).join('')}</div>`;
+                }).join('');
+            } catch (e) { console.error('Best times failed:', e); }
+        }
+
+        // Activity views
+        function switchView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+            loadView();
+        }
+
+        async function loadView() {
             const camId = document.getElementById('trend-camera').value;
             if (!camId) return;
-            try {
-                const [heatResp, timeResp] = await Promise.all([
-                    fetch(`/api/history/heatmap?camera=${camId}&days=7`),
-                    fetch(`/api/history/timeline?camera=${camId}`)
-                ]);
-                const heatData = await heatResp.json();
-                const timeData = await timeResp.json();
-                renderHeatmap(heatData.data);
-                renderTimeline(timeData.data);
-            } catch (e) { console.error('Trends fetch failed:', e); }
+            const canvas = document.getElementById('timeline-chart');
+            const heatmapEl = document.getElementById('heatmap-container');
+            const titleEl = document.getElementById('chart-title');
+            if (currentView === 'heatmap') {
+                canvas.style.display = 'none';
+                heatmapEl.style.display = 'block';
+                titleEl.textContent = 'Weekly Heatmap (last 7 days)';
+                const resp = await fetch(`/api/history/heatmap?camera=${camId}&days=7`);
+                const data = await resp.json();
+                renderHeatmap(data.data);
+            } else {
+                canvas.style.display = 'block';
+                heatmapEl.style.display = 'none';
+                if (currentView === 'today') {
+                    titleEl.textContent = "Today's Activity (per minute)";
+                    const resp = await fetch(`/api/history/timeline?camera=${camId}`);
+                    const data = await resp.json();
+                    renderChart(data.data.map(d => d.time), data.data.map(d => d.avg_count), 'People', '#3b82f6');
+                } else if (currentView === 'hourly') {
+                    titleEl.textContent = 'Hourly Average (last 30 days)';
+                    const resp = await fetch(`/api/history/hourly?camera=${camId}&days=30`);
+                    const data = await resp.json();
+                    const labels = data.data.map(d => { const h = d.hour; return h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? '12 PM' : `${h-12} PM`; });
+                    renderChart(labels, data.data.map(d => d.avg_count), 'Avg People', '#8b5cf6');
+                } else if (currentView === 'daily') {
+                    titleEl.textContent = 'Daily Activity (last 30 days)';
+                    const resp = await fetch(`/api/history/daily?camera=${camId}&days=30`);
+                    const data = await resp.json();
+                    renderChart(data.data.map(d => d.date), data.data.map(d => d.avg_count), 'Avg People', '#f59e0b');
+                }
+            }
         }
+
+        function renderChart(labels, values, label, color) {
+            const ctx = document.getElementById('timeline-chart').getContext('2d');
+            if (activityChart) activityChart.destroy();
+            activityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{ label, data: values, borderColor: color, backgroundColor: color + '1a', fill: true, tension: 0.3, pointRadius: values.length > 50 ? 0 : 3, pointHoverRadius: 5, borderWidth: 2 }]
+                },
+                options: {
+                    responsive: true,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { backgroundColor: '#1a1a1a', titleColor: '#fff', bodyColor: '#e0e0e0', borderColor: '#3a3a3a', borderWidth: 1 },
+                        zoom: {
+                            pan: { enabled: true, mode: 'x' },
+                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#666', maxTicksLimit: 14, maxRotation: 45 }, grid: { color: '#2a2a2a' } },
+                        y: { beginAtZero: true, ticks: { color: '#666' }, grid: { color: '#2a2a2a' } }
+                    }
+                }
+            });
+        }
+
+        function resetZoom() { if (activityChart) activityChart.resetZoom(); }
 
         function renderHeatmap(data) {
             const container = document.getElementById('heatmap-container');
             const lookup = {};
             let maxCount = 1;
-            data.forEach(d => {
-                const key = `${d.day_of_week}-${d.hour}`;
-                lookup[key] = d.avg_count;
-                if (d.avg_count > maxCount) maxCount = d.avg_count;
-            });
+            data.forEach(d => { const key = `${d.day_of_week}-${d.hour}`; lookup[key] = d.avg_count; if (d.avg_count > maxCount) maxCount = d.avg_count; });
             let html = '<div class="heatmap-grid">';
             html += '<div class="heatmap-label"></div>';
             for (let h = 0; h < 24; h++) html += `<div class="heatmap-hour">${h}</div>`;
@@ -262,9 +367,7 @@
                 for (let h = 0; h < 24; h++) {
                     const val = lookup[`${d}-${h}`] || 0;
                     const intensity = val / maxCount;
-                    const r = Math.round(34 + intensity * 205);
-                    const g = Math.round(34 + (1 - intensity) * 50);
-                    const b = 34;
+                    const r = Math.round(34 + intensity * 205), g = Math.round(34 + (1 - intensity) * 50), b = 34;
                     const color = val > 0 ? `rgb(${r},${g},${b})` : '#1a1a1a';
                     const title = val > 0 ? `${DAYS[d]} ${h}:00 — avg ${val} people` : `${DAYS[d]} ${h}:00 — no data`;
                     html += `<div class="heatmap-cell" style="background:${color}" title="${title}"></div>`;
@@ -274,30 +377,11 @@
             container.innerHTML = html;
         }
 
-        function renderTimeline(data) {
-            const ctx = document.getElementById('timeline-chart').getContext('2d');
-            if (timelineChart) timelineChart.destroy();
-            timelineChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: data.map(d => d.time),
-                    datasets: [{
-                        label: 'People',
-                        data: data.map(d => d.avg_count),
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59,130,246,0.1)',
-                        fill: true, tension: 0.3, pointRadius: 0,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { ticks: { color: '#666', maxTicksLimit: 12 }, grid: { color: '#2a2a2a' } },
-                        y: { beginAtZero: true, ticks: { color: '#666' }, grid: { color: '#2a2a2a' } }
-                    }
-                }
-            });
+        function toggleSection(id) {
+            const el = document.getElementById(id);
+            const arrow = document.getElementById(id + '-arrow');
+            el.classList.toggle('collapsed');
+            arrow.classList.toggle('collapsed');
         }
 
         init();
