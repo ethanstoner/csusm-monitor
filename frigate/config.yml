@@ -1,0 +1,23 @@
+cameras:
+  starbucks:
+    ffmpeg:
+      inputs:
+        - path: https://stream.csusm.edu/starbucks.m3u8
+          roles: [detect]
+    detect:
+      width: 1280
+      height: 720
+  coffeecart:
+    ffmpeg:
+      inputs:
+        - path: https://stream.csusm.edu/coffeecart.m3u8
+          roles: [detect]
+    detect:
+      width: 1280
+      height: 720
+objects:
+  track: [person]
+mqtt:
+  host: mosquitto
+snapshots:
+  enabled: true
