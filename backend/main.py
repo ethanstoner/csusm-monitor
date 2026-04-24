@@ -1,5 +1,6 @@
 import logging
 import threading
+import time
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
@@ -29,6 +30,8 @@ _db_conn = None
 _workers = []
 _http_client: httpx.AsyncClient | None = None
 _frigate_listener = None  # FrigateListener | None — set during lifespan startup
+_manifest_cache: dict[str, tuple[float, bytes]] = {}  # camera_id → (timestamp, trimmed_bytes)
+_MANIFEST_TTL = 3.0  # seconds — just under one segment duration (~4s)
 
 
 def get_db():
@@ -200,17 +203,24 @@ async def proxy_stream(camera_id: str, path: str):
         return Response(status_code=404, content="Camera not found")
     base = CAMERAS[camera_id]["stream_url"].rsplit("/", 1)[0]
     url = f"{base}/{path}"
-    resp = await _http_client.get(url)
-    content = resp.content
-    content_type = resp.headers.get("content-type", "application/octet-stream")
+
     if path.endswith(".m3u8"):
-        content_type = "application/vnd.apple.mpegurl"
-        # Trim manifest to last ~6 segments so hls.js starts at the live edge
-        # instead of buffering from the beginning of a 200KB+ manifest
-        content = _trim_manifest(content.decode())
-    elif path.endswith(".ts"):
+        # Cache the trimmed manifest to avoid re-downloading the full (and ever-growing)
+        # raw manifest on every hls.js poll (~every 4s). The raw manifest can exceed
+        # 360KB by midday as CSUSM never resets EXT-X-MEDIA-SEQUENCE.
+        cached = _manifest_cache.get(camera_id)
+        if cached and (time.time() - cached[0]) < _MANIFEST_TTL:
+            return Response(content=cached[1], media_type="application/vnd.apple.mpegurl")
+        resp = await _http_client.get(url)
+        content = _trim_manifest(resp.content.decode())
+        _manifest_cache[camera_id] = (time.time(), content)
+        return Response(content=content, media_type="application/vnd.apple.mpegurl")
+
+    resp = await _http_client.get(url)
+    content_type = resp.headers.get("content-type", "application/octet-stream")
+    if path.endswith(".ts"):
         content_type = "video/mp2t"
-    return Response(content=content, status_code=resp.status_code, media_type=content_type)
+    return Response(content=resp.content, status_code=resp.status_code, media_type=content_type)
 
 
 def _trim_manifest(manifest: str) -> bytes:
