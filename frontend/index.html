@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSUSM Campus Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0f0f0f; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 20px; }
+        header { text-align: center; padding: 20px 0; }
+        header h1 { font-size: 1.8rem; font-weight: 600; color: #fff; }
+        header .updated { font-size: 0.8rem; color: #666; margin-top: 4px; }
+        .feeds { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin: 20px 0; }
+        .camera-card { background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid #2a2a2a; }
+        .video-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
+        .video-wrapper video { width: 100%; height: 100%; object-fit: cover; }
+        .count-badge { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); border-radius: 20px; padding: 6px 14px; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .health-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .health-dot.healthy { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+        .health-dot.unhealthy { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+        .camera-label { padding: 12px 16px; font-weight: 500; font-size: 0.95rem; }
+
+        .section { margin-top: 30px; }
+        .section h2 { font-size: 1.3rem; margin-bottom: 16px; color: #fff; }
+        .trend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .trend-card { background: #1a1a1a; border-radius: 12px; padding: 20px; border: 1px solid #2a2a2a; }
+        .trend-card h3 { font-size: 1rem; margin-bottom: 12px; color: #aaa; }
+        .heatmap-grid { display: grid; grid-template-columns: 60px repeat(24, 1fr); gap: 2px; font-size: 0.7rem; }
+        .heatmap-cell { aspect-ratio: 1; border-radius: 3px; display: flex; align-items: center; justify-content: center; }
+        .heatmap-label { display: flex; align-items: center; font-size: 0.75rem; color: #888; }
+        .heatmap-hour { text-align: center; color: #888; font-size: 0.65rem; padding: 2px 0; }
+        select { background: #2a2a2a; color: #e0e0e0; border: 1px solid #3a3a3a; border-radius: 6px; padding: 4px 8px; font-size: 0.85rem; margin-bottom: 12px; }
+
+        /* Detection Log */
+        .detection-log { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+        .detection-entry { background: #1a1a1a; border-radius: 10px; overflow: hidden; border: 1px solid #2a2a2a; cursor: pointer; transition: border-color 0.2s; }
+        .detection-entry:hover { border-color: #22c55e; }
+        .detection-entry img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
+        .detection-meta { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+        .detection-meta .cam-name { font-size: 0.85rem; color: #aaa; }
+        .detection-meta .det-count { font-size: 0.85rem; font-weight: 600; color: #22c55e; }
+        .detection-meta .det-time { font-size: 0.75rem; color: #666; }
+        .detection-empty { color: #555; font-style: italic; padding: 20px; text-align: center; }
+        .log-controls { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+
+        /* Lightbox */
+        .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; cursor: pointer; }
+        .lightbox.active { display: flex; }
+        .lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; border-radius: 8px; }
+
+        @media (max-width: 768px) {
+            .feeds { grid-template-columns: 1fr; }
+            .trend-grid { grid-template-columns: 1fr; }
+            .detection-log { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CSUSM Campus Monitor</h1>
+        <div class="updated" id="last-updated">Loading...</div>
+    </header>
+    <div class="feeds" id="feeds"></div>
+
+    <div class="section">
+        <h2>Detection Log</h2>
+        <div class="log-controls">
+            <label>Filter: </label>
+            <select id="log-camera-filter">
+                <option value="">All Cameras</option>
+            </select>
+            <span style="color:#555; font-size:0.8rem;" id="log-count"></span>
+        </div>
+        <div class="detection-log" id="detection-log"></div>
+    </div>
+
+    <div class="section">
+        <h2>Trends</h2>
+        <div style="margin-bottom: 12px;">
+            <label>Camera: </label>
+            <select id="trend-camera"></select>
+        </div>
+        <div class="trend-grid">
+            <div class="trend-card">
+                <h3>Best Times (last 7 days)</h3>
+                <div id="heatmap-container"></div>
+            </div>
+            <div class="trend-card">
+                <h3>Today's Activity</h3>
+                <canvas id="timeline-chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="lightbox" id="lightbox">
+        <img id="lightbox-img" />
+    </div>
+
+    <script>
+        const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const CAM_NAMES = {};
+        let timelineChart = null;
+        let cameras = [];
+
+        async function init() {
+            const resp = await fetch('/api/cameras');
+            const data = await resp.json();
+            cameras = data.cameras;
+            const feedsEl = document.getElementById('feeds');
+            const selectEl = document.getElementById('trend-camera');
+            const logFilterEl = document.getElementById('log-camera-filter');
+            feedsEl.innerHTML = '';
+            selectEl.innerHTML = '';
+
+            cameras.forEach(cam => {
+                CAM_NAMES[cam.id] = cam.name;
+
+                // Camera card
+                const card = document.createElement('div');
+                card.className = 'camera-card';
+                card.innerHTML = `
+                    <div class="video-wrapper">
+                        <video id="video-${cam.id}" muted playsinline></video>
+                        <div class="count-badge">
+                            <span class="health-dot" id="health-${cam.id}"></span>
+                            <span id="count-${cam.id}">--</span>
+                        </div>
+                    </div>
+                    <div class="camera-label">${cam.name}</div>
+                `;
+                feedsEl.appendChild(card);
+
+                // Setup HLS
+                const video = document.getElementById(`video-${cam.id}`);
+                if (Hls.isSupported()) {
+                    const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+                    hls.loadSource(cam.stream_url);
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = cam.stream_url;
+                    video.addEventListener('loadedmetadata', () => { video.play().catch(() => {}); });
+                }
+
+                // Dropdown options
+                const opt1 = document.createElement('option');
+                opt1.value = cam.id;
+                opt1.textContent = cam.name;
+                selectEl.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = cam.id;
+                opt2.textContent = cam.name;
+                logFilterEl.appendChild(opt2);
+            });
+
+            // Lightbox
+            document.getElementById('lightbox').addEventListener('click', () => {
+                document.getElementById('lightbox').classList.remove('active');
+            });
+
+            selectEl.addEventListener('change', () => { updateTrends(); });
+            logFilterEl.addEventListener('change', () => { loadDetectionLog(); });
+
+            pollStatus();
+            setInterval(pollStatus, 3000);
+            updateTrends();
+            setInterval(updateTrends, 60000);
+            loadDetectionLog();
+            setInterval(loadDetectionLog, 10000);
+        }
+
+        // Poll /api/status
+        async function pollStatus() {
+            try {
+                const resp = await fetch('/api/status');
+                const data = await resp.json();
+                data.cameras.forEach(cam => {
+                    const countEl = document.getElementById(`count-${cam.id}`);
+                    const healthEl = document.getElementById(`health-${cam.id}`);
+                    if (countEl) countEl.textContent = `${cam.count} ${cam.count === 1 ? 'person' : 'people'}`;
+                    if (healthEl) healthEl.className = `health-dot ${cam.healthy ? 'healthy' : 'unhealthy'}`;
+                });
+                document.getElementById('last-updated').textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+            } catch (e) { console.error('Status poll failed:', e); }
+        }
+
+        // Load detection log
+        async function loadDetectionLog() {
+            const filter = document.getElementById('log-camera-filter').value;
+            const url = filter ? `/api/detection-log?camera=${filter}&limit=50` : '/api/detection-log?limit=50';
+            try {
+                const resp = await fetch(url);
+                const data = await resp.json();
+                const logEl = document.getElementById('detection-log');
+                const countEl = document.getElementById('log-count');
+                if (data.detections.length === 0) {
+                    logEl.innerHTML = '<div class="detection-empty">No people detected yet. Detections will appear here when YOLO spots someone.</div>';
+                    countEl.textContent = '';
+                    return;
+                }
+                countEl.textContent = `${data.detections.length} detections`;
+                logEl.innerHTML = data.detections.map(d => `
+                    <div class="detection-entry" onclick="openLightbox('${d.url}')">
+                        <img src="${d.url}" loading="lazy" />
+                        <div class="detection-meta">
+                            <span class="cam-name">${CAM_NAMES[d.camera] || d.camera}</span>
+                            <span class="det-count">${d.count} ${d.count === 1 ? 'person' : 'people'}</span>
+                            <span class="det-time">${d.timestamp}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) { console.error('Detection log failed:', e); }
+        }
+
+        function openLightbox(url) {
+            document.getElementById('lightbox-img').src = url;
+            document.getElementById('lightbox').classList.add('active');
+        }
+
+        // Trends
+        async function updateTrends() {
+            const camId = document.getElementById('trend-camera').value;
+            if (!camId) return;
+            try {
+                const [heatResp, timeResp] = await Promise.all([
+                    fetch(`/api/history/heatmap?camera=${camId}&days=7`),
+                    fetch(`/api/history/timeline?camera=${camId}`)
+                ]);
+                const heatData = await heatResp.json();
+                const timeData = await timeResp.json();
+                renderHeatmap(heatData.data);
+                renderTimeline(timeData.data);
+            } catch (e) { console.error('Trends fetch failed:', e); }
+        }
+
+        function renderHeatmap(data) {
+            const container = document.getElementById('heatmap-container');
+            const lookup = {};
+            let maxCount = 1;
+            data.forEach(d => {
+                const key = `${d.day_of_week}-${d.hour}`;
+                lookup[key] = d.avg_count;
+                if (d.avg_count > maxCount) maxCount = d.avg_count;
+            });
+            let html = '<div class="heatmap-grid">';
+            html += '<div class="heatmap-label"></div>';
+            for (let h = 0; h < 24; h++) html += `<div class="heatmap-hour">${h}</div>`;
+            for (let d = 0; d < 7; d++) {
+                html += `<div class="heatmap-label">${DAYS[d]}</div>`;
+                for (let h = 0; h < 24; h++) {
+                    const val = lookup[`${d}-${h}`] || 0;
+                    const intensity = val / maxCount;
+                    const r = Math.round(34 + intensity * 205);
+                    const g = Math.round(34 + (1 - intensity) * 50);
+                    const b = 34;
+                    const color = val > 0 ? `rgb(${r},${g},${b})` : '#1a1a1a';
+                    const title = val > 0 ? `${DAYS[d]} ${h}:00 — avg ${val} people` : `${DAYS[d]} ${h}:00 — no data`;
+                    html += `<div class="heatmap-cell" style="background:${color}" title="${title}"></div>`;
+                }
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderTimeline(data) {
+            const ctx = document.getElementById('timeline-chart').getContext('2d');
+            if (timelineChart) timelineChart.destroy();
+            timelineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.time),
+                    datasets: [{
+                        label: 'People',
+                        data: data.map(d => d.avg_count),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59,130,246,0.1)',
+                        fill: true, tension: 0.3, pointRadius: 0,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: '#666', maxTicksLimit: 12 }, grid: { color: '#2a2a2a' } },
+                        y: { beginAtZero: true, ticks: { color: '#666' }, grid: { color: '#2a2a2a' } }
+                    }
+                }
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
