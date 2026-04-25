@@ -40,7 +40,7 @@ Real-time campus occupancy monitor: captures HLS video frames → YOLOv8 person 
 - **Timestamps are naive Pacific local time** (not UTC). Stored as strings so SQLite date functions work directly. Timezone configured via `TIMEZONE` in config.
 - **HLS proxy** (`/api/stream/`) rewrites manifests to serve only last 6 segments, preventing clients from buffering from playlist start.
 - **Static object filter** uses spatial proximity (40px center radius) over temporal history (12/20 frame hits) — no hardcoded exclusion zones needed. ~60s learning period after restart.
-- **Confidence threshold is 0.35** (intentionally low) to catch partially-occluded people. The static filter handles the false positives this creates from stationary objects.
+- **Confidence threshold is 0.45** — low enough to catch partially-occluded people while the `StaticObjectFilter` handles the false positives this creates from stationary objects.
 - **Thread safety:** `_detections_lock` guards `latest_detections` dict; SQLite connection uses `check_same_thread=False`.
 
 ## Test Fixtures

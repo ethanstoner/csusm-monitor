@@ -70,12 +70,11 @@ async def lifespan(app: FastAPI):
             logger.info("Frigate listener not available, using local YOLO detection only")
 
     # Start daily cleanup thread
-    import time as _time
     _cleanup_running = True
 
     def _cleanup_loop():
         while _cleanup_running:
-            _time.sleep(86400)  # 24 hours
+            time.sleep(86400)  # 24 hours
             try:
                 deleted = cleanup_old_data(_db_conn, RETENTION_DAYS)
                 if deleted:

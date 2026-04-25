@@ -194,6 +194,8 @@ csusm-monitor/
 ├── tests/
 │   ├── test_api.py           # API endpoint tests
 │   ├── test_config.py        # Configuration validation
+│   ├── test_database.py      # SQLite schema & query tests
+│   ├── test_detector.py      # StaticObjectFilter unit tests
 │   ├── test_frigate_listener.py  # MQTT listener unit tests
 │   └── test_integration.py   # End-to-end smoke test
 ├── docker-compose.yml        # Frigate + Mosquitto stack
