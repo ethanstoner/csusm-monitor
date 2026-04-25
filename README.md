@@ -1,8 +1,16 @@
 # CSUSM Campus Monitor
 
+[![Tests](https://github.com/ethanstoner/csusm-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/ethanstoner/csusm-monitor/actions/workflows/ci.yml)
+
 **Real-time occupancy tracking for campus locations using computer vision and live video streams.**
 
 Built to solve a real problem: CSUSM's Starbucks and Coffee Cart have no way to tell how busy they are before you walk across campus. This project taps into the university's public HLS camera streams, runs YOLOv8 person detection on each frame, and serves a live dashboard showing current crowd counts, historical trends, and the best times to visit.
+
+### Live Feeds & Detection Log
+![Dashboard showing live camera feeds with people count badges and detection log with YOLOv8 bounding boxes](assets/dashboard-live.png)
+
+### Analytics — Best Times & Weekly Heatmap
+![Analytics section showing best times to visit per camera and weekly activity heatmap](assets/dashboard-analytics.png)
 
 ---
 
