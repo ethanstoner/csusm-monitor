@@ -33,7 +33,7 @@ Real-time campus occupancy monitor: captures HLS video frames → YOLOv8 person 
 
 **Frontend:** Single `frontend/index.html` — dark-themed dashboard with hls.js for live video, Chart.js for heatmap/timeline, detection log grid with camera filter. Polls `/api/status` every 3s.
 
-**Data flow:** `DetectionWorker._loop()` → `capture_frame()` (ffmpeg subprocess) → `detect_people()` (YOLOv8) → `StaticObjectFilter.filter_boxes()` → `insert_detection()` (SQLite) + `save_detection_snapshot()` (annotated JPEG).
+**Data flow:** `DetectionWorker._loop()` → `capture_frame()` (ffmpeg subprocess) → `detect_people()` (YOLOv8) → `StaticObjectFilter.filter_boxes()` (suppress stationary FPs) → `insert_detection()` (SQLite) + `save_detection_snapshot()` (annotated JPEG).
 
 ## Key Design Decisions
 
