@@ -23,6 +23,47 @@ TZ = ZoneInfo(TIMEZONE)
 latest_detections: dict[str, dict] = {}
 _detections_lock = threading.Lock()
 
+# --- Static object filter ---
+# Tracks bounding box centers over a rolling window to suppress stationary
+# false positives (signs, poles, furniture) that YOLO misidentifies as people.
+_STATIC_WINDOW = 20      # frames of history to keep
+_STATIC_HIT_THRESHOLD = 12  # hits in window to consider "static"
+_STATIC_RADIUS = 40       # px — max center drift to count as same object
+
+
+class StaticObjectFilter:
+    """Suppress detections that remain in the same spot across many frames."""
+
+    def __init__(self):
+        self._history: list[list[tuple[float, float]]] = []  # ring of center-point lists
+
+    def filter_boxes(self, boxes: list[dict]) -> list[dict]:
+        """Return only boxes whose centers have NOT been static over the window."""
+        centers = [((b["x1"] + b["x2"]) / 2, (b["y1"] + b["y2"]) / 2) for b in boxes]
+        self._history.append(centers)
+        if len(self._history) > _STATIC_WINDOW:
+            self._history.pop(0)
+
+        if len(self._history) < _STATIC_HIT_THRESHOLD:
+            return boxes  # not enough history yet — pass everything through
+
+        kept = []
+        for box, center in zip(boxes, centers):
+            hits = 0
+            for past_centers in self._history[:-1]:
+                if any(
+                    abs(pc[0] - center[0]) < _STATIC_RADIUS and abs(pc[1] - center[1]) < _STATIC_RADIUS
+                    for pc in past_centers
+                ):
+                    hits += 1
+            if hits < _STATIC_HIT_THRESHOLD:
+                kept.append(box)
+        return kept
+
+
+# One filter per camera (populated lazily in DetectionWorker._loop)
+_static_filters: dict[str, StaticObjectFilter] = {}
+
 
 def capture_frame(stream_url: str, timeout: int = FFMPEG_TIMEOUT) -> np.ndarray | None:
     """Pull a single frame from an HLS stream using ffmpeg. Returns BGR numpy array or None."""
@@ -154,6 +195,11 @@ class DetectionWorker:
                     logger.info("[%s] Static/placeholder frame — skipping detection", self.camera_id)
                 else:
                     count, boxes = detect_people(frame)
+                    # Suppress stationary false positives (signs, poles)
+                    if self.camera_id not in _static_filters:
+                        _static_filters[self.camera_id] = StaticObjectFilter()
+                    boxes = _static_filters[self.camera_id].filter_boxes(boxes)
+                    count = len(boxes)
                     now = datetime.now(TZ)
                     insert_detection(self.db_conn, self.camera_id, count, now)
                     with _detections_lock:
