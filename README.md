@@ -123,11 +123,25 @@ CSUSM HLS Streams --> Frigate (Docker) --> MQTT --> FastAPI --> SQLite
 | **Detection** | YOLOv8 (ultralytics), OpenCV, ffmpeg |
 | **Backend** | Python, FastAPI, SQLite (WAL mode), paho-mqtt |
 | **Frontend** | Vanilla JS, hls.js, Chart.js (with zoom plugin) |
-| **Infrastructure** | Docker Compose (Frigate + Mosquitto), uvicorn |
+| **Infrastructure** | Docker Compose (full stack), Dockerfile, uvicorn |
 
 ---
 
 ## Quick Start
+
+### Docker (recommended)
+
+**Requirements:** Docker + Docker Compose
+
+```bash
+git clone https://github.com/ethanstoner/csusm-monitor.git
+cd csusm-monitor
+docker compose up -d
+```
+
+That's it — opens the dashboard at [http://localhost:8000](http://localhost:8000). Brings up the FastAPI backend, Frigate NVR, and Mosquitto MQTT broker as a single stack. The YOLO model weights are baked into the image at build time.
+
+### Local development (no Docker)
 
 **Requirements:** Python 3.12+, ffmpeg on PATH
 
@@ -145,14 +159,6 @@ python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000
 ```
 
 Open [http://localhost:8000](http://localhost:8000)
-
-### With Frigate (GPU-accelerated detection)
-
-```bash
-cp .env.example .env        # defaults work for local dev
-docker-compose up -d         # starts Frigate + Mosquitto
-python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000
-```
 
 ---
 
@@ -206,7 +212,9 @@ csusm-monitor/
 │   ├── test_detector.py      # StaticObjectFilter unit tests
 │   ├── test_frigate_listener.py  # MQTT listener unit tests
 │   └── test_integration.py   # End-to-end smoke test
-├── docker-compose.yml        # Frigate + Mosquitto stack
+├── Dockerfile                # Backend container (Python + ffmpeg + YOLO)
+├── .dockerignore             # Docker build exclusions
+├── docker-compose.yml        # Full stack: monitor + Frigate + Mosquitto
 ├── start.bat                 # One-click Windows launcher
 ├── .env.example              # Environment variable template
 └── CLAUDE.md                 # AI assistant context
