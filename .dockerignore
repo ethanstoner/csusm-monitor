@@ -1,0 +1,15 @@
+venv/
+data/
+.env
+__pycache__/
+*.pyc
+*.db
+.pytest_cache/
+.playwright-mcp/
+.worktrees/
+docs/
+tests/
+*.pt
+*.png
+!assets/*.png
+.git/

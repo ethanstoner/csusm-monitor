@@ -1,10 +1,26 @@
 services:
+  monitor:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - monitor-data:/app/data
+    environment:
+      - MQTT_HOST=mosquitto
+      - FRIGATE_HOST=frigate
+      - FRIGATE_PORT=5000
+    depends_on:
+      - mosquitto
+      - frigate
+    restart: unless-stopped
+
   mosquitto:
     image: eclipse-mosquitto:2
     ports:
       - "1883:1883"
     volumes:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    restart: unless-stopped
 
   frigate:
     image: ghcr.io/blakeblackshear/frigate:stable
@@ -15,6 +31,8 @@ services:
       - frigate-media:/media/frigate
     depends_on:
       - mosquitto
+    restart: unless-stopped
 
 volumes:
+  monitor-data:
   frigate-media:
