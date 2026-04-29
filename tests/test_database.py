@@ -55,7 +55,7 @@ def test_get_timeline_data(tmp_path):
     data = get_timeline_data(conn, "starbucks", "2026-04-12")
     assert len(data) > 0
     assert data[0]["time"] == "10:00"
-    assert data[0]["avg_count"] == 3.0
+    assert data[0]["avg_count"] == 4  # MAX of (2, 4) in the same minute
     conn.close()
 
 def test_cleanup_old_data(tmp_path):

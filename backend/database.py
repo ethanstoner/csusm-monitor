@@ -78,7 +78,7 @@ def get_heatmap_data(conn: sqlite3.Connection, camera: str, days: int = 7) -> li
     cutoff = (datetime.now(TZ) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
     if camera == "_all":
         rows = conn.execute("""
-            SELECT day_of_week, hour, SUM(count) * 1.0 / COUNT(DISTINCT date(timestamp)) as avg_count
+            SELECT day_of_week, hour, AVG(count) as avg_count
             FROM detections WHERE timestamp >= ?
             GROUP BY day_of_week, hour
             ORDER BY day_of_week, hour
@@ -98,20 +98,20 @@ def get_timeline_data(conn: sqlite3.Connection, camera: str, date: str) -> list[
     """Get 1-minute averaged time series for a specific date."""
     if camera == "_all":
         rows = conn.execute("""
-            SELECT strftime('%H:%M', timestamp) as time_min, SUM(count) as avg_count
+            SELECT strftime('%H:%M', timestamp) as time_min, MAX(count) as peak_count
             FROM detections WHERE date(timestamp) = ?
             GROUP BY time_min
             ORDER BY time_min
         """, (date,)).fetchall()
     else:
         rows = conn.execute("""
-            SELECT strftime('%H:%M', timestamp) as time_min, AVG(count) as avg_count
+            SELECT strftime('%H:%M', timestamp) as time_min, MAX(count) as peak_count
             FROM detections
             WHERE camera = ? AND date(timestamp) = ?
             GROUP BY time_min
             ORDER BY time_min
         """, (camera, date)).fetchall()
-    return [{"time": r[0], "avg_count": round(r[1], 1)} for r in rows]
+    return [{"time": r[0], "avg_count": r[1]} for r in rows]
 
 
 def get_hourly_averages(conn: sqlite3.Connection, camera: str, day_type: str = "all", days: int = 30) -> list[dict]:
@@ -123,13 +123,21 @@ def get_hourly_averages(conn: sqlite3.Connection, camera: str, day_type: str = "
         dow_filter = "AND day_of_week >= 5"
     else:
         dow_filter = ""
-    rows = conn.execute(f"""
-        SELECT hour, AVG(count) as avg_count
-        FROM detections
-        WHERE camera = ? AND timestamp >= ? {dow_filter}
-        GROUP BY hour
-        ORDER BY hour
-    """, (camera, cutoff)).fetchall()
+    if camera == "_all":
+        rows = conn.execute(f"""
+            SELECT hour, AVG(count) as avg_count
+            FROM detections WHERE timestamp >= ? {dow_filter}
+            GROUP BY hour
+            ORDER BY hour
+        """, (cutoff,)).fetchall()
+    else:
+        rows = conn.execute(f"""
+            SELECT hour, AVG(count) as avg_count
+            FROM detections
+            WHERE camera = ? AND timestamp >= ? {dow_filter}
+            GROUP BY hour
+            ORDER BY hour
+        """, (camera, cutoff)).fetchall()
     return [{"hour": r[0], "avg_count": round(r[1], 1)} for r in rows]
 
 

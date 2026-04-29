@@ -1,4 +1,5 @@
 import logging
+import os
 import threading
 import time
 from contextlib import asynccontextmanager
@@ -10,7 +11,7 @@ import httpx
 from fastapi import FastAPI, Query
 from fastapi.responses import FileResponse, HTMLResponse, Response
 
-from backend.config import CAMERAS, DB_PATH, FRIGATE_HOST, FRIGATE_PORT, HEALTH_TIMEOUT, RETENTION_DAYS, SNAPSHOTS_DIR, TIMEZONE
+from backend.config import CAMERAS, DB_PATH, FRIGATE_HOST, FRIGATE_PORT, HEALTH_TIMEOUT, RETENTION_DAYS, SNAPSHOTS_DIR, TIMEZONE  # noqa: F401 — FRIGATE_* used by detection-log fallback
 from backend.database import (
     cleanup_old_data,
     get_best_times,
@@ -60,14 +61,15 @@ async def lifespan(app: FastAPI):
             worker.start()
             _workers.append(worker)
 
-        # Optionally start Frigate MQTT listener (non-fatal if unavailable)
-        try:
-            from backend.frigate_listener import FrigateListener
-            _frigate_listener = FrigateListener(_db_conn)
-            _frigate_listener.start()
-            _workers.append(_frigate_listener)
-        except Exception:
-            logger.info("Frigate listener not available, using local YOLO detection only")
+        # Optionally start Frigate MQTT listener if MQTT_HOST is configured
+        if os.getenv("MQTT_HOST"):
+            try:
+                from backend.frigate_listener import FrigateListener
+                _frigate_listener = FrigateListener(_db_conn)
+                _frigate_listener.start()
+                _workers.append(_frigate_listener)
+            except Exception:
+                logger.info("Frigate listener not available, using local YOLO detection only")
 
     # Start daily cleanup thread
     _cleanup_running = True
