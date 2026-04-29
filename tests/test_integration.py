@@ -17,6 +17,7 @@ def live_client(tmp_path, monkeypatch):
     """Client with FrigateListener running (MQTT connection mocked)."""
     import backend.config as config
     monkeypatch.setattr(config, "DB_PATH", tmp_path / "test.db")
+    monkeypatch.setenv("MQTT_HOST", "localhost")
 
     with patch("backend.frigate_listener.mqtt.Client") as MockMqttClient:
         MockMqttClient.return_value = MagicMock()

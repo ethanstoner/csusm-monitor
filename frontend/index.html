@@ -27,9 +27,12 @@
         .section h2 { font-size: 1.3rem; margin-bottom: 16px; color: #fff; }
         .trend-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         .trend-card { background: #1a1a1a; border-radius: 12px; padding: 20px; border: 1px solid #2a2a2a; }
+        .activity-box { aspect-ratio: 4; width: 100%; position: relative; overflow: hidden; }
+        .activity-box canvas { width: 100% !important; height: 100% !important; }
+        #heatmap-container { display: flex; flex-direction: column; justify-content: center; height: 100%; }
         .trend-card h3 { font-size: 1rem; margin-bottom: 12px; color: #aaa; }
-        .heatmap-grid { display: grid; grid-template-columns: 60px repeat(24, 1fr); gap: 2px; font-size: 0.7rem; }
-        .heatmap-cell { aspect-ratio: 1; border-radius: 3px; display: flex; align-items: center; justify-content: center; }
+        .heatmap-grid { display: grid; grid-template-columns: 40px repeat(24, 1fr); gap: 2px; font-size: 0.7rem; }
+        .heatmap-cell { height: 22px; border-radius: 3px; display: flex; align-items: center; justify-content: center; }
         .heatmap-label { display: flex; align-items: center; font-size: 0.75rem; color: #888; }
         .heatmap-hour { text-align: center; color: #888; font-size: 0.65rem; padding: 2px 0; }
         select { background: #2a2a2a; color: #e0e0e0; border: 1px solid #3a3a3a; border-radius: 6px; padding: 4px 8px; font-size: 0.85rem; }
@@ -116,7 +119,6 @@
             <div class="view-tabs">
                 <button class="view-tab active" data-view="today" onclick="switchView('today')">Today</button>
                 <button class="view-tab" data-view="hourly" onclick="switchView('hourly')">Hourly Avg</button>
-                <button class="view-tab" data-view="daily" onclick="switchView('daily')">Daily</button>
                 <button class="view-tab" data-view="heatmap" onclick="switchView('heatmap')">Heatmap</button>
             </div>
             <button class="zoom-reset" onclick="resetZoom()">Reset Zoom</button>
@@ -124,8 +126,10 @@
         <div class="trend-grid">
             <div class="trend-card">
                 <h3 id="chart-title">Today's Activity</h3>
-                <canvas id="timeline-chart"></canvas>
-                <div id="heatmap-container" style="display:none;"></div>
+                <div class="activity-box">
+                    <canvas id="timeline-chart"></canvas>
+                    <div id="heatmap-container" style="display:none;"></div>
+                </div>
                 <div class="chart-hint">Scroll to zoom, drag to pan</div>
             </div>
         </div>
@@ -305,21 +309,16 @@
                 canvas.style.display = 'block';
                 heatmapEl.style.display = 'none';
                 if (currentView === 'today') {
-                    titleEl.textContent = "Today's Activity (per minute)";
+                    titleEl.textContent = "Today's Activity";
                     const resp = await fetch(`/api/history/timeline?camera=${camId}`);
                     const data = await resp.json();
                     renderChart(data.data.map(d => d.time), data.data.map(d => d.avg_count), 'People', '#3b82f6');
                 } else if (currentView === 'hourly') {
-                    titleEl.textContent = 'Hourly Average (last 30 days)';
-                    const resp = await fetch(`/api/history/hourly?camera=${camId}&days=30`);
+                    titleEl.textContent = 'Hourly Average (last 7 days)';
+                    const resp = await fetch(`/api/history/hourly?camera=${camId}&days=7`);
                     const data = await resp.json();
                     const labels = data.data.map(d => { const h = d.hour; return h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? '12 PM' : `${h-12} PM`; });
                     renderChart(labels, data.data.map(d => d.avg_count), 'Avg People', '#8b5cf6');
-                } else if (currentView === 'daily') {
-                    titleEl.textContent = 'Daily Activity (last 30 days)';
-                    const resp = await fetch(`/api/history/daily?camera=${camId}&days=30`);
-                    const data = await resp.json();
-                    renderChart(data.data.map(d => d.date), data.data.map(d => d.avg_count), 'Avg People', '#f59e0b');
                 }
             }
         }
@@ -335,6 +334,7 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
                     plugins: {
                         legend: { display: false },
@@ -374,6 +374,15 @@
                 }
             }
             html += '</div>';
+            html += '<div style="display:flex;align-items:center;gap:8px;margin-top:10px;justify-content:flex-end;font-size:0.75rem;color:#888;">';
+            html += '<span>Less</span>';
+            const legendSteps = [0, 0.2, 0.4, 0.6, 0.8, 1.0];
+            legendSteps.forEach(intensity => {
+                const r = Math.round(34 + intensity * 205), g = Math.round(34 + (1 - intensity) * 50), b = 34;
+                const bg = intensity === 0 ? '#1a1a1a' : `rgb(${r},${g},${b})`;
+                html += `<div style="width:18px;height:14px;border-radius:2px;background:${bg};border:1px solid #333;"></div>`;
+            });
+            html += '<span>More</span></div>';
             container.innerHTML = html;
         }
 
