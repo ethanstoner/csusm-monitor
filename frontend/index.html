@@ -4,906 +4,617 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSUSM Campus Monitor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #111318;
-            --surface: #191c24;
-            --surface-raised: #1f222c;
-            --border: #282c37;
-            --border-subtle: #22252e;
-            --text: #e4e7ed;
-            --text-dim: #8b919e;
-            --text-faint: #565c6a;
-            --blue: #3b82f6;
+            --bg-root: #0f172a;
+            --bg-panel: #1e293b;
+            --bg-header: #020617;
+            --bg-hover: #334155;
+            --bg-input: #0f172a;
+            --border: #334155;
+            --border-active: #475569;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent: #3b82f6;
+            --accent-dim: rgba(59, 130, 246, 0.15);
             --green: #22c55e;
-            --amber: #eab308;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --amber: #f59e0b;
+            --amber-dim: rgba(245, 158, 11, 0.15);
             --red: #ef4444;
-            --sans: 'DM Sans', -apple-system, sans-serif;
-            --mono: 'JetBrains Mono', monospace;
-            --radius: 10px;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --radius: 6px;
         }
-
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: var(--sans);
-            font-size: 14px;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg-root);
+            color: var(--text-primary);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
+        .mono { font-family: 'JetBrains Mono', monospace; }
 
-        /* ── NAVBAR ── */
-        .navbar {
+        header {
+            background: var(--bg-header);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            height: 48px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 28px;
-            height: 52px;
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            flex-shrink: 0;
         }
-
-        .nav-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-            font-size: 14px;
-            letter-spacing: -0.2px;
-        }
-
-        .nav-brand svg { flex-shrink: 0; }
-
-        .nav-status {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-family: var(--mono);
-            font-size: 12px;
-            color: var(--text-dim);
-        }
-
-        .live-indicator {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--green);
-            animation: blink 2.5s ease-in-out infinite;
-        }
-
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .header-left h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.5px; }
+        .header-left span { font-size: 12px; color: var(--text-secondary); font-weight: 400; border-left: 1px solid var(--border); padding-left: 16px; }
+        .header-right { display: flex; align-items: center; gap: 20px; font-size: 11px; color: var(--text-secondary); }
+        .api-status { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; animation: blink 2.5s ease-in-out infinite; }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-        /* ── LAYOUT ── */
-        .page { padding: 20px 28px 48px; max-width: 1320px; margin: 0 auto; }
-
-        /* ── CONDITIONS ROW ── */
-        .conditions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
+        .status-strip {
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            gap: 16px;
+            height: 72px;
+            flex-shrink: 0;
         }
-
-        .cond-item {
-            background: var(--surface);
-            border: 1px solid var(--border-subtle);
+        .stat-tile {
+            flex: 1;
+            background: var(--bg-root);
+            border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 14px 16px;
+            padding: 10px 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: border-color 0.2s;
+        }
+        .stat-tile:hover { border-color: var(--accent); }
+        .stat-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: 600; }
+        .stat-value { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+        .stat-value.green { color: var(--green); }
+        .stat-value.amber { color: var(--amber); }
+        .stat-value.red { color: var(--red); }
+        .stat-value.accent { color: var(--accent); }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            min-height: 0;
+            padding: 16px 24px;
+            gap: 16px;
         }
 
-        .cond-label {
-            font-size: 11px;
-            font-weight: 500;
-            color: var(--text-faint);
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            margin-bottom: 6px;
-        }
-
-        .cond-value {
-            font-family: var(--mono);
-            font-size: 22px;
-            font-weight: 600;
-            line-height: 1.1;
-        }
-
-        .cond-sub {
-            font-size: 12px;
-            color: var(--text-faint);
-            margin-top: 3px;
-        }
-
-        /* ── MAIN GRID ── */
-        .grid-2 {
+        .cam-grid {
+            flex: 1;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
+            gap: 16px;
+            min-width: 0;
         }
-
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border-subtle);
+        .cam-card {
+            background: #000;
+            border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 18px 20px;
-        }
-
-        .card-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 14px;
-        }
-
-        .card-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .card-tag {
-            font-family: var(--mono);
-            font-size: 11px;
-            color: var(--text-faint);
-        }
-
-        /* Parking */
-        .park-num {
-            font-family: var(--mono);
-            font-size: 36px;
-            font-weight: 600;
-            line-height: 1;
-        }
-
-        .park-of {
-            font-size: 15px;
-            font-weight: 400;
-            color: var(--text-faint);
-        }
-
-        .park-bar {
-            height: 6px;
-            background: var(--surface-raised);
-            border-radius: 3px;
-            margin: 14px 0 10px;
-            overflow: hidden;
-        }
-
-        .park-fill {
-            height: 100%;
-            border-radius: 3px;
-            transition: width 0.6s ease;
-        }
-
-        .park-fill.g { background: var(--green); }
-        .park-fill.y { background: var(--amber); }
-        .park-fill.r { background: var(--red); }
-
-        .park-footer {
-            display: flex;
-            justify-content: space-between;
-            font-family: var(--mono);
-            font-size: 11px;
-            color: var(--text-faint);
-        }
-
-        /* Transit */
-        .dep-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 9px 0;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-
-        .dep-row:last-child { border-bottom: none; }
-
-        .dep-route {
-            font-family: var(--mono);
-            font-size: 11px;
-            font-weight: 600;
-            min-width: 36px;
-            text-align: center;
-            padding: 2px 6px;
-            border-radius: 4px;
-            background: rgba(59,130,246,0.1);
-            color: var(--blue);
-        }
-
-        .dep-dest {
-            flex: 1;
-            font-size: 13px;
-            color: var(--text);
-        }
-
-        .dep-eta {
-            font-family: var(--mono);
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--green);
-        }
-
-        /* Events */
-        .events-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 0 28px;
-        }
-
-        .evt {
-            padding: 9px 0;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-
-        .evt:last-child { border-bottom: none; }
-
-        .evt-name {
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        .evt-date {
-            font-family: var(--mono);
-            font-size: 11px;
-            color: var(--text-faint);
-            margin-top: 2px;
-        }
-
-        /* ── FEEDS ── */
-        .feeds-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .feed-card {
-            background: var(--surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius);
-            overflow: hidden;
-        }
-
-        .feed-video {
             position: relative;
-            aspect-ratio: 16/9;
-            background: #0a0c12;
-        }
-
-        .feed-video video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .feed-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+            overflow: hidden;
             display: flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(17, 19, 24, 0.85);
-            backdrop-filter: blur(8px);
-            border-radius: 6px;
-            padding: 5px 10px;
-            font-family: var(--mono);
-            font-size: 12px;
-            font-weight: 500;
+            flex-direction: column;
+            transition: border-color 0.3s;
         }
-
-        .feed-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
+        .cam-card:hover { border-color: var(--border-active); }
+        .cam-header {
+            position: absolute; top: 0; left: 0; right: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(4px);
+            padding: 8px 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 10; font-size: 13px; border-bottom: 1px solid var(--border);
         }
-
-        .feed-dot.on { background: var(--green); }
-        .feed-dot.off { background: var(--red); }
-
-        .feed-name {
-            padding: 10px 14px;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-dim);
+        .cam-name { font-weight: 600; letter-spacing: 0.5px; }
+        .cam-badge { font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 3px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-live { background: var(--green-dim); color: var(--green); }
+        .badge-offline { background: var(--red-dim); color: var(--red); }
+        .cam-video-container { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .cam-fallback { color: var(--text-secondary); font-size: 12px; text-align: center; padding: 20px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+        .cam-overlay {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(4px);
+            padding: 8px 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 10; font-size: 12px; border-top: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
         }
+        .person-count { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--accent); }
+        .person-icon { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 8px var(--accent); }
+        .cam-time { color: var(--text-secondary); font-size: 10px; font-weight: 500; }
 
-        /* ── SECTION HEADINGS ── */
-        .sh {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text);
-            margin-bottom: 12px;
+        .context-col {
+            width: 340px;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+            border-radius: var(--radius);
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
         }
+        .ctx-section { padding: 16px 0; border-bottom: 1px solid var(--border); }
+        .ctx-section:last-child { border-bottom: none; }
+        .ctx-title { font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 12px; font-weight: 700; }
+        .ctx-item { margin-bottom: 10px; font-size: 13px; }
+        .ctx-item:last-child { margin-bottom: 0; }
+        .ctx-sub { font-size: 11px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; margin-top: 3px; }
+        .ctx-row { display: flex; justify-content: space-between; align-items: center; }
 
-        .sh-label {
-            font-size: 11px;
-            font-weight: 500;
-            color: var(--text-faint);
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            margin-bottom: 12px;
-        }
+        .park-bar-bg { width: 100%; height: 6px; background: var(--bg-root); border-radius: 3px; margin-top: 10px; overflow: hidden; border: 1px solid var(--border); }
+        .park-bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
 
-        .section { margin-bottom: 24px; }
+        .dep-badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 2px 6px; border-radius: 3px; background: var(--accent-dim); color: var(--accent); font-weight: 600; margin-right: 8px; }
 
-        /* ── DETECTION LOG ── */
-        .det-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 12px;
-        }
-
-        .det-item {
-            background: var(--surface);
-            border: 1px solid var(--border-subtle);
+        .analytics-panel {
+            height: 240px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-shrink: 0;
+            margin: 0 24px 16px;
             border-radius: var(--radius);
             overflow: hidden;
-            cursor: pointer;
-            transition: border-color 0.15s;
         }
-
-        .det-item:hover { border-color: var(--border); }
-
-        .det-item img {
-            width: 100%;
-            aspect-ratio: 16/9;
-            object-fit: cover;
-            display: block;
-        }
-
-        .det-info {
+        .analytics-sidebar {
+            width: 150px;
+            border-right: 1px solid var(--border);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            font-size: 12px;
+            flex-direction: column;
+            padding: 8px;
+            gap: 4px;
+            background: var(--bg-root);
         }
-
-        .det-cam { color: var(--text-dim); }
-        .det-cnt { font-family: var(--mono); font-weight: 600; color: var(--green); }
-        .det-ts { font-family: var(--mono); font-size: 11px; color: var(--text-faint); }
-
-        /* ── BEST TIMES ── */
-        .best-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 12px;
-        }
-
-        .best-card {
-            background: var(--surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius);
-            padding: 16px;
-        }
-
-        .best-card h4 { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
-
-        .best-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 5px 0;
-        }
-
-        .best-hour { font-family: var(--mono); font-size: 12px; }
-
-        .best-tag {
-            font-family: var(--mono);
-            font-size: 11px;
-            padding: 1px 8px;
-            border-radius: 4px;
-        }
-
-        .best-tag.lo { background: rgba(34,197,94,0.1); color: var(--green); }
-        .best-tag.md { background: rgba(234,179,8,0.1); color: var(--amber); }
-        .best-tag.hi { background: rgba(239,68,68,0.1); color: var(--red); }
-
-        /* ── ACTIVITY / ANALYTICS ── */
-        .analytics-bar {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-
-        .analytics-bar select {
-            font-family: var(--sans);
-            font-size: 13px;
-            background: var(--surface);
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 5px 8px;
-            outline: none;
-        }
-
-        .tab-group { display: flex; gap: 2px; }
-
         .tab-btn {
-            font-family: var(--sans);
-            font-size: 12px;
-            font-weight: 500;
-            padding: 5px 12px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--text-faint);
-            cursor: pointer;
+            background: transparent; border: 1px solid transparent; color: var(--text-secondary);
+            padding: 10px 14px; font-size: 12px; cursor: pointer; border-radius: var(--radius);
+            font-family: 'Space Grotesk', sans-serif; text-align: left; font-weight: 500;
             transition: all 0.15s;
         }
+        .tab-btn.active { background: var(--bg-panel); border-color: var(--border); color: var(--accent); font-weight: 600; }
+        .tab-btn:hover:not(.active) { color: var(--text-primary); background: var(--bg-hover); }
 
-        .tab-btn:hover { color: var(--text-dim); }
-        .tab-btn.on { background: var(--blue); color: #fff; border-color: var(--blue); }
-
-        .chart-card {
-            background: var(--surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius);
-            padding: 18px 20px;
+        .analytics-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .analytics-topbar {
+            height: 48px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
         }
-
-        .chart-area {
-            aspect-ratio: 3.5;
-            position: relative;
+        .topbar-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .cam-selector {
+            background: var(--bg-input); border: 1px solid var(--border); color: var(--text-primary);
+            padding: 6px 12px; border-radius: var(--radius); font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            outline: none;
         }
+        .cam-selector:focus { border-color: var(--accent); }
 
-        .chart-area canvas { width: 100% !important; height: 100% !important; }
+        .analytics-body { flex: 1; padding: 16px 20px; overflow-y: auto; position: relative; }
+        .tab-content { display: none; height: 100%; width: 100%; }
+        .tab-content.active { display: flex; gap: 16px; }
 
-        .chart-foot {
-            font-family: var(--mono);
-            font-size: 10px;
-            color: var(--text-faint);
-            text-align: right;
-            margin-top: 6px;
-        }
+        .detect-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; overflow-y: auto; width: 100%; align-content: start; }
+        .detect-item { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--bg-root); cursor: pointer; transition: border-color 0.2s; }
+        .detect-item:hover { border-color: var(--border-active); }
+        .detect-item img { width: 100%; height: 56px; object-fit: cover; display: block; }
+        .detect-info { padding: 6px 8px; font-size: 9px; font-family: 'JetBrains Mono', monospace; color: var(--text-secondary); }
+        .detect-info strong { color: var(--text-primary); font-weight: 600; }
 
-        .reset-btn {
-            font-family: var(--sans);
-            font-size: 11px;
-            background: transparent;
-            color: var(--text-faint);
-            border: 1px solid var(--border);
-            border-radius: 5px;
-            padding: 4px 8px;
-            cursor: pointer;
-            margin-left: auto;
-        }
+        .best-times-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px; width: 100%; align-content: start; }
+        .best-time-card { background: var(--bg-root); border: 1px solid var(--border); padding: 10px; border-radius: var(--radius); text-align: center; transition: border-color 0.2s; }
+        .best-time-card:hover { border-color: var(--accent); }
+        .best-time-card .btime { font-size: 16px; font-weight: 700; color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+        .best-time-card .bcount { font-size: 9px; color: var(--text-secondary); margin-top: 4px; text-transform: uppercase; font-weight: 600; }
 
-        .reset-btn:hover { color: var(--text-dim); }
+        .chart-container { position: relative; width: 100%; height: 100%; }
 
-        /* Heatmap */
-        .hm-grid {
-            display: grid;
-            grid-template-columns: 36px repeat(24, 1fr);
-            gap: 2px;
-        }
+        .hm-layout { display: flex; width: 100%; gap: 8px; }
+        .hm-y { display: flex; flex-direction: column; justify-content: space-between; padding: 1px 0; }
+        .hm-y span { font-size: 9px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; line-height: 1; }
+        .hm-area { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+        .hm-row { display: grid; grid-template-columns: repeat(24, 1fr); gap: 3px; flex: 1; }
+        .hm-cell { border-radius: 2px; min-height: 0; transition: transform 0.1s; }
+        .hm-cell:hover { transform: scale(1.5); z-index: 10; }
+        .hm-x { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; margin-top: 6px; }
+        .hm-x span { font-size: 7px; text-align: center; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; }
 
-        .hm-cell {
-            height: 20px;
-            border-radius: 2px;
-            transition: transform 0.1s;
-        }
+        .empty-state { color: var(--text-secondary); font-size: 11px; display: flex; align-items: center; justify-content: center; width: 100%; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
-        .hm-cell:hover { transform: scale(1.3); z-index: 2; }
-
-        .hm-lbl {
-            font-family: var(--mono);
-            font-size: 10px;
-            color: var(--text-faint);
-            display: flex;
-            align-items: center;
-        }
-
-        .hm-hr {
-            font-family: var(--mono);
-            font-size: 9px;
-            color: var(--text-faint);
-            text-align: center;
-        }
-
-        /* Controls */
-        .log-bar {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .log-bar label { font-size: 12px; color: var(--text-dim); }
-        .log-bar select { font-size: 12px; }
-
-        .toggle-head {
-            cursor: pointer;
-            user-select: none;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .toggle-head:hover .sh { color: var(--text-dim); }
-        .arrow { font-size: 10px; color: var(--text-faint); transition: transform 0.2s; }
-        .arrow.shut { transform: rotate(-90deg); }
-        .fold { overflow: hidden; transition: max-height 0.25s ease; max-height: 3000px; }
-        .fold.shut { max-height: 0; }
-
-        .muted { color: var(--text-faint); font-size: 13px; }
-
-        /* Lightbox */
         .lb { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:200; justify-content:center; align-items:center; cursor:pointer; }
         .lb.on { display:flex; }
         .lb img { max-width:95%; max-height:95%; object-fit:contain; border-radius:8px; }
 
-        /* Responsive */
-        @media (max-width: 860px) {
-            .grid-2 { grid-template-columns: 1fr; }
-            .feeds-grid { grid-template-columns: 1fr; }
-            .navbar { padding: 0 16px; }
-            .page { padding: 16px 16px 40px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-root); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-active); }
+
+        @media (max-width: 1200px) {
+            body { overflow: auto; height: auto; }
+            .main-content { flex-direction: column; overflow: visible; padding: 12px; }
+            .cam-grid { grid-template-columns: 1fr; }
+            .cam-card { min-height: 250px; }
+            .context-col { width: 100%; flex-direction: row; flex-wrap: wrap; }
+            .ctx-section { flex: 1; min-width: 200px; padding: 8px 0; border-bottom: none; border-right: 1px solid var(--border); padding-right: 16px; margin-right: 16px; }
+            .ctx-section:last-child { border-right: none; margin-right: 0; padding-right: 0; }
+            .analytics-panel { margin: 0 12px 12px; height: 350px; flex-direction: column; }
+            .analytics-sidebar { width: 100%; flex-direction: row; border-right: none; border-bottom: 1px solid var(--border); overflow-x: auto; }
         }
     </style>
 </head>
 <body>
 
-<nav class="navbar">
-    <div class="nav-brand">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-        CSUSM Campus Monitor
+<header>
+    <div class="header-left">
+        <h1>CSUSM Campus Monitor</h1>
+        <span>Real-time campus intelligence</span>
     </div>
-    <div class="nav-status">
-        <span class="live-indicator"></span>
-        <span id="last-updated">--</span>
+    <div class="header-right">
+        <div class="api-status">
+            <div class="status-dot" id="api-dot"></div>
+            <span id="api-status-text">CONNECTING</span>
+        </div>
+        <span class="mono" id="last-updated">--:--:--</span>
     </div>
-</nav>
+</header>
 
-<div class="page">
-
-    <!-- Conditions -->
-    <div class="conditions" id="conditions">
-        <div class="cond-item">
-            <div class="cond-label">Temperature</div>
-            <div class="cond-value" id="c-temp">--</div>
-            <div class="cond-sub" id="c-feels">--</div>
-        </div>
-        <div class="cond-item">
-            <div class="cond-label">Humidity</div>
-            <div class="cond-value" id="c-hum">--</div>
-        </div>
-        <div class="cond-item">
-            <div class="cond-label">Wind</div>
-            <div class="cond-value" id="c-wind">--</div>
-        </div>
-        <div class="cond-item">
-            <div class="cond-label">UV Index</div>
-            <div class="cond-value" id="c-uv">--</div>
-        </div>
-        <div class="cond-item" id="c-aqi-card" style="display:none">
-            <div class="cond-label">Air Quality</div>
-            <div class="cond-value" id="c-aqi">--</div>
-            <div class="cond-sub" id="c-aqi-cat"></div>
-        </div>
+<div class="status-strip">
+    <div class="stat-tile">
+        <div class="stat-label">Temperature</div>
+        <div class="stat-value mono" id="stat-weather">--</div>
     </div>
-
-    <!-- Parking + Transit -->
-    <div class="grid-2">
-        <div class="card">
-            <div class="card-head">
-                <span class="card-title">Parking</span>
-                <span class="card-tag" id="pk-lot">Lot F</span>
-            </div>
-            <div class="park-num"><span id="pk-avail">--</span> <span class="park-of">/ <span id="pk-total">--</span> spaces</span></div>
-            <div class="park-bar"><div class="park-fill g" id="pk-fill" style="width:0%"></div></div>
-            <div class="park-footer"><span id="pk-pct">--</span><span id="pk-ts">--</span></div>
-        </div>
-        <div class="card">
-            <div class="card-head">
-                <span class="card-title">SPRINTER</span>
-                <span class="card-tag">CSUSM Station</span>
-            </div>
-            <div id="transit-box"><span class="muted">Loading...</span></div>
-        </div>
+    <div class="stat-tile">
+        <div class="stat-label">Humidity / Wind</div>
+        <div class="stat-value mono" id="stat-hum-wind">-- / --</div>
     </div>
-
-    <!-- Events -->
-    <div class="card section">
-        <div class="card-head">
-            <span class="card-title">Upcoming Events</span>
-        </div>
-        <div class="events-grid" id="events-box"><span class="muted">Loading...</span></div>
+    <div class="stat-tile">
+        <div class="stat-label">UV Index</div>
+        <div class="stat-value mono" id="stat-uv">--</div>
     </div>
-
-    <!-- Feeds -->
-    <div class="section">
-        <div class="sh-label">Live Feeds</div>
-        <div class="feeds-grid" id="feeds"></div>
+    <div class="stat-tile">
+        <div class="stat-label">Lot F Parking</div>
+        <div class="stat-value mono" id="stat-parking">--</div>
     </div>
+    <div class="stat-tile">
+        <div class="stat-label">Campus Crowd</div>
+        <div class="stat-value mono accent" id="stat-crowd">--</div>
+    </div>
+    <div class="stat-tile">
+        <div class="stat-label">Next SPRINTER</div>
+        <div class="stat-value mono" id="stat-transit">--</div>
+    </div>
+</div>
 
-    <!-- Detection Log -->
-    <div class="section">
-        <div class="toggle-head" onclick="toggleFold('det-fold')">
-            <span class="sh">Detection Log</span>
-            <span class="arrow" id="det-fold-arrow">&#9660;</span>
+<div class="main-content">
+    <div class="cam-grid" id="cam-grid">
+        <div class="cam-card"><div class="cam-fallback">Initializing...</div></div>
+    </div>
+    <div class="context-col">
+        <div class="ctx-section">
+            <div class="ctx-title">Parking Detail</div>
+            <div id="ctx-parking"><span class="empty-state" style="min-height:40px">Loading...</span></div>
         </div>
-        <div id="det-fold" class="fold">
-            <div class="log-bar">
-                <label>Filter:</label>
-                <select id="log-camera-filter"><option value="">All Cameras</option></select>
-                <span class="card-tag" id="log-count"></span>
-            </div>
-            <div class="det-grid" id="detection-log"></div>
+        <div class="ctx-section">
+            <div class="ctx-title">Weather Detail</div>
+            <div id="ctx-weather"><span class="empty-state" style="min-height:40px">Loading...</span></div>
+        </div>
+        <div class="ctx-section">
+            <div class="ctx-title">SPRINTER Departures</div>
+            <div id="ctx-transit"><span class="empty-state">Loading...</span></div>
+        </div>
+        <div class="ctx-section">
+            <div class="ctx-title">Campus Events</div>
+            <div id="ctx-events"><span class="empty-state">Loading...</span></div>
         </div>
     </div>
+</div>
 
-    <!-- Best Times -->
-    <div class="section">
-        <div class="sh-label">Best Times to Visit</div>
-        <div id="best-times-container" class="best-grid"></div>
+<div class="analytics-panel">
+    <div class="analytics-sidebar">
+        <button class="tab-btn active" onclick="switchTab('log',this)">Detection Log</button>
+        <button class="tab-btn" onclick="switchTab('best',this)">Best Times</button>
+        <button class="tab-btn" onclick="switchTab('timeline',this)">Timeline</button>
+        <button class="tab-btn" onclick="switchTab('hourly',this)">Hourly Avg</button>
+        <button class="tab-btn" onclick="switchTab('heatmap',this)">Heatmap</button>
     </div>
-
-    <!-- Activity -->
-    <div class="section">
-        <div class="sh-label">Activity</div>
-        <div class="analytics-bar">
-            <select id="trend-camera"></select>
-            <div class="tab-group">
-                <button class="tab-btn on" data-view="today" onclick="switchView('today')">Today</button>
-                <button class="tab-btn" data-view="hourly" onclick="switchView('hourly')">Hourly Avg</button>
-                <button class="tab-btn" data-view="heatmap" onclick="switchView('heatmap')">Heatmap</button>
-            </div>
-            <button class="reset-btn" onclick="resetZoom()">Reset Zoom</button>
+    <div class="analytics-main">
+        <div class="analytics-topbar">
+            <span class="topbar-label">Analytics</span>
+            <select class="cam-selector" id="cam-selector" onchange="loadAnalytics()"></select>
         </div>
-        <div class="chart-card">
-            <div class="chart-area">
-                <canvas id="timeline-chart"></canvas>
-                <div id="heatmap-container" style="display:none"></div>
-            </div>
-            <div class="chart-foot">Scroll to zoom &middot; Drag to pan</div>
+        <div class="analytics-body">
+            <div class="tab-content active" id="tab-log"><div class="detect-grid empty-state">Loading...</div></div>
+            <div class="tab-content" id="tab-best"><div class="best-times-grid empty-state">Select camera</div></div>
+            <div class="tab-content" id="tab-timeline"><div class="chart-container"><canvas id="chart-timeline"></canvas></div></div>
+            <div class="tab-content" id="tab-hourly"><div class="chart-container"><canvas id="chart-hourly"></canvas></div></div>
+            <div class="tab-content" id="tab-heatmap"><div class="hm-layout empty-state">Select camera</div></div>
         </div>
     </div>
-
 </div>
 
 <div class="lb" id="lightbox"><img id="lb-img" /></div>
 
 <script>
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-const CAM_NAMES = {};
 const WMO = {0:'\u2600\uFE0F',1:'\uD83C\uDF24',2:'\u26C5',3:'\u2601\uFE0F',45:'\uD83C\uDF2B',48:'\uD83C\uDF2B',51:'\uD83C\uDF26',53:'\uD83C\uDF27',55:'\uD83C\uDF27',61:'\uD83C\uDF27',63:'\uD83C\uDF27',65:'\uD83C\uDF27',71:'\uD83C\uDF28',73:'\uD83C\uDF28',75:'\u2744\uFE0F',80:'\uD83C\uDF26',81:'\uD83C\uDF27',82:'\u26C8',95:'\u26C8',96:'\u26C8',99:'\u26C8'};
-let chart = null, view = 'today', cameras = [], lastIds = '';
+const CAM_NAMES = {};
+let cameras = [];
+let timelineChart = null, hourlyChart = null;
+let lastDetIds = '';
+
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.borderColor = '#334155';
+Chart.defaults.font.family = "'JetBrains Mono', monospace";
+Chart.defaults.font.size = 10;
+
+async function api(path) {
+    try {
+        const r = await fetch('/api' + path, {signal: AbortSignal.timeout(5000)});
+        if (!r.ok) return null;
+        return await r.json();
+    } catch(e) { return null; }
+}
 
 async function init() {
-    const data = (await (await fetch('/api/cameras')).json());
-    cameras = data.cameras;
-    const feeds = document.getElementById('feeds');
-    const camSel = document.getElementById('trend-camera');
-    const logSel = document.getElementById('log-camera-filter');
+    // Load cameras and build feeds
+    const camData = await api('/cameras');
+    if (camData) {
+        cameras = camData.cameras;
+        const grid = document.getElementById('cam-grid');
+        grid.innerHTML = '';
+        const sel = document.getElementById('cam-selector');
+        sel.innerHTML = '<option value="_all">All Cameras</option>';
 
-    camSel.innerHTML = '<option value="_all">All Cameras</option>';
-    cameras.forEach(cam => {
-        CAM_NAMES[cam.id] = cam.name;
-        // Feed card
-        const d = document.createElement('div');
-        d.className = 'feed-card';
-        d.innerHTML = `<div class="feed-video"><video id="v-${cam.id}" muted playsinline></video><div class="feed-badge"><span class="feed-dot" id="h-${cam.id}"></span><span id="n-${cam.id}">--</span></div></div><div class="feed-name">${cam.name}</div>`;
-        feeds.appendChild(d);
-        const vid = document.getElementById(`v-${cam.id}`);
-        if (Hls.isSupported()) {
-            const hls = new Hls({enableWorker:true,liveSyncDurationCount:3,liveMaxLatencyDurationCount:6,maxBufferLength:15,maxMaxBufferLength:30});
-            hls.loadSource(cam.stream_url); hls.attachMedia(vid);
-            hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
-            hls.on(Hls.Events.ERROR, (_,d) => { if(d.fatal) hls.startLoad(); });
-        } else if (vid.canPlayType('application/vnd.apple.mpegurl')) {
-            vid.src = cam.stream_url;
-            vid.addEventListener('loadedmetadata', () => vid.play().catch(()=>{}));
-        }
-        [camSel, logSel].forEach(s => { const o = document.createElement('option'); o.value = cam.id; o.textContent = cam.name; s.appendChild(o); });
-    });
+        cameras.forEach(cam => {
+            CAM_NAMES[cam.id] = cam.name;
+            const card = document.createElement('div');
+            card.className = 'cam-card';
+            card.innerHTML = `
+                <div class="cam-header">
+                    <span class="cam-name">${cam.name}</span>
+                    <span class="cam-badge badge-live" id="badge-${cam.id}">LIVE</span>
+                </div>
+                <div class="cam-video-container" id="vid-${cam.id}">
+                    <div class="cam-fallback">Connecting...</div>
+                </div>
+                <div class="cam-overlay">
+                    <div class="person-count"><div class="person-icon"></div><span id="cnt-${cam.id}">0</span></div>
+                    <span class="cam-time" id="ts-${cam.id}">--:--</span>
+                </div>
+            `;
+            grid.appendChild(card);
+
+            // HLS stream
+            const container = document.getElementById(`vid-${cam.id}`);
+            const video = document.createElement('video');
+            video.muted = true; video.playsInline = true;
+            if (Hls.isSupported()) {
+                const hls = new Hls({enableWorker:true, liveSyncDurationCount:3, liveMaxLatencyDurationCount:6, maxBufferLength:15, maxMaxBufferLength:30});
+                hls.loadSource(cam.stream_url);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => { container.innerHTML=''; container.appendChild(video); video.play().catch(()=>{}); });
+                hls.on(Hls.Events.ERROR, (_,d) => { if(d.fatal) { container.innerHTML='<div class="cam-fallback" style="color:var(--red)">STREAM ERROR</div>'; hls.destroy(); }});
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = cam.stream_url;
+                video.addEventListener('loadedmetadata', () => { container.innerHTML=''; container.appendChild(video); video.play().catch(()=>{}); });
+            }
+
+            const opt = document.createElement('option');
+            opt.value = cam.id; opt.textContent = cam.name;
+            sel.appendChild(opt);
+        });
+
+        if (cameras.length) { sel.value = cameras[0].id; loadAnalytics(); }
+    }
 
     document.getElementById('lightbox').addEventListener('click', () => document.getElementById('lightbox').classList.remove('on'));
-    camSel.addEventListener('change', loadView);
-    logSel.addEventListener('change', loadLog);
 
-    poll(); setInterval(poll, 3000);
-    cond(); setInterval(cond, 60000);
-    park(); setInterval(park, 60000);
-    transit(); setInterval(transit, 60000);
-    events(); setInterval(events, 300000);
-    best(); setInterval(best, 120000);
-    loadView(); setInterval(loadView, 60000);
-    loadLog(); setInterval(loadLog, 10000);
+    // Initial loads + intervals
+    pollStatus(); setInterval(pollStatus, 3000);
+    loadConditions(); setInterval(loadConditions, 60000);
+    loadParking(); setInterval(loadParking, 60000);
+    loadTransit(); setInterval(loadTransit, 60000);
+    loadEvents(); setInterval(loadEvents, 300000);
+    loadDetectionLog(); setInterval(loadDetectionLog, 10000);
+
+    document.getElementById('api-status-text').textContent = 'SYSTEM NOMINAL';
 }
 
-async function poll() {
-    try {
-        const d = (await (await fetch('/api/status')).json());
-        d.cameras.forEach(c => {
-            const n = document.getElementById(`n-${c.id}`);
-            const h = document.getElementById(`h-${c.id}`);
-            if (n) n.textContent = `${c.count} ${c.count===1?'person':'people'}`;
-            if (h) h.className = `feed-dot ${c.healthy?'on':'off'}`;
-        });
-        document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
-    } catch(e) {}
-}
-
-function cond() {
-    fetch('/api/conditions').then(r=>r.json()).then(d => {
-        if (!d.weather) return;
-        const w = d.weather;
-        const icon = WMO[w.weather_code]||'';
-        document.getElementById('c-temp').textContent = `${icon} ${Math.round(w.temperature)}°F`;
-        document.getElementById('c-feels').textContent = `Feels like ${Math.round(w.apparent_temperature)}°`;
-        const hEl = document.getElementById('c-hum');
-        hEl.textContent = `${Math.round(w.humidity)}%`;
-        hEl.style.color = w.humidity>80?'var(--red)':w.humidity>60?'var(--amber)':'var(--green)';
-        const dirs = ['N','NE','E','SE','S','SW','W','NW'];
-        document.getElementById('c-wind').textContent = `${Math.round(w.wind_speed)} mph ${dirs[Math.round(w.wind_direction/45)%8]}`;
-        const uEl = document.getElementById('c-uv');
-        uEl.textContent = w.uv_index.toFixed(1);
-        uEl.style.color = w.uv_index>=8?'var(--red)':w.uv_index>=6?'var(--amber)':w.uv_index>=3?'var(--amber)':'var(--green)';
-        if (d.aqi) {
-            document.getElementById('c-aqi-card').style.display = '';
-            document.getElementById('c-aqi').textContent = d.aqi.aqi;
-            document.getElementById('c-aqi').style.color = d.aqi.aqi>100?'var(--red)':d.aqi.aqi>50?'var(--amber)':'var(--green)';
-            document.getElementById('c-aqi-cat').textContent = d.aqi.category;
-        }
-    }).catch(()=>{});
-}
-
-function park() {
-    fetch('/api/parking').then(r=>r.json()).then(d => {
-        if (!d.lots||!d.lots.length) return;
-        const l = d.lots[0];
-        document.getElementById('pk-lot').textContent = `Lot ${l.lot_id}`;
-        document.getElementById('pk-avail').textContent = l.available;
-        document.getElementById('pk-total').textContent = l.total;
-        const p = l.percent_full;
-        const f = document.getElementById('pk-fill');
-        f.style.width = p+'%';
-        f.className = 'park-fill '+(p>75?'r':p>50?'y':'g');
-        document.getElementById('pk-pct').textContent = p+'% full';
-        document.getElementById('pk-ts').textContent = l.timestamp;
-    }).catch(()=>{});
-}
-
-function transit() {
-    fetch('/api/transit').then(r=>r.json()).then(d => {
-        const el = document.getElementById('transit-box');
-        if (!d.departures||!d.departures.length) { el.innerHTML='<span class="muted">No upcoming departures</span>'; return; }
-        const seen = new Set();
-        const uniq = d.departures.filter(x => { const k=x.time+x.direction; if(seen.has(k)) return false; seen.add(k); return true; });
-        el.innerHTML = uniq.slice(0,5).map(x => `<div class="dep-row"><span class="dep-route">${x.route}</span><span class="dep-dest">${x.direction}</span><span class="dep-eta">${x.minutes_away} min</span></div>`).join('');
-    }).catch(()=>{});
-}
-
-function events() {
-    fetch('/api/events').then(r=>r.json()).then(d => {
-        const el = document.getElementById('events-box');
-        if (!d.events||!d.events.length) { el.innerHTML='<span class="muted">No upcoming events</span>'; return; }
-        el.innerHTML = d.events.slice(0,6).map(e => `<div class="evt"><div class="evt-name">${e.title}</div><div class="evt-date">${e.date||''}${e.location?' \u2022 '+e.location:''}</div></div>`).join('');
-    }).catch(()=>{});
-}
-
-async function loadLog() {
-    const f = document.getElementById('log-camera-filter').value;
-    const url = f?`/api/detection-log?camera=${f}&limit=20`:'/api/detection-log?limit=20';
-    try {
-        const d = (await (await fetch(url)).json());
-        const el = document.getElementById('detection-log');
-        const ct = document.getElementById('log-count');
-        if (!d.detections.length) { el.innerHTML='<span class="muted">No detections yet</span>'; ct.textContent=''; lastIds=''; return; }
-        ct.textContent = d.detections.length+' detections';
-        const ids = d.detections.map(x=>`${x.camera}:${x.filename}`).join(',');
-        if (ids===lastIds) return;
-        lastIds = ids;
-        el.innerHTML = d.detections.map(x => `<div class="det-item" onclick="openLb('${x.url}')"><img src="${x.url}" loading="lazy"/><div class="det-info"><span class="det-cam">${CAM_NAMES[x.camera]||x.camera}</span><span class="det-cnt">${x.count} ${x.count===1?'person':'people'}</span><span class="det-ts">${x.timestamp}</span></div></div>`).join('');
-    } catch(e) {}
-}
-
-function openLb(u) { document.getElementById('lb-img').src=u; document.getElementById('lightbox').classList.add('on'); }
-
-async function best() {
-    const c = document.getElementById('best-times-container');
-    try {
-        const res = await Promise.all(cameras.map(x => fetch(`/api/history/best-times?camera=${x.id}&days=7`).then(r=>r.json())));
-        c.innerHTML = res.map((r,i) => {
-            const cam = cameras[i], top = r.data.slice(0,5);
-            if (!top.length) return `<div class="best-card"><h4>${cam.name}</h4><span class="muted">Not enough data</span></div>`;
-            const mx = Math.max(...r.data.map(d=>d.avg_count),1);
-            return `<div class="best-card"><h4>${cam.name}</h4>${top.map(t => {
-                const p=t.avg_count/mx, cls=p<.33?'lo':p<.66?'md':'hi';
-                const h=t.hour, lbl=h===0?'12 AM':h<12?h+' AM':h===12?'12 PM':(h-12)+' PM';
-                return `<div class="best-row"><span class="best-hour">${lbl}</span><span class="best-tag ${cls}">avg ${t.avg_count}</span></div>`;
-            }).join('')}</div>`;
-        }).join('');
-    } catch(e) {}
-}
-
-function switchView(v) { view=v; document.querySelectorAll('.tab-btn').forEach(t=>t.classList.toggle('on',t.dataset.view===v)); loadView(); }
-
-async function loadView() {
-    const cam = document.getElementById('trend-camera').value;
-    if (!cam) return;
-    const cv = document.getElementById('timeline-chart');
-    const hm = document.getElementById('heatmap-container');
-    if (view==='heatmap') {
-        cv.style.display='none'; hm.style.display='block';
-        const d = (await (await fetch(`/api/history/heatmap?camera=${cam}&days=7`)).json());
-        renderHM(d.data);
-    } else {
-        cv.style.display='block'; hm.style.display='none';
-        if (view==='today') {
-            const d = (await (await fetch(`/api/history/timeline?camera=${cam}`)).json());
-            renderChart(d.data.map(x=>x.time), d.data.map(x=>x.avg_count), 'People', '#3b82f6');
-        } else {
-            const d = (await (await fetch(`/api/history/hourly?camera=${cam}&days=7`)).json());
-            const lbl = d.data.map(x => { const h=x.hour; return h===0?'12 AM':h<12?h+' AM':h===12?'12 PM':(h-12)+' PM'; });
-            renderChart(lbl, d.data.map(x=>x.avg_count), 'Avg People', '#a78bfa');
-        }
-    }
-}
-
-function renderChart(labels, vals, label, color) {
-    const ctx = document.getElementById('timeline-chart').getContext('2d');
-    if (chart) chart.destroy();
-    chart = new Chart(ctx, {
-        type:'line',
-        data:{labels,datasets:[{label,data:vals,borderColor:color,backgroundColor:color+'14',fill:true,tension:.35,pointRadius:vals.length>50?0:2,pointHoverRadius:4,borderWidth:1.5}]},
-        options:{
-            responsive:true,maintainAspectRatio:false,
-            interaction:{mode:'index',intersect:false},
-            plugins:{
-                legend:{display:false},
-                tooltip:{backgroundColor:'#191c24',titleColor:'#e4e7ed',bodyColor:'#8b919e',titleFont:{family:"'DM Sans'"},bodyFont:{family:"'JetBrains Mono'",size:11},borderColor:'#282c37',borderWidth:1,padding:10,cornerRadius:8},
-                zoom:{pan:{enabled:true,mode:'x'},zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'}}
-            },
-            scales:{
-                x:{ticks:{color:'#565c6a',font:{family:"'JetBrains Mono'",size:10},maxTicksLimit:14,maxRotation:45},grid:{color:'rgba(255,255,255,0.03)'}},
-                y:{beginAtZero:true,ticks:{color:'#565c6a',font:{family:"'JetBrains Mono'",size:10}},grid:{color:'rgba(255,255,255,0.03)'}}
-            }
-        }
+async function pollStatus() {
+    const d = await api('/status');
+    if (!d) return;
+    let total = 0, healthy = 0;
+    d.cameras.forEach(c => {
+        total += c.count || 0;
+        if (c.healthy) healthy++;
+        const cnt = document.getElementById(`cnt-${c.id}`);
+        const badge = document.getElementById(`badge-${c.id}`);
+        const ts = document.getElementById(`ts-${c.id}`);
+        if (cnt) cnt.textContent = `${c.count} ${c.count===1?'person':'people'}`;
+        if (badge) { badge.className = `cam-badge ${c.healthy?'badge-live':'badge-offline'}`; badge.textContent = c.healthy?'LIVE':'OFFLINE'; }
+        if (ts && c.timestamp) ts.textContent = c.timestamp.split(' ')[1] || c.timestamp;
     });
+    document.getElementById('stat-crowd').textContent = total;
+    document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
 }
 
-function resetZoom() { if(chart) chart.resetZoom(); }
+async function loadConditions() {
+    const d = await api('/conditions');
+    if (!d || !d.weather) return;
+    const w = d.weather;
+    const icon = WMO[w.weather_code] || '';
+    document.getElementById('stat-weather').textContent = `${icon} ${Math.round(w.temperature)}°F`;
+    document.getElementById('stat-hum-wind').textContent = `${Math.round(w.humidity)}% / ${Math.round(w.wind_speed)} mph`;
+    const uvEl = document.getElementById('stat-uv');
+    uvEl.textContent = w.uv_index.toFixed(1);
+    uvEl.className = `stat-value mono ${w.uv_index>=8?'red':w.uv_index>=6?'amber':'green'}`;
 
-function renderHM(data) {
-    const el = document.getElementById('heatmap-container');
-    const map = {}; let mx = 1;
-    data.forEach(d => { map[d.day_of_week+'-'+d.hour]=d.avg_count; if(d.avg_count>mx) mx=d.avg_count; });
-    let h = '<div class="hm-grid"><div class="hm-lbl"></div>';
-    for (let i=0;i<24;i++) h+=`<div class="hm-hr">${i}</div>`;
-    for (let d=0;d<7;d++) {
-        h+=`<div class="hm-lbl">${DAYS[d]}</div>`;
-        for (let i=0;i<24;i++) {
-            const v=map[d+'-'+i]||0, a=v/mx;
-            const bg=v>0?`rgba(59,130,246,${(.08+a*.6).toFixed(2)})`:'rgba(255,255,255,0.02)';
-            h+=`<div class="hm-cell" style="background:${bg}" title="${DAYS[d]} ${i}:00 — avg ${v}"></div>`;
-        }
+    const dirs = ['N','NE','E','SE','S','SW','W','NW'];
+    const dir = dirs[Math.round(w.wind_direction/45)%8];
+    const el = document.getElementById('ctx-weather');
+    el.innerHTML = `
+        <div class="ctx-item"><div class="ctx-row"><span>Feels Like</span><span class="mono">${Math.round(w.apparent_temperature)}°F</span></div></div>
+        <div class="ctx-item"><div class="ctx-row"><span>Wind</span><span class="mono">${Math.round(w.wind_speed)} mph ${dir}</span></div></div>
+        <div class="ctx-item"><div class="ctx-row"><span>UV Index</span><span class="mono" style="color:${w.uv_index>=8?'var(--red)':w.uv_index>=6?'var(--amber)':'var(--green)'}">${w.uv_index.toFixed(1)}</span></div></div>
+        ${d.aqi ? `<div class="ctx-item"><div class="ctx-row"><span>Air Quality</span><span class="mono" style="color:${d.aqi.aqi>100?'var(--red)':d.aqi.aqi>50?'var(--amber)':'var(--green)'}">${d.aqi.aqi} (${d.aqi.category})</span></div></div>` : ''}
+    `;
+}
+
+async function loadParking() {
+    const d = await api('/parking');
+    if (!d || !d.lots || !d.lots.length) return;
+    const l = d.lots[0];
+    const pEl = document.getElementById('stat-parking');
+    pEl.textContent = `${l.available} / ${l.total}`;
+    pEl.className = `stat-value mono ${l.percent_full>75?'red':l.percent_full>50?'amber':'green'}`;
+
+    document.getElementById('ctx-parking').innerHTML = `
+        <div style="font-weight:600;font-size:13px;margin-bottom:8px">Lot ${l.lot_id}</div>
+        <div class="park-bar-bg"><div class="park-bar-fill" style="background:${l.percent_full>75?'var(--red)':l.percent_full>50?'var(--amber)':'var(--green)'};width:${l.percent_full}%"></div></div>
+        <div class="ctx-row mono" style="margin-top:8px;font-size:11px;color:var(--text-secondary)">
+            <span>${l.percent_full}% Full</span><span>${l.available} Open</span>
+        </div>
+    `;
+}
+
+async function loadTransit() {
+    const d = await api('/transit');
+    if (!d) return;
+    const deps = d.departures || [];
+    // Deduplicate
+    const seen = new Set();
+    const uniq = deps.filter(x => { const k=x.time+x.direction; if(seen.has(k)) return false; seen.add(k); return true; });
+
+    const statEl = document.getElementById('stat-transit');
+    statEl.textContent = uniq.length ? `${uniq[0].minutes_away} min` : 'None';
+    statEl.className = `stat-value mono ${uniq.length?'green':''}`;
+
+    const el = document.getElementById('ctx-transit');
+    if (!uniq.length) { el.innerHTML = '<span class="empty-state">No departures</span>'; return; }
+    el.innerHTML = uniq.slice(0,4).map(x => `
+        <div class="ctx-item" style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--border)">
+            <div><span class="dep-badge">${x.route}</span>${x.direction}</div>
+            <span class="mono" style="color:var(--green);font-weight:700;font-size:13px">${x.minutes_away}m</span>
+        </div>
+    `).join('');
+}
+
+async function loadEvents() {
+    const d = await api('/events');
+    if (!d || !d.events || !d.events.length) { document.getElementById('ctx-events').innerHTML = '<span class="empty-state">No events</span>'; return; }
+    document.getElementById('ctx-events').innerHTML = d.events.slice(0,4).map(e => `
+        <div class="ctx-item" style="padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--border)">
+            <div style="font-size:13px;font-weight:600">${e.title}</div>
+            <div class="ctx-sub">${e.date||''}${e.location?' \u2022 '+e.location:''}</div>
+        </div>
+    `).join('');
+}
+
+async function loadDetectionLog() {
+    const d = await api('/detection-log?limit=20');
+    if (!d || !d.detections) return;
+    const el = document.querySelector('#tab-log .detect-grid') || document.getElementById('tab-log');
+    if (!d.detections.length) { el.innerHTML = '<div class="empty-state">No detections yet</div>'; return; }
+    const ids = d.detections.map(x => x.filename).join(',');
+    if (ids === lastDetIds) return;
+    lastDetIds = ids;
+    el.classList.remove('empty-state');
+    el.innerHTML = d.detections.map(x => `
+        <div class="detect-item" onclick="document.getElementById('lb-img').src='${x.url}';document.getElementById('lightbox').classList.add('on')">
+            <img src="${x.url}" loading="lazy">
+            <div class="detect-info"><strong>${CAM_NAMES[x.camera]||x.camera}</strong> &middot; ${x.count}p<br>${x.timestamp}</div>
+        </div>
+    `).join('');
+}
+
+async function loadAnalytics() {
+    const cam = document.getElementById('cam-selector').value;
+    if (!cam) return;
+
+    // Best times
+    const best = await api(`/history/best-times?camera=${cam}&days=7`);
+    const bestEl = document.getElementById('tab-best');
+    if (best && best.data && best.data.length) {
+        bestEl.innerHTML = '<div class="best-times-grid">' + best.data.slice(0,8).map(t => {
+            const h = t.hour;
+            const lbl = h===0?'12 AM':h<12?h+' AM':h===12?'12 PM':(h-12)+' PM';
+            return `<div class="best-time-card"><div class="btime">${lbl}</div><div class="bcount">avg ${t.avg_count}</div></div>`;
+        }).join('') + '</div>';
+    } else { bestEl.innerHTML = '<div class="empty-state">Not enough data</div>'; }
+
+    // Timeline
+    const tl = await api(`/history/timeline?camera=${cam}`);
+    const tlCtx = document.getElementById('chart-timeline').getContext('2d');
+    if (timelineChart) timelineChart.destroy();
+    if (tl && tl.data && tl.data.length) {
+        timelineChart = new Chart(tlCtx, {
+            type:'line',
+            data:{labels:tl.data.map(d=>d.time), datasets:[{label:'People',data:tl.data.map(d=>d.avg_count),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.1)',borderWidth:1.5,pointRadius:0,fill:true,tension:.4}]},
+            options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},zoom:{pan:{enabled:true,mode:'x'},zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'}}},scales:{x:{grid:{color:'#334155'},ticks:{maxTicksLimit:12}},y:{beginAtZero:true,grid:{color:'#334155'}}}}
+        });
     }
-    h+='</div>';
-    h+='<div style="display:flex;gap:4px;align-items:center;justify-content:flex-end;margin-top:8px;font-family:var(--mono);font-size:10px;color:var(--text-faint)"><span>Less</span>';
-    [0,.2,.4,.6,.8,1].forEach(i => h+=`<div style="width:14px;height:10px;border-radius:2px;background:rgba(59,130,246,${(.08+i*.6).toFixed(2)})"></div>`);
-    h+='<span>More</span></div>';
-    el.innerHTML = h;
+
+    // Hourly
+    const hr = await api(`/history/hourly?camera=${cam}&days=7`);
+    const hrCtx = document.getElementById('chart-hourly').getContext('2d');
+    if (hourlyChart) hourlyChart.destroy();
+    if (hr && hr.data && hr.data.length) {
+        const labels = hr.data.map(d => { const h=d.hour; return h===0?'12a':h<12?h+'a':h===12?'12p':(h-12)+'p'; });
+        hourlyChart = new Chart(hrCtx, {
+            type:'bar',
+            data:{labels, datasets:[{label:'7d Avg',data:hr.data.map(d=>d.avg_count),backgroundColor:'#3b82f6',borderWidth:0,barPercentage:.6}]},
+            options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:12}},y:{beginAtZero:true,grid:{color:'#334155'}}}}
+        });
+    }
+
+    // Heatmap
+    const hm = await api(`/history/heatmap?camera=${cam}&days=7`);
+    const hmEl = document.getElementById('tab-heatmap');
+    if (hm && hm.data && hm.data.length) {
+        const map = {}; let mx = 1;
+        hm.data.forEach(d => { map[d.day_of_week+'-'+d.hour]=d.avg_count; if(d.avg_count>mx) mx=d.avg_count; });
+        let rows = '';
+        for (let d=0;d<7;d++) {
+            let cells = '';
+            for (let h=0;h<24;h++) {
+                const v = map[d+'-'+h]||0;
+                const a = v/mx;
+                const bg = v>0 ? `rgba(59,130,246,${(.1+a*.7).toFixed(2)})` : 'var(--bg-root)';
+                cells += `<div class="hm-cell" style="background:${bg}" title="${DAYS[d]} ${h}:00 — avg ${v}"></div>`;
+            }
+            rows += `<div class="hm-row">${cells}</div>`;
+        }
+        let xLabels = '';
+        for (let h=0;h<24;h+=3) xLabels += `<span>${h}</span>`;
+        hmEl.innerHTML = `<div class="hm-layout"><div class="hm-y">${DAYS.map(d=>`<span>${d}</span>`).join('')}</div><div class="hm-area">${rows}<div class="hm-x">${xLabels}</div></div></div>`;
+    } else { hmEl.innerHTML = '<div class="empty-state">No data</div>'; }
 }
 
-function toggleFold(id) {
-    document.getElementById(id).classList.toggle('shut');
-    document.getElementById(id+'-arrow').classList.toggle('shut');
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.getElementById(`tab-${name}`).classList.add('active');
+    if (name==='timeline' && timelineChart) timelineChart.resize();
+    if (name==='hourly' && hourlyChart) hourlyChart.resize();
 }
 
 init();
