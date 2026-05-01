@@ -186,3 +186,50 @@ def test_aqi_collector_with_key(db, monkeypatch):
 
     with collector._lock:
         assert collector.latest["aqi"] == 42
+
+
+def _make_gtfs_zip():
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        zf.writestr("stops.txt", "stop_id,stop_name,stop_lat,stop_lon\n"
+                     "100,Cal State San Marcos,33.1284,-117.1597\n"
+                     "200,Other Stop,33.0,-117.0\n")
+        zf.writestr("routes.txt", "route_id,route_short_name,route_long_name,route_type\n"
+                     "SPRINTER,SPRINTER,Sprinter,0\n")
+        zf.writestr("trips.txt", "route_id,service_id,trip_id,direction_id,trip_headsign\n"
+                     "SPRINTER,weekday,T1,0,Escondido\n"
+                     "SPRINTER,weekday,T2,1,Oceanside\n")
+        zf.writestr("stop_times.txt", "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n"
+                     "T1,08:30:00,08:30:00,100,5\n"
+                     "T1,09:00:00,09:00:00,200,6\n"
+                     "T2,09:15:00,09:15:00,100,3\n"
+                     "T2,09:45:00,09:45:00,200,4\n")
+        zf.writestr("calendar.txt", "service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date\n"
+                     "weekday,1,1,1,1,1,0,0,20260101,20261231\n")
+    buf.seek(0)
+    return buf.read()
+
+
+def test_transit_collector_parse(db, tmp_path, monkeypatch):
+    import httpx
+    import backend.config as cfg
+    from unittest.mock import MagicMock
+
+    monkeypatch.setattr(cfg, "GTFS_DIR", tmp_path / "gtfs")
+
+    gtfs_bytes = _make_gtfs_zip()
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.content = gtfs_bytes
+    mock_response.raise_for_status = MagicMock()
+    monkeypatch.setattr(httpx, "get", lambda *a, **kw: mock_response)
+
+    from backend.collectors import TransitCollector
+    collector = TransitCollector(db)
+    collector.collect()
+
+    departures = collector.get_next_departures(current_time="08:00:00", current_weekday=0)
+    assert len(departures) == 2
+    assert departures[0]["time"] == "08:30:00"
+    assert departures[0]["direction"] == "Escondido"
+    assert departures[0]["minutes_away"] == 30
