@@ -233,3 +233,37 @@ def test_transit_collector_parse(db, tmp_path, monkeypatch):
     assert departures[0]["time"] == "08:30:00"
     assert departures[0]["direction"] == "Escondido"
     assert departures[0]["minutes_away"] == 30
+
+
+def test_events_collector_parse(db, monkeypatch):
+    import httpx
+    from unittest.mock import MagicMock
+
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.text = """
+    <html><body>
+    <div class="event-item">
+        <span class="event-date">May 4, 11:00 AM</span>
+        <span class="event-title">ASI Fresh Market Mondays</span>
+        <span class="event-location">USU Quad</span>
+        <span class="event-description">Free fruits and veggies</span>
+    </div>
+    <div class="event-item">
+        <span class="event-date">May 5, 12:00 PM</span>
+        <span class="event-title">Chow on Deck</span>
+        <span class="event-location">Forum Plaza</span>
+        <span class="event-description">End of semester celebration</span>
+    </div>
+    </body></html>
+    """
+    mock_response.raise_for_status = MagicMock()
+    monkeypatch.setattr(httpx, "get", lambda *a, **kw: mock_response)
+
+    from backend.collectors import EventsCollector
+    collector = EventsCollector(db)
+    collector.collect()
+
+    rows = db.execute("SELECT title, event_date, location FROM events").fetchall()
+    assert len(rows) == 2
+    assert rows[0][0] == "ASI Fresh Market Mondays"

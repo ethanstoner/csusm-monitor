@@ -229,3 +229,49 @@ class TransitCollector(BaseCollector):
             if len(results) >= n:
                 break
         return results
+
+
+class EventsCollector(BaseCollector):
+    NAME = "events-collector"
+    INTERVAL = cfg.EVENTS_INTERVAL
+
+    def collect(self):
+        resp = httpx.get("https://m.csusm.edu/default/events/index", timeout=15)
+        resp.raise_for_status()
+        events = self._parse_events(resp.text)
+        if not events:
+            logger.info("Events: no events found on Kurogo page")
+            return
+
+        conn = getattr(self, "_conn", self._main_db)
+        for ev in events:
+            insert_event(conn, **ev)
+        with self._lock:
+            self.latest = {"events": events, "count": len(events)}
+        logger.info("Events: stored %d events", len(events))
+
+    def _parse_events(self, html):
+        events = []
+        title_matches = re.findall(r'class="event-title"[^>]*>([^<]+)', html)
+        date_matches = re.findall(r'class="event-date"[^>]*>([^<]+)', html)
+        loc_matches = re.findall(r'class="event-location"[^>]*>([^<]+)', html)
+        desc_matches = re.findall(r'class="event-description"[^>]*>([^<]+)', html)
+
+        for i, title in enumerate(title_matches):
+            events.append({
+                "title": title.strip(),
+                "event_date": date_matches[i].strip() if i < len(date_matches) else None,
+                "location": loc_matches[i].strip() if i < len(loc_matches) else None,
+                "description": desc_matches[i].strip() if i < len(desc_matches) else None,
+            })
+
+        if not events:
+            for match in re.finditer(r'(\w+ \d+,?\s*\d{1,2}:\d{2}\s*[AP]M)\s*[-–]?\s*(.+?)(?:<|$)', html):
+                events.append({
+                    "title": match.group(2).strip(),
+                    "event_date": match.group(1).strip(),
+                    "location": None,
+                    "description": None,
+                })
+
+        return events[:20]
