@@ -131,9 +131,9 @@ def test_parking_collector_parse(db, monkeypatch):
     mock_response.text = """
     <html><body>
     <h1>Parking List</h1>
-    <p>5/1/2026 10:09 AM</p>
-    <div>Lot F</div>
-    <div>766/1240 Spaces available</div>
+    <span style="color:white;">Last Updated<br>5/1/2026 10:09 AM</span>
+    <span style="font-size:25px;">Lot F</span>
+    <h5><b>766/1240<small class="text-muted"> Spaces available</small></b></h5>
     </body></html>
     """
     mock_response.raise_for_status = MagicMock()
@@ -211,22 +211,26 @@ def _make_gtfs_zip():
 
 
 def test_transit_collector_parse(db, tmp_path, monkeypatch):
-    import httpx
+    import subprocess
     import backend.config as cfg
-    from unittest.mock import MagicMock
+    from unittest.mock import patch
 
-    monkeypatch.setattr(cfg, "GTFS_DIR", tmp_path / "gtfs")
+    gtfs_dir = tmp_path / "gtfs"
+    monkeypatch.setattr(cfg, "GTFS_DIR", gtfs_dir)
 
+    # Write mock GTFS zip directly to where the collector expects it
     gtfs_bytes = _make_gtfs_zip()
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_response.content = gtfs_bytes
-    mock_response.raise_for_status = MagicMock()
-    monkeypatch.setattr(httpx, "get", lambda *a, **kw: mock_response)
+    gtfs_dir.mkdir(parents=True, exist_ok=True)
+    (gtfs_dir / "google_transit.zip").write_bytes(gtfs_bytes)
 
-    from backend.collectors import TransitCollector
-    collector = TransitCollector(db)
-    collector.collect()
+    # Mock subprocess.run to pretend curl succeeded (file already written above)
+    def mock_run(*args, **kwargs):
+        return subprocess.CompletedProcess(args=args[0], returncode=0, stdout="", stderr="")
+
+    with patch("backend.collectors.subprocess.run", mock_run):
+        from backend.collectors import TransitCollector
+        collector = TransitCollector(db)
+        collector.collect()
 
     departures = collector.get_next_departures(current_time="08:00:00", current_weekday=0)
     assert len(departures) == 2
