@@ -112,3 +112,36 @@ class ParkingCollector(BaseCollector):
         with self._lock:
             self.latest = {"lot_id": lot_id, "available": available, "total": total}
         logger.info("Parking Lot %s: %d/%d available", lot_id, available, total)
+
+
+class AirQualityCollector(BaseCollector):
+    NAME = "aqi-collector"
+    INTERVAL = cfg.AQI_INTERVAL
+
+    def collect(self):
+        if not cfg.AIRNOW_API_KEY:
+            return
+        url = "https://www.airnowapi.org/aq/observation/zipCode/current/"
+        params = {
+            "zipCode": cfg.CAMPUS_ZIP,
+            "format": "application/json",
+            "API_KEY": cfg.AIRNOW_API_KEY,
+        }
+        resp = httpx.get(url, params=params, timeout=10)
+        if resp.status_code == 401:
+            logger.warning("AirNow API key is invalid or expired (HTTP 401)")
+            return
+        resp.raise_for_status()
+        readings = resp.json()
+        if not readings:
+            return
+        dominant = max(readings, key=lambda r: r.get("AQI", 0))
+        aqi = dominant["AQI"]
+        category = dominant.get("Category", {}).get("Name", "Unknown")
+        pollutant = dominant.get("ParameterName", "Unknown")
+
+        conn = getattr(self, "_conn", self._main_db)
+        insert_air_quality(conn, aqi=aqi, category=category, pollutant=pollutant)
+        with self._lock:
+            self.latest = {"aqi": aqi, "category": category, "pollutant": pollutant}
+        logger.info("AQI: %d (%s) — %s", aqi, category, pollutant)
