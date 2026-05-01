@@ -85,3 +85,38 @@ def test_get_parking_trends(db):
     assert len(data) > 0
     assert "avg_available" in data[0]
     assert "avg_percent_full" in data[0]
+
+
+def test_weather_collector_parse(db, monkeypatch):
+    """Test WeatherCollector parses Open-Meteo JSON and stores to DB."""
+    import httpx
+    from unittest.mock import MagicMock
+
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "current": {
+            "temperature_2m": 72.5,
+            "apparent_temperature": 70.0,
+            "relative_humidity_2m": 45,
+            "wind_speed_10m": 8.5,
+            "wind_direction_10m": 180,
+            "weather_code": 1,
+            "uv_index": 5.0,
+        }
+    }
+    mock_response.raise_for_status = MagicMock()
+
+    monkeypatch.setattr(httpx, "get", lambda *a, **kw: mock_response)
+
+    from backend.collectors import WeatherCollector
+    collector = WeatherCollector(db)
+    collector.collect()
+
+    rows = db.execute("SELECT temperature, humidity FROM weather").fetchall()
+    assert len(rows) == 1
+    assert rows[0][0] == 72.5
+    assert rows[0][1] == 45
+
+    with collector._lock:
+        assert collector.latest["temperature"] == 72.5
