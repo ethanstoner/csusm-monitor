@@ -12,3 +12,4 @@ __pycache__/
 *.pt
 *.png
 !assets/*.png
+data/gtfs/
