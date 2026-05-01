@@ -146,3 +146,43 @@ def test_parking_collector_parse(db, monkeypatch):
     rows = db.execute("SELECT lot_id, available, total FROM parking").fetchall()
     assert len(rows) == 1
     assert rows[0] == ("F", 766, 1240)
+
+
+def test_aqi_collector_no_key(db, monkeypatch):
+    import backend.config as cfg
+    monkeypatch.setattr(cfg, "AIRNOW_API_KEY", "")
+
+    from backend.collectors import AirQualityCollector
+    collector = AirQualityCollector(db)
+    collector.collect()
+
+    rows = db.execute("SELECT COUNT(*) FROM air_quality").fetchone()
+    assert rows[0] == 0
+
+
+def test_aqi_collector_with_key(db, monkeypatch):
+    import httpx
+    import backend.config as cfg
+    from unittest.mock import MagicMock
+
+    monkeypatch.setattr(cfg, "AIRNOW_API_KEY", "test-key-123")
+
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = [
+        {"AQI": 42, "Category": {"Name": "Good"}, "ParameterName": "PM2.5"},
+        {"AQI": 35, "Category": {"Name": "Good"}, "ParameterName": "O3"},
+    ]
+    mock_response.raise_for_status = MagicMock()
+    monkeypatch.setattr(httpx, "get", lambda *a, **kw: mock_response)
+
+    from backend.collectors import AirQualityCollector
+    collector = AirQualityCollector(db)
+    collector.collect()
+
+    rows = db.execute("SELECT aqi, pollutant FROM air_quality").fetchall()
+    assert len(rows) == 1
+    assert rows[0][0] == 42
+
+    with collector._lock:
+        assert collector.latest["aqi"] == 42
