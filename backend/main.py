@@ -20,6 +20,11 @@ from backend.database import (
     get_hourly_averages,
     get_latest_counts,
     get_timeline_data,
+    get_latest_weather,
+    get_latest_air_quality,
+    get_latest_parking,
+    get_parking_trends,
+    get_upcoming_events,
     init_db,
 )
 
@@ -70,6 +75,18 @@ async def lifespan(app: FastAPI):
                 _workers.append(_frigate_listener)
             except Exception:
                 logger.info("Frigate listener not available, using local YOLO detection only")
+
+        # Data collectors
+        from backend.collectors import (
+            WeatherCollector, ParkingCollector, AirQualityCollector,
+            TransitCollector, EventsCollector,
+        )
+        for CollectorClass in [WeatherCollector, ParkingCollector,
+                               AirQualityCollector, TransitCollector,
+                               EventsCollector]:
+            collector = CollectorClass(_db_conn)
+            collector.start()
+            _workers.append(collector)
 
     # Start daily cleanup thread
     _cleanup_running = True
@@ -346,3 +363,38 @@ async def best_times(camera: str = Query(...), days: int = Query(default=7)):
 async def get_daily(camera: str = Query(...), days: int = Query(default=30)):
     data = get_daily_totals(_db_conn, camera, days)
     return {"camera": camera, "days": days, "data": data}
+
+
+@app.get("/api/conditions")
+async def get_conditions():
+    weather = get_latest_weather(_db_conn)
+    aqi = get_latest_air_quality(_db_conn)
+    return {"weather": weather, "aqi": aqi}
+
+
+@app.get("/api/parking")
+async def get_parking():
+    latest = get_latest_parking(_db_conn)
+    lots = [latest] if latest else []
+    return {"lots": lots}
+
+
+@app.get("/api/parking/trends")
+async def parking_trends(lot: str = Query(...), days: int = Query(default=7)):
+    data = get_parking_trends(_db_conn, lot, days)
+    return {"lot": lot, "days": days, "data": data}
+
+
+@app.get("/api/transit")
+async def get_transit():
+    for w in _workers:
+        if hasattr(w, "get_next_departures"):
+            deps = w.get_next_departures()
+            return {"station": "Cal State San Marcos", "departures": deps}
+    return {"station": "Cal State San Marcos", "departures": []}
+
+
+@app.get("/api/events")
+async def get_events():
+    events = get_upcoming_events(_db_conn)
+    return {"events": events}
