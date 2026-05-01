@@ -18,6 +18,24 @@ DB_PATH = Path(__file__).parent.parent / "data" / "history.db"
 SNAPSHOTS_DIR = Path(__file__).parent.parent / "data" / "snapshots"
 MAX_SNAPSHOTS = 200
 
+# --- Data collectors ---
+WEATHER_INTERVAL = 900       # 15 min
+PARKING_INTERVAL = 300       # 5 min
+AQI_INTERVAL = 1800          # 30 min
+TRANSIT_REFRESH_INTERVAL = 86400  # daily GTFS refresh
+EVENTS_INTERVAL = 21600      # 6 hours
+
+# --- CSUSM location ---
+CAMPUS_LAT = 33.1284
+CAMPUS_LON = -117.1597
+CAMPUS_ZIP = "92096"
+
+# --- API keys (optional) ---
+AIRNOW_API_KEY = os.getenv("AIRNOW_API_KEY", "")
+
+# --- Data paths ---
+GTFS_DIR = Path(__file__).parent.parent / "data" / "gtfs"
+
 # --- Frigate / MQTT (override via .env) ---
 MQTT_HOST = os.getenv("MQTT_HOST", "localhost")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
