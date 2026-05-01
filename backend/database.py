@@ -39,6 +39,44 @@ def init_db(db_path: Path) -> sqlite3.Connection:
             (cam_id, cam["name"], cam["stream_url"]),
         )
     conn.commit()
+
+    # --- Collector tables ---
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS weather (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            temperature REAL, apparent_temperature REAL,
+            humidity REAL, wind_speed REAL, wind_direction REAL,
+            weather_code INTEGER, uv_index REAL,
+            timestamp TEXT NOT NULL
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS parking (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            lot_id TEXT NOT NULL, available INTEGER NOT NULL,
+            total INTEGER NOT NULL, timestamp TEXT NOT NULL,
+            day_of_week INTEGER, hour INTEGER
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_parking_lot_time ON parking(lot_id, timestamp)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_parking_trends ON parking(lot_id, day_of_week, hour)")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS air_quality (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            aqi INTEGER, category TEXT, pollutant TEXT,
+            timestamp TEXT NOT NULL
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL, event_date TEXT,
+            location TEXT, description TEXT,
+            fetched_at TEXT NOT NULL,
+            UNIQUE(title, event_date)
+        )
+    """)
+    conn.commit()
     return conn
 
 
@@ -179,3 +217,86 @@ def cleanup_old_data(conn: sqlite3.Connection, retention_days: int = RETENTION_D
     cursor = conn.execute("DELETE FROM detections WHERE timestamp < ?", (cutoff,))
     conn.commit()
     return cursor.rowcount
+
+
+def insert_weather(conn, *, temperature, apparent_temperature, humidity,
+                   wind_speed, wind_direction, weather_code, uv_index):
+    ts = datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S")
+    conn.execute(
+        "INSERT INTO weather (temperature, apparent_temperature, humidity, wind_speed, wind_direction, weather_code, uv_index, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (temperature, apparent_temperature, humidity, wind_speed, wind_direction, weather_code, uv_index, ts),
+    )
+    conn.commit()
+
+
+def insert_parking(conn, *, lot_id, available, total):
+    now = datetime.now(TZ)
+    ts = now.strftime("%Y-%m-%d %H:%M:%S")
+    conn.execute(
+        "INSERT INTO parking (lot_id, available, total, timestamp, day_of_week, hour) VALUES (?, ?, ?, ?, ?, ?)",
+        (lot_id, available, total, ts, now.weekday(), now.hour),
+    )
+    conn.commit()
+
+
+def insert_air_quality(conn, *, aqi, category, pollutant):
+    ts = datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S")
+    conn.execute(
+        "INSERT INTO air_quality (aqi, category, pollutant, timestamp) VALUES (?, ?, ?, ?)",
+        (aqi, category, pollutant, ts),
+    )
+    conn.commit()
+
+
+def insert_event(conn, *, title, event_date, location, description):
+    ts = datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S")
+    conn.execute(
+        "INSERT OR IGNORE INTO events (title, event_date, location, description, fetched_at) VALUES (?, ?, ?, ?, ?)",
+        (title, event_date, location, description, ts),
+    )
+    conn.commit()
+
+
+def get_latest_weather(conn):
+    row = conn.execute("SELECT temperature, apparent_temperature, humidity, wind_speed, wind_direction, weather_code, uv_index, timestamp FROM weather ORDER BY id DESC LIMIT 1").fetchone()
+    if not row:
+        return None
+    return {"temperature": row[0], "apparent_temperature": row[1], "humidity": row[2],
+            "wind_speed": row[3], "wind_direction": row[4], "weather_code": row[5],
+            "uv_index": row[6], "timestamp": row[7]}
+
+
+def get_latest_air_quality(conn):
+    row = conn.execute("SELECT aqi, category, pollutant, timestamp FROM air_quality ORDER BY id DESC LIMIT 1").fetchone()
+    if not row:
+        return None
+    return {"aqi": row[0], "category": row[1], "pollutant": row[2], "timestamp": row[3]}
+
+
+def get_latest_parking(conn):
+    row = conn.execute("SELECT lot_id, available, total, timestamp FROM parking ORDER BY id DESC LIMIT 1").fetchone()
+    if not row:
+        return None
+    return {"lot_id": row[0], "available": row[1], "total": row[2],
+            "percent_full": round((1 - row[1] / row[2]) * 100, 1) if row[2] > 0 else 0,
+            "timestamp": row[3]}
+
+
+def get_parking_trends(conn, lot_id, days=7):
+    cutoff = (datetime.now(TZ) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+    rows = conn.execute("""
+        SELECT day_of_week, hour, AVG(available) as avg_available, AVG(total) as avg_total
+        FROM parking WHERE lot_id = ? AND timestamp >= ?
+        GROUP BY day_of_week, hour ORDER BY day_of_week, hour
+    """, (lot_id, cutoff)).fetchall()
+    return [{"day_of_week": r[0], "hour": r[1], "avg_available": round(r[2], 1),
+             "avg_percent_full": round((1 - r[2] / r[3]) * 100, 1) if r[3] > 0 else 0}
+            for r in rows]
+
+
+def get_upcoming_events(conn, limit=5):
+    rows = conn.execute("""
+        SELECT title, event_date, location, description FROM events
+        WHERE event_date >= date('now') ORDER BY event_date LIMIT ?
+    """, (limit,)).fetchall()
+    return [{"title": r[0], "date": r[1], "location": r[2], "description": r[3]} for r in rows]
