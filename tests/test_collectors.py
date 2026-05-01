@@ -267,3 +267,61 @@ def test_events_collector_parse(db, monkeypatch):
     rows = db.execute("SELECT title, event_date, location FROM events").fetchall()
     assert len(rows) == 2
     assert rows[0][0] == "ASI Fresh Market Mondays"
+
+
+@pytest.fixture
+def api_client(tmp_path, monkeypatch):
+    """Test client with collector tables initialized."""
+    import backend.config as cfg
+    monkeypatch.setattr(cfg, "DB_PATH", tmp_path / "test.db")
+    monkeypatch.setattr("backend.main.START_WORKERS", False)
+    from backend.main import app, get_db
+    with TestClient(app) as c:
+        conn = get_db()
+        from backend.database import insert_weather, insert_parking, insert_air_quality, insert_event
+        insert_weather(conn, temperature=72.5, apparent_temperature=70.0, humidity=45.0,
+                       wind_speed=8.5, wind_direction=180.0, weather_code=1, uv_index=5.0)
+        insert_parking(conn, lot_id="F", available=766, total=1240)
+        insert_air_quality(conn, aqi=42, category="Good", pollutant="PM2.5")
+        insert_event(conn, title="Test Event", event_date="2026-12-01",
+                     location="USU", description="A test event")
+        yield c
+
+
+def test_get_conditions(api_client):
+    resp = api_client.get("/api/conditions")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["weather"]["temperature"] == 72.5
+    assert data["aqi"]["aqi"] == 42
+
+
+def test_get_parking_api(api_client):
+    resp = api_client.get("/api/parking")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["lots"]) == 1
+    assert data["lots"][0]["available"] == 766
+
+
+def test_get_parking_trends_api(api_client):
+    resp = api_client.get("/api/parking/trends?lot=F&days=7")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["lot"] == "F"
+
+
+def test_get_transit_api(api_client):
+    resp = api_client.get("/api/transit")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "station" in data
+    assert "departures" in data
+
+
+def test_get_events_api(api_client):
+    resp = api_client.get("/api/events")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["events"]) == 1
+    assert data["events"][0]["title"] == "Test Event"
