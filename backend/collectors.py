@@ -145,3 +145,87 @@ class AirQualityCollector(BaseCollector):
         with self._lock:
             self.latest = {"aqi": aqi, "category": category, "pollutant": pollutant}
         logger.info("AQI: %d (%s) — %s", aqi, category, pollutant)
+
+
+class TransitCollector(BaseCollector):
+    NAME = "transit-collector"
+    INTERVAL = cfg.TRANSIT_REFRESH_INTERVAL
+
+    def __init__(self, db_conn):
+        super().__init__(db_conn)
+        self._schedule = []
+        self._services = {}
+        self._last_download = 0
+
+    def collect(self):
+        cfg.GTFS_DIR.mkdir(parents=True, exist_ok=True)
+        zip_path = cfg.GTFS_DIR / "google_transit.zip"
+
+        resp = httpx.get("https://lfportal.nctd.org/staticGTFS/google_transit.zip", timeout=30)
+        resp.raise_for_status()
+        zip_path.write_bytes(resp.content)
+
+        self._parse_gtfs(zip_path)
+        self._last_download = time.time()
+        logger.info("Transit: loaded %d departures from CSUSM station", len(self._schedule))
+
+    def _parse_gtfs(self, zip_path):
+        with zipfile.ZipFile(zip_path) as zf:
+            stops = list(csv.DictReader(io.TextIOWrapper(zf.open("stops.txt"))))
+            csusm_ids = {s["stop_id"] for s in stops if "cal state" in s["stop_name"].lower() or "csusm" in s["stop_name"].lower()}
+            if not csusm_ids:
+                logger.warning("Transit: CSUSM station not found in GTFS stops")
+                return
+
+            self._services = {}
+            cal = list(csv.DictReader(io.TextIOWrapper(zf.open("calendar.txt"))))
+            for row in cal:
+                self._services[row["service_id"]] = {
+                    "days": [int(row[d]) for d in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]],
+                    "start": row["start_date"],
+                    "end": row["end_date"],
+                }
+
+            trips = list(csv.DictReader(io.TextIOWrapper(zf.open("trips.txt"))))
+            trip_info = {t["trip_id"]: t for t in trips}
+
+            stop_times = list(csv.DictReader(io.TextIOWrapper(zf.open("stop_times.txt"))))
+            self._schedule = []
+            for st in stop_times:
+                if st["stop_id"] in csusm_ids and st["trip_id"] in trip_info:
+                    trip = trip_info[st["trip_id"]]
+                    self._schedule.append({
+                        "trip_id": st["trip_id"],
+                        "route": trip.get("route_id", ""),
+                        "direction": trip.get("trip_headsign", ""),
+                        "stop_time": st["departure_time"],
+                        "service_id": trip.get("service_id", ""),
+                    })
+            self._schedule.sort(key=lambda x: x["stop_time"])
+
+    def get_next_departures(self, n=6, current_time=None, current_weekday=None):
+        now = datetime.now(TZ)
+        if current_time is None:
+            current_time = now.strftime("%H:%M:%S")
+        if current_weekday is None:
+            current_weekday = now.weekday()
+
+        results = []
+        for dep in self._schedule:
+            svc = self._services.get(dep["service_id"])
+            if svc and not svc["days"][current_weekday]:
+                continue
+            if dep["stop_time"] >= current_time:
+                dep_parts = dep["stop_time"].split(":")
+                cur_parts = current_time.split(":")
+                dep_mins = int(dep_parts[0]) * 60 + int(dep_parts[1])
+                cur_mins = int(cur_parts[0]) * 60 + int(cur_parts[1])
+                results.append({
+                    "route": dep["route"],
+                    "direction": dep["direction"],
+                    "time": dep["stop_time"],
+                    "minutes_away": dep_mins - cur_mins,
+                })
+            if len(results) >= n:
+                break
+        return results
