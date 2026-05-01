@@ -120,3 +120,29 @@ def test_weather_collector_parse(db, monkeypatch):
 
     with collector._lock:
         assert collector.latest["temperature"] == 72.5
+
+
+def test_parking_collector_parse(db, monkeypatch):
+    import httpx
+    from unittest.mock import MagicMock
+
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.text = """
+    <html><body>
+    <h1>Parking List</h1>
+    <p>5/1/2026 10:09 AM</p>
+    <div>Lot F</div>
+    <div>766/1240 Spaces available</div>
+    </body></html>
+    """
+    mock_response.raise_for_status = MagicMock()
+    monkeypatch.setattr(httpx, "get", lambda *a, **kw: mock_response)
+
+    from backend.collectors import ParkingCollector
+    collector = ParkingCollector(db)
+    collector.collect()
+
+    rows = db.execute("SELECT lot_id, available, total FROM parking").fetchall()
+    assert len(rows) == 1
+    assert rows[0] == ("F", 766, 1240)

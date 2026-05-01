@@ -89,3 +89,26 @@ class WeatherCollector(BaseCollector):
         with self._lock:
             self.latest = weather
         logger.info("Weather: %.0f°F, humidity %d%%", weather["temperature"], weather["humidity"])
+
+
+class ParkingCollector(BaseCollector):
+    NAME = "parking-collector"
+    INTERVAL = cfg.PARKING_INTERVAL
+
+    def collect(self):
+        resp = httpx.get("https://parkingstatus.csusm.edu", timeout=10)
+        resp.raise_for_status()
+        match = re.search(r"(\d+)\s*/\s*(\d+)\s*Spaces available", resp.text)
+        if not match:
+            logger.warning("Parking: could not parse HTML")
+            return
+        available = int(match.group(1))
+        total = int(match.group(2))
+        lot_match = re.search(r"Lot\s+(\w+)", resp.text)
+        lot_id = lot_match.group(1) if lot_match else "unknown"
+
+        conn = getattr(self, "_conn", self._main_db)
+        insert_parking(conn, lot_id=lot_id, available=available, total=total)
+        with self._lock:
+            self.latest = {"lot_id": lot_id, "available": available, "total": total}
+        logger.info("Parking Lot %s: %d/%d available", lot_id, available, total)
