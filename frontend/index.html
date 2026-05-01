@@ -83,6 +83,45 @@
             .trend-grid { grid-template-columns: 1fr; }
             .detection-log { grid-template-columns: 1fr; }
         }
+
+        /* Campus Conditions Bar */
+        .conditions-bar { display: flex; gap: 16px; margin: 20px 0; flex-wrap: wrap; }
+        .condition-card { background: #1a1a1a; border-radius: 12px; padding: 16px 20px; border: 1px solid #2a2a2a; flex: 1; min-width: 140px; text-align: center; }
+        .condition-card .value { font-size: 1.8rem; font-weight: 700; color: #fff; }
+        .condition-card .label { font-size: 0.75rem; color: #888; margin-top: 4px; }
+        .condition-card .sub { font-size: 0.8rem; color: #666; margin-top: 2px; }
+        .aqi-good { color: #22c55e; }
+        .aqi-moderate { color: #eab308; }
+        .aqi-unhealthy-sensitive { color: #f97316; }
+        .aqi-unhealthy { color: #ef4444; }
+        .uv-low { color: #22c55e; }
+        .uv-moderate { color: #eab308; }
+        .uv-high { color: #f97316; }
+        .uv-very-high { color: #ef4444; }
+        .uv-extreme { color: #a855f7; }
+
+        /* Parking */
+        .parking-section { margin-top: 30px; }
+        .parking-gauge { background: #1a1a1a; border-radius: 12px; padding: 20px; border: 1px solid #2a2a2a; }
+        .gauge-bar { height: 32px; background: #2a2a2a; border-radius: 8px; overflow: hidden; margin: 12px 0; }
+        .gauge-fill { height: 100%; border-radius: 8px; transition: width 0.5s ease; }
+        .gauge-fill.green { background: linear-gradient(90deg, #22c55e, #16a34a); }
+        .gauge-fill.yellow { background: linear-gradient(90deg, #eab308, #ca8a04); }
+        .gauge-fill.red { background: linear-gradient(90deg, #ef4444, #dc2626); }
+        .parking-stats { display: flex; justify-content: space-between; font-size: 0.9rem; color: #888; }
+
+        /* Transit & Events */
+        .info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
+        @media (max-width: 768px) { .info-row { grid-template-columns: 1fr; } }
+        .info-card { background: #1a1a1a; border-radius: 12px; padding: 20px; border: 1px solid #2a2a2a; }
+        .departure-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #2a2a2a; }
+        .departure-row:last-child { border-bottom: none; }
+        .departure-dir { color: #e0e0e0; font-size: 0.9rem; }
+        .departure-time { color: #3b82f6; font-weight: 600; font-size: 0.9rem; }
+        .event-row { padding: 10px 0; border-bottom: 1px solid #2a2a2a; }
+        .event-row:last-child { border-bottom: none; }
+        .event-title { color: #e0e0e0; font-size: 0.9rem; font-weight: 500; }
+        .event-meta { color: #666; font-size: 0.8rem; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -90,7 +129,60 @@
         <h1>CSUSM Campus Monitor</h1>
         <div class="updated" id="last-updated">Loading...</div>
     </header>
+    <div class="conditions-bar" id="conditions-bar">
+        <div class="condition-card" id="cond-temp">
+            <div class="value" id="temp-val">--°F</div>
+            <div class="label">Temperature</div>
+            <div class="sub" id="temp-feels">Feels like --°</div>
+        </div>
+        <div class="condition-card" id="cond-humidity">
+            <div class="value" id="humidity-val">--%</div>
+            <div class="label">Humidity</div>
+        </div>
+        <div class="condition-card" id="cond-wind">
+            <div class="value" id="wind-val">-- mph</div>
+            <div class="label">Wind</div>
+            <div class="sub" id="wind-dir"></div>
+        </div>
+        <div class="condition-card" id="cond-uv">
+            <div class="value" id="uv-val">--</div>
+            <div class="label">UV Index</div>
+        </div>
+        <div class="condition-card" id="cond-aqi" style="display:none">
+            <div class="value" id="aqi-val">--</div>
+            <div class="label">Air Quality</div>
+            <div class="sub" id="aqi-category"></div>
+        </div>
+    </div>
     <div class="feeds" id="feeds"></div>
+
+    <div class="section parking-section">
+        <h2>🅿️ Parking Availability</h2>
+        <div class="parking-gauge">
+            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                <h3 id="parking-lot-name" style="color:#aaa; font-size:1rem;">Lot F</h3>
+                <span id="parking-count" style="font-size:1.3rem; font-weight:700; color:#fff;">--/--</span>
+            </div>
+            <div class="gauge-bar">
+                <div class="gauge-fill green" id="parking-fill" style="width:0%"></div>
+            </div>
+            <div class="parking-stats">
+                <span id="parking-percent">--% full</span>
+                <span id="parking-updated">Updated: --</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-card">
+            <h3 style="color:#aaa; font-size:1rem; margin-bottom:12px;">🚆 Next SPRINTER Departures</h3>
+            <div id="transit-list"><div style="color:#666">Loading...</div></div>
+        </div>
+        <div class="info-card">
+            <h3 style="color:#aaa; font-size:1rem; margin-bottom:12px;">📅 Campus Events</h3>
+            <div id="events-list"><div style="color:#666">Loading...</div></div>
+        </div>
+    </div>
 
     <div class="section">
         <h2 class="section-toggle" onclick="toggleSection('detection-log-section')">Detection Log <span id="detection-log-section-arrow" class="toggle-arrow">&#9660;</span></h2>
@@ -392,6 +484,96 @@
             el.classList.toggle('collapsed');
             arrow.classList.toggle('collapsed');
         }
+
+        // Campus Conditions
+        const WMO_ICONS = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌧',55:'🌧',61:'🌧',63:'🌧',65:'🌧️',71:'🌨',73:'🌨',75:'❄️',80:'🌦',81:'🌧',82:'⛈',95:'⛈',96:'⛈',99:'⛈'};
+
+        function updateConditions() {
+            fetch('/api/conditions').then(r => r.json()).then(data => {
+                if (data.weather) {
+                    const w = data.weather;
+                    const icon = WMO_ICONS[w.weather_code] || '';
+                    document.getElementById('temp-val').textContent = `${icon} ${Math.round(w.temperature)}°F`;
+                    document.getElementById('temp-feels').textContent = `Feels like ${Math.round(w.apparent_temperature)}°`;
+                    document.getElementById('humidity-val').textContent = `${Math.round(w.humidity)}%`;
+                    document.getElementById('humidity-val').style.color = w.humidity > 80 ? '#ef4444' : w.humidity > 60 ? '#eab308' : '#22c55e';
+                    document.getElementById('wind-val').textContent = `${Math.round(w.wind_speed)} mph`;
+                    const dirs = ['N','NE','E','SE','S','SW','W','NW'];
+                    document.getElementById('wind-dir').textContent = dirs[Math.round(w.wind_direction / 45) % 8];
+                    const uv = w.uv_index;
+                    const uvEl = document.getElementById('uv-val');
+                    uvEl.textContent = uv.toFixed(1);
+                    uvEl.className = 'value ' + (uv >= 11 ? 'uv-extreme' : uv >= 8 ? 'uv-very-high' : uv >= 6 ? 'uv-high' : uv >= 3 ? 'uv-moderate' : 'uv-low');
+                }
+                if (data.aqi) {
+                    document.getElementById('cond-aqi').style.display = '';
+                    const a = data.aqi;
+                    const aqiEl = document.getElementById('aqi-val');
+                    aqiEl.textContent = a.aqi;
+                    aqiEl.className = 'value ' + (a.aqi > 150 ? 'aqi-unhealthy' : a.aqi > 100 ? 'aqi-unhealthy-sensitive' : a.aqi > 50 ? 'aqi-moderate' : 'aqi-good');
+                    document.getElementById('aqi-category').textContent = a.category;
+                }
+            }).catch(() => {});
+        }
+        updateConditions();
+        setInterval(updateConditions, 60000);
+
+        // Parking
+        function updateParking() {
+            fetch('/api/parking').then(r => r.json()).then(data => {
+                if (data.lots && data.lots.length > 0) {
+                    const lot = data.lots[0];
+                    document.getElementById('parking-lot-name').textContent = `Lot ${lot.lot_id}`;
+                    document.getElementById('parking-count').textContent = `${lot.available} / ${lot.total} available`;
+                    const pct = lot.percent_full;
+                    const fill = document.getElementById('parking-fill');
+                    fill.style.width = pct + '%';
+                    fill.className = 'gauge-fill ' + (pct > 75 ? 'red' : pct > 50 ? 'yellow' : 'green');
+                    document.getElementById('parking-percent').textContent = `${pct}% full`;
+                    document.getElementById('parking-updated').textContent = `Updated: ${lot.timestamp}`;
+                }
+            }).catch(() => {});
+        }
+        updateParking();
+        setInterval(updateParking, 60000);
+
+        // Transit
+        function updateTransit() {
+            fetch('/api/transit').then(r => r.json()).then(data => {
+                const el = document.getElementById('transit-list');
+                if (!data.departures || data.departures.length === 0) {
+                    el.innerHTML = '<div style="color:#666">No upcoming departures</div>';
+                    return;
+                }
+                el.innerHTML = data.departures.slice(0, 4).map(d => {
+                    const mins = d.minutes_away != null ? d.minutes_away : '';
+                    return `<div class="departure-row">
+                        <span class="departure-dir">${d.direction}</span>
+                        <span class="departure-time">${d.time.slice(0,5)} (${mins} min)</span>
+                    </div>`;
+                }).join('');
+            }).catch(() => {});
+        }
+
+        // Events
+        function updateEvents() {
+            fetch('/api/events').then(r => r.json()).then(data => {
+                const el = document.getElementById('events-list');
+                if (!data.events || data.events.length === 0) {
+                    el.innerHTML = '<div style="color:#666">No upcoming events</div>';
+                    return;
+                }
+                el.innerHTML = data.events.slice(0, 5).map(e =>
+                    `<div class="event-row">
+                        <div class="event-title">${e.title}</div>
+                        <div class="event-meta">${e.date || ''}${e.location ? ' — ' + e.location : ''}</div>
+                    </div>`
+                ).join('');
+            }).catch(() => {});
+        }
+
+        updateTransit(); setInterval(updateTransit, 60000);
+        updateEvents(); setInterval(updateEvents, 300000);
 
         init();
     </script>
