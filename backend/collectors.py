@@ -3,6 +3,7 @@ import io
 import logging
 import re
 import sqlite3
+import subprocess
 import threading
 import time
 import zipfile
@@ -98,7 +99,8 @@ class ParkingCollector(BaseCollector):
     def collect(self):
         resp = httpx.get("https://parkingstatus.csusm.edu", timeout=10)
         resp.raise_for_status()
-        match = re.search(r"(\d+)\s*/\s*(\d+)\s*Spaces available", resp.text)
+        # Real HTML has: <b>664/1240<small class="text-muted"> Spaces available</small></b>
+        match = re.search(r"<b>(\d+)/(\d+)", resp.text)
         if not match:
             logger.warning("Parking: could not parse HTML")
             return
@@ -161,9 +163,15 @@ class TransitCollector(BaseCollector):
         cfg.GTFS_DIR.mkdir(parents=True, exist_ok=True)
         zip_path = cfg.GTFS_DIR / "google_transit.zip"
 
-        resp = httpx.get("https://lfportal.nctd.org/staticGTFS/google_transit.zip", timeout=30)
-        resp.raise_for_status()
-        zip_path.write_bytes(resp.content)
+        # Use curl for download — NCTD server rejects httpx/python TLS connections
+        result = subprocess.run(
+            ["curl", "-sL", "-A", "Mozilla/5.0", "-o", str(zip_path),
+             "https://lfportal.nctd.org/staticGTFS/google_transit.zip"],
+            capture_output=True, text=True, timeout=60,
+        )
+        if result.returncode != 0 or not zip_path.exists() or zip_path.stat().st_size < 1000:
+            logger.warning("Transit: GTFS download failed (curl rc=%d)", result.returncode)
+            return
 
         self._parse_gtfs(zip_path)
         self._last_download = time.time()
@@ -235,13 +243,34 @@ class EventsCollector(BaseCollector):
     NAME = "events-collector"
     INTERVAL = cfg.EVENTS_INTERVAL
 
+    # CSUSM academic calendar dates (static, updated per semester)
+    # Source: https://www.csusm.edu/academic_programs/calendars.html
+    ACADEMIC_EVENTS = [
+        {"title": "Last Day of Classes", "event_date": "2026-05-15", "location": "Campus", "description": "Spring 2026"},
+        {"title": "Finals Week", "event_date": "2026-05-18", "location": "Campus", "description": "Spring 2026 final exams May 18-22"},
+        {"title": "Commencement", "event_date": "2026-05-22", "location": "Campus", "description": "Spring 2026 commencement ceremony"},
+        {"title": "Summer Session Begins", "event_date": "2026-06-01", "location": "Campus", "description": "Summer 2026"},
+        {"title": "Independence Day (No Classes)", "event_date": "2026-07-03", "location": "Campus", "description": "Campus closed"},
+        {"title": "Fall Semester Begins", "event_date": "2026-08-24", "location": "Campus", "description": "Fall 2026"},
+        {"title": "Labor Day (No Classes)", "event_date": "2026-09-07", "location": "Campus", "description": "Campus closed"},
+        {"title": "Veterans Day (No Classes)", "event_date": "2026-11-11", "location": "Campus", "description": "Campus closed"},
+        {"title": "Thanksgiving Break", "event_date": "2026-11-23", "location": "Campus", "description": "Nov 23-27, no classes"},
+        {"title": "Last Day of Classes (Fall)", "event_date": "2026-12-11", "location": "Campus", "description": "Fall 2026"},
+    ]
+
     def collect(self):
-        resp = httpx.get("https://m.csusm.edu/default/events/index", timeout=15)
-        resp.raise_for_status()
-        events = self._parse_events(resp.text)
+        # Try scraping dynamic events first
+        events = []
+        try:
+            resp = httpx.get("https://m.csusm.edu/default/events/index", timeout=15)
+            resp.raise_for_status()
+            events = self._parse_events(resp.text)
+        except Exception:
+            logger.info("Events: could not fetch Kurogo page, using academic calendar")
+
+        # Fall back to academic calendar if no dynamic events found
         if not events:
-            logger.info("Events: no events found on Kurogo page")
-            return
+            events = self.ACADEMIC_EVENTS
 
         conn = getattr(self, "_conn", self._main_db)
         for ev in events:
@@ -252,6 +281,7 @@ class EventsCollector(BaseCollector):
 
     def _parse_events(self, html):
         events = []
+        # Try structured class-based parsing
         title_matches = re.findall(r'class="event-title"[^>]*>([^<]+)', html)
         date_matches = re.findall(r'class="event-date"[^>]*>([^<]+)', html)
         loc_matches = re.findall(r'class="event-location"[^>]*>([^<]+)', html)
@@ -264,14 +294,5 @@ class EventsCollector(BaseCollector):
                 "location": loc_matches[i].strip() if i < len(loc_matches) else None,
                 "description": desc_matches[i].strip() if i < len(desc_matches) else None,
             })
-
-        if not events:
-            for match in re.finditer(r'(\w+ \d+,?\s*\d{1,2}:\d{2}\s*[AP]M)\s*[-–]?\s*(.+?)(?:<|$)', html):
-                events.append({
-                    "title": match.group(2).strip(),
-                    "event_date": match.group(1).strip(),
-                    "location": None,
-                    "description": None,
-                })
 
         return events[:20]
