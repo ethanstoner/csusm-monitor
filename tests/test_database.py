@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from backend.database import init_db, insert_detection, get_latest_counts, get_heatmap_data, get_timeline_data, cleanup_old_data
 
 def test_init_db_creates_tables(tmp_path):
@@ -61,8 +61,10 @@ def test_get_timeline_data(tmp_path):
 def test_cleanup_old_data(tmp_path):
     db_path = tmp_path / "test.db"
     conn = init_db(db_path)
-    insert_detection(conn, "starbucks", 5, datetime(2026, 2, 10, 10, 0, 0))
-    insert_detection(conn, "starbucks", 3, datetime(2026, 4, 12, 10, 0, 0))
+    old = datetime.now() - timedelta(days=60)
+    recent = datetime.now() - timedelta(days=5)
+    insert_detection(conn, "starbucks", 5, old)
+    insert_detection(conn, "starbucks", 3, recent)
     cleanup_old_data(conn, retention_days=30)
     rows = conn.execute("SELECT count(*) FROM detections").fetchone()[0]
     assert rows == 1

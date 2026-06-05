@@ -2,7 +2,7 @@ import sqlite3
 import io
 import zipfile
 import pytest
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from fastapi.testclient import TestClient
 
@@ -75,10 +75,12 @@ def test_insert_event_dedup(db):
 
 def test_get_parking_trends(db):
     from backend.database import get_parking_trends
+    recent = datetime.now() - timedelta(days=1)
     for hour in range(8, 12):
+        ts = recent.replace(hour=hour, minute=0, second=0, microsecond=0)
         db.execute(
             "INSERT INTO parking (lot_id, available, total, timestamp, day_of_week, hour) VALUES (?, ?, ?, ?, ?, ?)",
-            ("F", 1000 - hour * 50, 1240, f"2026-05-01 {hour:02d}:00:00", 3, hour),
+            ("F", 1000 - hour * 50, 1240, ts.strftime("%Y-%m-%d %H:%M:%S"), ts.weekday(), hour),
         )
     db.commit()
     data = get_parking_trends(db, "F", days=7)
