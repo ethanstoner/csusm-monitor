@@ -81,6 +81,8 @@ CSUSM HLS Streams --> Frigate (Docker) --> MQTT --> FastAPI --> SQLite
 
 **Solution:** Built a `StaticObjectFilter` that tracks bounding box center positions over a 20-frame rolling window. Objects that remain within a 40px radius for 12+ consecutive frames are classified as stationary and suppressed. This eliminates false positives without hardcoding exclusion zones, and self-calibrates ~60 seconds after startup.
 
+The self-calibration has a cost worth naming: for those first 12 frames the filter has no history, so it passes everything through and the counts are inflated by exactly the objects it exists to remove. Those counts are shown live but deliberately **not** written to the database, because every trend in the dashboard is an average and a restart would otherwise bake a minute of false positives into the seven-day view.
+
 ### 2. HLS Manifest Bloat
 **Problem:** CSUSM's HLS streams never reset `EXT-X-MEDIA-SEQUENCE`, causing manifests to grow past 360KB by midday. hls.js would try to buffer from the playlist start, causing massive latency.
 
@@ -101,6 +103,11 @@ CSUSM HLS Streams --> Frigate (Docker) --> MQTT --> FastAPI --> SQLite
 
 **Solution:** Designed a pluggable architecture — `DetectionWorker` (local YOLO) runs by default, and `FrigateListener` (MQTT subscriber for Frigate NVR) starts optionally alongside it. Both write to the same SQLite schema. The API layer merges live counts from whichever backend is active.
 
+### 6. A Missing Camera Is Not the Same as an Empty One
+**Problem:** These are public university streams and they go down. When one 404s, ffmpeg fails against it in about 0.2 seconds, so a fixed 5-second retry meant spawning a process and logging a warning twelve times a minute, indefinitely, for a camera that was never coming back that day. Worse, the resulting hole in the data was invisible downstream — an hour with four readings and an hour with seven hundred rendered identically in the heatmap.
+
+**Solution:** Consecutive capture failures back off geometrically from 5s to a 60s ceiling and reset on the first good frame; a dark or static frame means the stream is alive, so those don't count as failures. The inter-cycle wait is an `Event`, so shutdown interrupts a backoff instead of waiting it out. Trend queries return a sample count per bucket, and the heatmap hatches any hour with sparse coverage so a gap reads as a gap rather than as a quiet hour.
+
 ---
 
 ## Features
@@ -111,7 +118,9 @@ CSUSM HLS Streams --> Frigate (Docker) --> MQTT --> FastAPI --> SQLite
 - **Weekly Heatmap** — Day-of-week × hour-of-day grid showing average crowd density
 - **Hourly Averages** — 30-day rolling average by hour, filterable by weekday/weekend
 - **Daily Trends** — Total and average counts per day with interactive zoom/pan
-- **Best Times to Visit** — Ranked hours by lowest average crowd count per camera
+- **Best Times to Visit** — Ranked hours by lowest average crowd, scoped to each location's opening hours
+- **Campus Context** — Weather, air quality, parking availability, Sprinter departures and upcoming events alongside the feeds
+- **Coverage Honesty** — Hours backed by too few readings are marked, so outages don't masquerade as quiet periods
 - **Automatic Data Cleanup** — Retention policy deletes rows older than 30 days
 
 ---
@@ -169,11 +178,17 @@ Open [http://localhost:8000](http://localhost:8000)
 | `GET` | `/api/status` | Current count + health per camera |
 | `GET` | `/api/cameras` | Camera list with proxied stream URLs |
 | `GET` | `/api/detection-log` | Recent detection snapshots (Frigate or local) |
-| `GET` | `/api/history/heatmap?camera=X` | Day × hour average counts |
+| `GET` | `/api/cameras/{id}/hours` | Operating-hours window analytics are scoped to |
+| `GET` | `/api/history/heatmap?camera=X` | Day × hour average counts, with sample counts |
 | `GET` | `/api/history/hourly?camera=X` | Hourly averages (weekday/weekend filter) |
 | `GET` | `/api/history/timeline?camera=X` | Minute-by-minute time series |
-| `GET` | `/api/history/best-times?camera=X` | Hours ranked by lowest crowd |
+| `GET` | `/api/history/best-times?camera=X` | Hours ranked by lowest crowd, within opening hours |
 | `GET` | `/api/history/daily?camera=X` | Daily totals and averages |
+| `GET` | `/api/conditions` | Latest weather and air quality |
+| `GET` | `/api/parking` | Latest campus parking availability |
+| `GET` | `/api/parking/trends?lot=X` | Parking availability by day × hour |
+| `GET` | `/api/transit` | Next NCTD Sprinter departures from CSUSM |
+| `GET` | `/api/events` | Upcoming campus events |
 | `GET` | `/api/stream/{id}/{path}` | HLS proxy (manifest trimming + CORS) |
 
 ---
@@ -184,7 +199,7 @@ Open [http://localhost:8000](http://localhost:8000)
 pytest -v
 ```
 
-Tests cover the API layer, database operations, configuration validation, Frigate MQTT listener, and a full integration smoke test with mocked detection pipeline.
+66 tests covering the API layer, database and trend queries, the data collectors' HTML/GTFS parsing, configuration validation, the `StaticObjectFilter` and detection-worker lifecycle (backoff, prompt shutdown, warm-up suppression), the Frigate MQTT listener, and a full integration smoke test with a mocked detection pipeline.
 
 ---
 
@@ -195,6 +210,7 @@ csusm-monitor/
 ├── backend/
 │   ├── main.py              # FastAPI app, lifespan, API routes
 │   ├── detector.py           # YOLOv8 detection worker + frame filters
+│   ├── collectors.py         # Weather, parking, AQI, transit, events collectors
 │   ├── frigate_listener.py   # MQTT subscriber for Frigate NVR
 │   ├── database.py           # SQLite schema, queries, cleanup
 │   ├── config.py             # All tunable parameters
@@ -207,17 +223,17 @@ csusm-monitor/
 │   └── mosquitto.conf        # MQTT broker config
 ├── tests/
 │   ├── test_api.py           # API endpoint tests
+│   ├── test_collectors.py    # Collector parsing + collector API tests
 │   ├── test_config.py        # Configuration validation
 │   ├── test_database.py      # SQLite schema & query tests
-│   ├── test_detector.py      # StaticObjectFilter unit tests
+│   ├── test_detector.py      # StaticObjectFilter + worker lifecycle tests
 │   ├── test_frigate_listener.py  # MQTT listener unit tests
 │   └── test_integration.py   # End-to-end smoke test
 ├── Dockerfile                # Backend container (Python + ffmpeg + YOLO)
 ├── .dockerignore             # Docker build exclusions
 ├── docker-compose.yml        # Full stack: monitor + Frigate + Mosquitto
 ├── start.bat                 # One-click Windows launcher
-├── .env.example              # Environment variable template
-└── CLAUDE.md                 # AI assistant context
+└── .env.example              # Environment variable template
 ```
 
 ---
