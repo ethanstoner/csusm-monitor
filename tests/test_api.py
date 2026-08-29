@@ -1,3 +1,5 @@
+import time
+
 import pytest
 from datetime import datetime
 from fastapi.testclient import TestClient
@@ -119,3 +121,37 @@ def test_snapshot_endpoint_removed(client):
     """The old /api/snapshot/{id} endpoint no longer exists."""
     resp = client.get("/api/snapshot/starbucks")
     assert resp.status_code == 404
+
+
+def test_cleanup_thread_does_not_outlive_shutdown(tmp_path, monkeypatch):
+    """The retention thread holds _db_conn — it must die before the app closes it."""
+    import threading
+    import backend.config as config
+    monkeypatch.setattr(config, "DB_PATH", tmp_path / "test.db")
+    monkeypatch.setattr("backend.main.START_WORKERS", False)
+    from backend.main import app
+
+    def cleanup_threads():
+        return [t for t in threading.enumerate() if t.name == "daily-cleanup" and t.is_alive()]
+
+    assert not cleanup_threads()
+    with TestClient(app):
+        assert len(cleanup_threads()) == 1, "cleanup thread should be running while the app is up"
+    assert not cleanup_threads(), "cleanup thread survived shutdown holding the DB connection"
+
+
+def test_cleanup_thread_still_sweeps(tmp_path, monkeypatch):
+    """Shortening the interval proves the loop actually runs its sweep."""
+    import backend.config as config
+    monkeypatch.setattr(config, "DB_PATH", tmp_path / "test.db")
+    monkeypatch.setattr("backend.main.START_WORKERS", False)
+    monkeypatch.setattr("backend.main.CLEANUP_INTERVAL", 0.1)
+    calls = []
+    monkeypatch.setattr("backend.main.cleanup_old_data", lambda *a: calls.append(a) or 0)
+
+    from backend.main import app
+    with TestClient(app):
+        deadline = time.time() + 5
+        while len(calls) < 2 and time.time() < deadline:
+            time.sleep(0.05)
+    assert len(calls) >= 2, "cleanup loop never ran a periodic sweep"

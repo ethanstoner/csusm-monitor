@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 
 START_WORKERS = True  # Set to False in tests
+CLEANUP_INTERVAL = 86400  # seconds between retention sweeps (24 hours)
 TZ = ZoneInfo(TIMEZONE)
 
 _db_conn = None
@@ -88,12 +89,14 @@ async def lifespan(app: FastAPI):
             collector.start()
             _workers.append(collector)
 
-    # Start daily cleanup thread
-    _cleanup_running = True
+    # Start daily cleanup thread. The wait is an Event, not time.sleep: a
+    # 24-hour sleep meant the flag was only ever read once a day, so the thread
+    # outlived shutdown holding _db_conn and would eventually run a query
+    # against a connection the app had already closed.
+    cleanup_stop = threading.Event()
 
     def _cleanup_loop():
-        while _cleanup_running:
-            time.sleep(86400)  # 24 hours
+        while not cleanup_stop.wait(CLEANUP_INTERVAL):
             try:
                 deleted = cleanup_old_data(_db_conn, RETENTION_DAYS)
                 if deleted:
@@ -101,16 +104,20 @@ async def lifespan(app: FastAPI):
             except Exception:
                 logger.exception("Daily cleanup failed")
 
-    cleanup_thread = threading.Thread(target=_cleanup_loop, daemon=True)
+    cleanup_thread = threading.Thread(target=_cleanup_loop, daemon=True, name="daily-cleanup")
     cleanup_thread.start()
 
     yield
-    _cleanup_running = False
 
-    # Shutdown
+    # Shutdown — stop every thread that touches the DB before closing it
+    cleanup_stop.set()
     for worker in _workers:
         worker.stop()
     _workers.clear()
+    cleanup_thread.join(timeout=5)
+    if cleanup_thread.is_alive():
+        logger.warning("Daily cleanup thread did not exit; leaving DB connection open")
+        return
     if _http_client:
         await _http_client.aclose()
     if _db_conn:
