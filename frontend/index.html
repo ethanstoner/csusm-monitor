@@ -63,30 +63,32 @@
         .status-strip {
             background: var(--bg-panel);
             border-bottom: 1px solid var(--border);
-            padding: 12px 24px;
+            padding: 10px 24px;
             display: flex;
-            gap: 16px;
-            height: 72px;
+            gap: 12px;
             flex-shrink: 0;
         }
         .stat-tile {
             flex: 1;
+            min-width: 0;
             background: var(--bg-root);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 10px 16px;
+            padding: 8px 12px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             transition: border-color 0.2s;
+            overflow: hidden;
         }
         .stat-tile:hover { border-color: var(--accent); }
-        .stat-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: 600; }
-        .stat-value { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+        .stat-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .stat-value { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; letter-spacing: -0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .stat-value.green { color: var(--green); }
         .stat-value.amber { color: var(--amber); }
         .stat-value.red { color: var(--red); }
         .stat-value.accent { color: var(--accent); }
+        .stat-sub { font-size: 10px; color: var(--text-secondary); margin-top: 3px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .main-content {
             flex: 1;
@@ -138,8 +140,9 @@
             display: flex; justify-content: space-between; align-items: center;
             z-index: 10; font-size: 12px; border-top: 1px solid var(--border);
             font-family: 'JetBrains Mono', monospace;
+            min-width: 0;
         }
-        .person-count { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--accent); }
+        .person-count { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .person-icon { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 8px var(--accent); }
         .cam-time { color: var(--text-secondary); font-size: 10px; font-weight: 500; }
 
@@ -157,18 +160,36 @@
         .ctx-section { padding: 16px 0; border-bottom: 1px solid var(--border); }
         .ctx-section:last-child { border-bottom: none; }
         .ctx-title { font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 12px; font-weight: 700; }
-        .ctx-item { margin-bottom: 10px; font-size: 13px; }
+        .ctx-item { margin-bottom: 10px; font-size: 13px; overflow: hidden; }
         .ctx-item:last-child { margin-bottom: 0; }
-        .ctx-sub { font-size: 11px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; margin-top: 3px; }
-        .ctx-row { display: flex; justify-content: space-between; align-items: center; }
+        .ctx-sub { font-size: 11px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ctx-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-width: 0; }
+        .ctx-row span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .park-bar-bg { width: 100%; height: 6px; background: var(--bg-root); border-radius: 3px; margin-top: 10px; overflow: hidden; border: 1px solid var(--border); }
         .park-bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
 
+        .park-map-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 8px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--bg-root);
+            color: var(--text-secondary);
+            font-size: 10px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+        .park-map-btn:hover { border-color: var(--accent); color: var(--accent); }
+
         .dep-badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 2px 6px; border-radius: 3px; background: var(--accent-dim); color: var(--accent); font-weight: 600; margin-right: 8px; }
 
         .analytics-panel {
-            height: 240px;
+            height: 280px;
             background: var(--bg-panel);
             border: 1px solid var(--border);
             display: flex;
@@ -214,7 +235,7 @@
         .detect-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; overflow-y: auto; width: 100%; align-content: start; }
         .detect-item { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--bg-root); cursor: pointer; transition: border-color 0.2s; }
         .detect-item:hover { border-color: var(--border-active); }
-        .detect-item img { width: 100%; height: 56px; object-fit: cover; display: block; }
+        .detect-item img { width: 100%; height: 72px; object-fit: cover; display: block; }
         .detect-info { padding: 6px 8px; font-size: 9px; font-family: 'JetBrains Mono', monospace; color: var(--text-secondary); }
         .detect-info strong { color: var(--text-primary); font-weight: 600; }
 
@@ -247,16 +268,77 @@
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--border-active); }
 
+        .stat-value { transition: color 0.3s ease; }
+
+        /* --- Tablet / small laptop --- */
         @media (max-width: 1200px) {
             body { overflow: auto; height: auto; }
-            .main-content { flex-direction: column; overflow: visible; padding: 12px; }
-            .cam-grid { grid-template-columns: 1fr; }
-            .cam-card { min-height: 250px; }
+            .main-content { flex-direction: column; overflow: visible; padding: 12px; gap: 12px; }
+            .cam-grid { grid-template-columns: 1fr 1fr; }
+            .cam-card { min-height: 220px; }
             .context-col { width: 100%; flex-direction: row; flex-wrap: wrap; }
             .ctx-section { flex: 1; min-width: 200px; padding: 8px 0; border-bottom: none; border-right: 1px solid var(--border); padding-right: 16px; margin-right: 16px; }
             .ctx-section:last-child { border-right: none; margin-right: 0; padding-right: 0; }
             .analytics-panel { margin: 0 12px 12px; height: 350px; flex-direction: column; }
             .analytics-sidebar { width: 100%; flex-direction: row; border-right: none; border-bottom: 1px solid var(--border); overflow-x: auto; }
+            .analytics-sidebar .tab-btn { white-space: nowrap; }
+        }
+
+        /* --- Mobile --- */
+        @media (max-width: 768px) {
+            header { padding: 0 12px; height: 42px; }
+            .header-left h1 { font-size: 13px; }
+            .header-left span { display: none; }
+            .header-right { gap: 10px; }
+            .header-right .mono { font-size: 10px; }
+
+            .status-strip { flex-wrap: wrap; padding: 8px 12px; gap: 6px; }
+            .stat-tile { flex: 1 1 calc(33% - 6px); min-width: 0; padding: 6px 8px; }
+            .stat-value { font-size: 13px; }
+            .stat-label { font-size: 8px; letter-spacing: 0.5px; }
+            .stat-sub { font-size: 9px; }
+
+            .main-content { padding: 8px; gap: 8px; }
+            .cam-grid { grid-template-columns: 1fr; }
+            .cam-card { min-height: 200px; }
+
+            .context-col { width: 100%; flex-direction: column; padding: 0 12px; }
+            .ctx-section { border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; margin-right: 0; padding-bottom: 12px; margin-bottom: 12px; }
+            .ctx-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+            .ctx-title { font-size: 10px; }
+
+            .analytics-panel { margin: 0 8px 8px; height: 300px; flex-direction: column; }
+            .analytics-sidebar { padding: 4px; gap: 2px; }
+            .analytics-sidebar .tab-btn { padding: 6px 10px; font-size: 11px; white-space: nowrap; }
+            .analytics-topbar { padding: 0 12px; height: 40px; }
+            .analytics-body { padding: 10px 12px; }
+
+            .detect-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; }
+            .detect-item img { height: 56px; }
+            .detect-info { padding: 4px 6px; font-size: 8px; }
+
+            .best-times-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
+            .best-time-card { padding: 8px; }
+            .best-time-card .btime { font-size: 14px; }
+
+            .hm-row { gap: 2px; }
+            .hm-cell:hover { transform: scale(1.3); }
+
+            .lb img { max-width: 100%; max-height: 90%; border-radius: 4px; }
+        }
+
+        /* --- Small mobile (< 400px) --- */
+        @media (max-width: 400px) {
+            .stat-tile { flex: 1 1 calc(50% - 6px); }
+            .stat-value { font-size: 12px; }
+            .cam-header { padding: 6px 10px; font-size: 11px; }
+            .cam-overlay { padding: 6px 10px; font-size: 10px; }
+            .cam-badge { font-size: 8px; padding: 2px 6px; }
+            .dep-badge { font-size: 9px; padding: 1px 5px; }
+            header { height: auto; padding: 6px 10px; flex-wrap: wrap; gap: 4px; }
+            .header-left h1 { font-size: 12px; }
+            .header-right { font-size: 9px; gap: 6px; }
+            .api-status span { display: none; }
         }
     </style>
 </head>
@@ -279,18 +361,23 @@
 <div class="status-strip">
     <div class="stat-tile">
         <div class="stat-label">Temperature</div>
-        <div class="stat-value mono" id="stat-weather">--</div>
+        <div class="stat-value mono" id="stat-temp">--</div>
+        <div class="stat-sub" id="stat-feels"></div>
     </div>
     <div class="stat-tile">
-        <div class="stat-label">Humidity / Wind</div>
-        <div class="stat-value mono" id="stat-hum-wind">-- / --</div>
+        <div class="stat-label">Humidity</div>
+        <div class="stat-value mono" id="stat-hum">--</div>
+    </div>
+    <div class="stat-tile">
+        <div class="stat-label">Wind</div>
+        <div class="stat-value mono" id="stat-wind">--</div>
     </div>
     <div class="stat-tile">
         <div class="stat-label">UV Index</div>
         <div class="stat-value mono" id="stat-uv">--</div>
     </div>
     <div class="stat-tile">
-        <div class="stat-label">Lot F Parking</div>
+        <div class="stat-label">Lot F Available</div>
         <div class="stat-value mono" id="stat-parking">--</div>
     </div>
     <div class="stat-tile">
@@ -338,7 +425,7 @@
     <div class="analytics-main">
         <div class="analytics-topbar">
             <span class="topbar-label">Analytics</span>
-            <select class="cam-selector" id="cam-selector" onchange="loadAnalytics()"></select>
+            <select class="cam-selector" id="cam-selector" onchange="analyticsLoaded={};loadAnalyticsTab(currentTab)"></select>
         </div>
         <div class="analytics-body">
             <div class="tab-content active" id="tab-log"><div class="detect-grid empty-state">Loading...</div></div>
@@ -354,11 +441,14 @@
 
 <script>
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-const WMO = {0:'\u2600\uFE0F',1:'\uD83C\uDF24',2:'\u26C5',3:'\u2601\uFE0F',45:'\uD83C\uDF2B',48:'\uD83C\uDF2B',51:'\uD83C\uDF26',53:'\uD83C\uDF27',55:'\uD83C\uDF27',61:'\uD83C\uDF27',63:'\uD83C\uDF27',65:'\uD83C\uDF27',71:'\uD83C\uDF28',73:'\uD83C\uDF28',75:'\u2744\uFE0F',80:'\uD83C\uDF26',81:'\uD83C\uDF27',82:'\u26C8',95:'\u26C8',96:'\u26C8',99:'\u26C8'};
+const WMO_ICON = {0:'\u2600\uFE0F',1:'\uD83C\uDF24',2:'\u26C5',3:'\u2601\uFE0F',45:'\uD83C\uDF2B',48:'\uD83C\uDF2B',51:'\uD83C\uDF26',53:'\uD83C\uDF27',55:'\uD83C\uDF27',61:'\uD83C\uDF27',63:'\uD83C\uDF27',65:'\uD83C\uDF27',71:'\uD83C\uDF28',73:'\uD83C\uDF28',75:'\u2744\uFE0F',80:'\uD83C\uDF26',81:'\uD83C\uDF27',82:'\u26C8',95:'\u26C8',96:'\u26C8',99:'\u26C8'};
+const WMO_DESC = {0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Rime fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Light snow',73:'Snow',75:'Heavy snow',80:'Rain showers',81:'Heavy showers',82:'Violent showers',95:'Thunderstorm',96:'Thunderstorm w/ hail',99:'Severe thunderstorm'};
 const CAM_NAMES = {};
 let cameras = [];
 let timelineChart = null, hourlyChart = null;
 let lastDetIds = '';
+let currentTab = 'log';
+let analyticsLoaded = {};
 
 Chart.defaults.color = '#94a3b8';
 Chart.defaults.borderColor = '#334155';
@@ -422,7 +512,11 @@ async function init() {
             sel.appendChild(opt);
         });
 
-        if (cameras.length) { sel.value = cameras[0].id; loadAnalytics(); }
+        if (cameras.length) {
+            const healthyCam = cameras.find(c => c.healthy) || cameras[0];
+            sel.value = healthyCam.id;
+            loadAnalytics();
+        }
     }
 
     document.getElementById('lightbox').addEventListener('click', () => document.getElementById('lightbox').classList.remove('on'));
@@ -458,36 +552,60 @@ async function pollStatus() {
 
 async function loadConditions() {
     const d = await api('/conditions');
-    if (!d || !d.weather) return;
+    if (!d || !d.weather) {
+        document.getElementById('stat-temp').textContent = 'Unavailable';
+        document.getElementById('stat-temp').className = 'stat-value mono';
+        return;
+    }
     const w = d.weather;
-    const icon = WMO[w.weather_code] || '';
-    document.getElementById('stat-weather').textContent = `${icon} ${Math.round(w.temperature)}°F`;
-    document.getElementById('stat-hum-wind').textContent = `${Math.round(w.humidity)}% / ${Math.round(w.wind_speed)} mph`;
-    const uvEl = document.getElementById('stat-uv');
-    uvEl.textContent = w.uv_index.toFixed(1);
-    uvEl.className = `stat-value mono ${w.uv_index>=8?'red':w.uv_index>=6?'amber':'green'}`;
-
+    const icon = WMO_ICON[w.weather_code] || '';
+    const desc = WMO_DESC[w.weather_code] || '';
     const dirs = ['N','NE','E','SE','S','SW','W','NW'];
     const dir = dirs[Math.round(w.wind_direction/45)%8];
+    const uvDesc = w.uv_index>=11?'Extreme':w.uv_index>=8?'Very High':w.uv_index>=6?'High':w.uv_index>=3?'Moderate':'Low';
+
+    // Status strip
+    document.getElementById('stat-temp').textContent = `${icon} ${Math.round(w.temperature)}°F`;
+    const feelsEl = document.getElementById('stat-feels');
+    const feelsTemp = Math.round(w.apparent_temperature);
+    const actualTemp = Math.round(w.temperature);
+    feelsEl.textContent = Math.abs(feelsTemp - actualTemp) >= 3 ? `Feels ${feelsTemp}°` : desc;
+    document.getElementById('stat-hum').textContent = `${Math.round(w.humidity)}%`;
+    document.getElementById('stat-hum').className = `stat-value mono ${w.humidity>80?'red':w.humidity>60?'amber':'green'}`;
+    document.getElementById('stat-wind').textContent = `${Math.round(w.wind_speed)} mph ${dir}`;
+    const uvEl = document.getElementById('stat-uv');
+    uvEl.textContent = `${w.uv_index.toFixed(1)} ${uvDesc}`;
+    uvEl.className = `stat-value mono ${w.uv_index>=8?'red':w.uv_index>=6?'amber':'green'}`;
+
+    // Sidebar detail
     const el = document.getElementById('ctx-weather');
     el.innerHTML = `
+        <div class="ctx-item"><div class="ctx-row"><span>Condition</span><span class="mono">${desc}</span></div></div>
         <div class="ctx-item"><div class="ctx-row"><span>Feels Like</span><span class="mono">${Math.round(w.apparent_temperature)}°F</span></div></div>
+        <div class="ctx-item"><div class="ctx-row"><span>Humidity</span><span class="mono" style="color:${w.humidity>80?'var(--red)':w.humidity>60?'var(--amber)':'var(--green)'}">${Math.round(w.humidity)}%</span></div></div>
         <div class="ctx-item"><div class="ctx-row"><span>Wind</span><span class="mono">${Math.round(w.wind_speed)} mph ${dir}</span></div></div>
-        <div class="ctx-item"><div class="ctx-row"><span>UV Index</span><span class="mono" style="color:${w.uv_index>=8?'var(--red)':w.uv_index>=6?'var(--amber)':'var(--green)'}">${w.uv_index.toFixed(1)}</span></div></div>
-        ${d.aqi ? `<div class="ctx-item"><div class="ctx-row"><span>Air Quality</span><span class="mono" style="color:${d.aqi.aqi>100?'var(--red)':d.aqi.aqi>50?'var(--amber)':'var(--green)'}">${d.aqi.aqi} (${d.aqi.category})</span></div></div>` : ''}
+        <div class="ctx-item"><div class="ctx-row"><span>UV Index</span><span class="mono" style="color:${w.uv_index>=8?'var(--red)':w.uv_index>=6?'var(--amber)':'var(--green)'}">${w.uv_index.toFixed(1)} (${uvDesc})</span></div></div>
+        ${d.aqi ? `<div class="ctx-item"><div class="ctx-row"><span>Air Quality</span><span class="mono" style="color:${d.aqi.aqi>100?'var(--red)':d.aqi.aqi>50?'var(--amber)':'var(--green)'}">${d.aqi.aqi} — ${d.aqi.category}</span></div></div>` : ''}
     `;
 }
 
 async function loadParking() {
     const d = await api('/parking');
-    if (!d || !d.lots || !d.lots.length) return;
+    if (!d || !d.lots || !d.lots.length) {
+        document.getElementById('stat-parking').textContent = 'No Data';
+        document.getElementById('stat-parking').className = 'stat-value mono';
+        return;
+    }
     const l = d.lots[0];
     const pEl = document.getElementById('stat-parking');
     pEl.textContent = `${l.available} / ${l.total}`;
     pEl.className = `stat-value mono ${l.percent_full>75?'red':l.percent_full>50?'amber':'green'}`;
 
     document.getElementById('ctx-parking').innerHTML = `
-        <div style="font-weight:600;font-size:13px;margin-bottom:8px">Lot ${l.lot_id}</div>
+        <div style="display:flex;align-items:center;margin-bottom:8px">
+            <span style="font-weight:600;font-size:13px">Lot ${l.lot_id}</span>
+            <a class="park-map-btn" href="https://parkingstatus.csusm.edu/map.php" target="_blank" rel="noopener">Map</a>
+        </div>
         <div class="park-bar-bg"><div class="park-bar-fill" style="background:${l.percent_full>75?'var(--red)':l.percent_full>50?'var(--amber)':'var(--green)'};width:${l.percent_full}%"></div></div>
         <div class="ctx-row mono" style="margin-top:8px;font-size:11px;color:var(--text-secondary)">
             <span>${l.percent_full}% Full</span><span>${l.available} Open</span>
@@ -509,12 +627,14 @@ async function loadTransit() {
 
     const el = document.getElementById('ctx-transit');
     if (!uniq.length) { el.innerHTML = '<span class="empty-state">No departures</span>'; return; }
-    el.innerHTML = uniq.slice(0,4).map(x => `
-        <div class="ctx-item" style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--border)">
-            <div><span class="dep-badge">${x.route}</span>${x.direction}</div>
-            <span class="mono" style="color:var(--green);font-weight:700;font-size:13px">${x.minutes_away}m</span>
-        </div>
-    `).join('');
+    el.innerHTML = uniq.slice(0,5).map(x => {
+        const depTime = x.time ? x.time.slice(0,5) : '';
+        const dest = x.direction || 'Unknown';
+        return `<div class="ctx-item" style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:8px"><span class="dep-badge">${x.route}</span><span style="font-size:12px">&rarr; ${dest}</span></div>
+            <div style="text-align:right"><span class="mono" style="color:var(--green);font-weight:700;font-size:13px">${x.minutes_away}m</span><div style="font-size:10px;color:var(--text-secondary);font-family:var(--mono,monospace)">${depTime}</div></div>
+        </div>`;
+    }).join('');
 }
 
 async function loadEvents() {
@@ -546,75 +666,88 @@ async function loadDetectionLog() {
 }
 
 async function loadAnalytics() {
+    analyticsLoaded = {};
+    loadAnalyticsTab(currentTab);
+}
+
+async function loadAnalyticsTab(tab) {
     const cam = document.getElementById('cam-selector').value;
-    if (!cam) return;
+    if (!cam || analyticsLoaded[tab]) return;
+    analyticsLoaded[tab] = true;
 
-    // Best times
-    const best = await api(`/history/best-times?camera=${cam}&days=7`);
-    const bestEl = document.getElementById('tab-best');
-    if (best && best.data && best.data.length) {
-        bestEl.innerHTML = '<div class="best-times-grid">' + best.data.slice(0,8).map(t => {
-            const h = t.hour;
-            const lbl = h===0?'12 AM':h<12?h+' AM':h===12?'12 PM':(h-12)+' PM';
-            return `<div class="best-time-card"><div class="btime">${lbl}</div><div class="bcount">avg ${t.avg_count}</div></div>`;
-        }).join('') + '</div>';
-    } else { bestEl.innerHTML = '<div class="empty-state">Not enough data</div>'; }
-
-    // Timeline
-    const tl = await api(`/history/timeline?camera=${cam}`);
-    const tlCtx = document.getElementById('chart-timeline').getContext('2d');
-    if (timelineChart) timelineChart.destroy();
-    if (tl && tl.data && tl.data.length) {
-        timelineChart = new Chart(tlCtx, {
-            type:'line',
-            data:{labels:tl.data.map(d=>d.time), datasets:[{label:'People',data:tl.data.map(d=>d.avg_count),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.1)',borderWidth:1.5,pointRadius:0,fill:true,tension:.4}]},
-            options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},zoom:{pan:{enabled:true,mode:'x'},zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'}}},scales:{x:{grid:{color:'#334155'},ticks:{maxTicksLimit:12}},y:{beginAtZero:true,grid:{color:'#334155'}}}}
-        });
-    }
-
-    // Hourly
-    const hr = await api(`/history/hourly?camera=${cam}&days=7`);
-    const hrCtx = document.getElementById('chart-hourly').getContext('2d');
-    if (hourlyChart) hourlyChart.destroy();
-    if (hr && hr.data && hr.data.length) {
-        const labels = hr.data.map(d => { const h=d.hour; return h===0?'12a':h<12?h+'a':h===12?'12p':(h-12)+'p'; });
-        hourlyChart = new Chart(hrCtx, {
-            type:'bar',
-            data:{labels, datasets:[{label:'7d Avg',data:hr.data.map(d=>d.avg_count),backgroundColor:'#3b82f6',borderWidth:0,barPercentage:.6}]},
-            options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:12}},y:{beginAtZero:true,grid:{color:'#334155'}}}}
-        });
-    }
-
-    // Heatmap
-    const hm = await api(`/history/heatmap?camera=${cam}&days=7`);
-    const hmEl = document.getElementById('tab-heatmap');
-    if (hm && hm.data && hm.data.length) {
-        const map = {}; let mx = 1;
-        hm.data.forEach(d => { map[d.day_of_week+'-'+d.hour]=d.avg_count; if(d.avg_count>mx) mx=d.avg_count; });
-        let rows = '';
-        for (let d=0;d<7;d++) {
-            let cells = '';
-            for (let h=0;h<24;h++) {
-                const v = map[d+'-'+h]||0;
-                const a = v/mx;
-                const bg = v>0 ? `rgba(59,130,246,${(.1+a*.7).toFixed(2)})` : 'var(--bg-root)';
-                cells += `<div class="hm-cell" style="background:${bg}" title="${DAYS[d]} ${h}:00 — avg ${v}"></div>`;
-            }
-            rows += `<div class="hm-row">${cells}</div>`;
+    if (tab === 'log') {
+        // already handled by loadDetectionLog interval
+    } else if (tab === 'best') {
+        const best = await api(`/history/best-times?camera=${cam}&days=7`);
+        const el = document.getElementById('tab-best');
+        if (best && best.data && best.data.length) {
+            const camName = CAM_NAMES[cam] || cam;
+            el.innerHTML = `<div class="best-times-grid">${best.data.slice(0,8).map(t => {
+                const h = t.hour;
+                const lbl = h===0?'12 AM':h<12?h+' AM':h===12?'12 PM':(h-12)+' PM';
+                return `<div class="best-time-card"><div class="btime">${lbl}</div><div class="bcount">avg ${t.avg_count} people</div></div>`;
+            }).join('')}</div>`;
+        } else { el.innerHTML = '<div class="empty-state">Not enough data yet</div>'; }
+    } else if (tab === 'timeline') {
+        const tl = await api(`/history/timeline?camera=${cam}`);
+        if (timelineChart) timelineChart.destroy();
+        timelineChart = null;
+        if (tl && tl.data && tl.data.length) {
+            // Small delay to ensure canvas is visible before Chart.js measures it
+            await new Promise(r => setTimeout(r, 50));
+            const ctx = document.getElementById('chart-timeline').getContext('2d');
+            timelineChart = new Chart(ctx, {
+                type:'line',
+                data:{labels:tl.data.map(d=>d.time), datasets:[{label:'People',data:tl.data.map(d=>d.avg_count),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.08)',borderWidth:1.5,pointRadius:tl.data.length>60?0:2,pointHoverRadius:4,fill:true,tension:.35}]},
+                options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleColor:'#f1f5f9',bodyColor:'#94a3b8',borderColor:'#334155',borderWidth:1,padding:10,cornerRadius:6},zoom:{pan:{enabled:true,mode:'x'},zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'}}},scales:{x:{grid:{color:'rgba(51,65,85,0.5)'},ticks:{maxTicksLimit:14,maxRotation:45}},y:{beginAtZero:true,grid:{color:'rgba(51,65,85,0.5)'}}}}
+            });
         }
-        let xLabels = '';
-        for (let h=0;h<24;h+=3) xLabels += `<span>${h}</span>`;
-        hmEl.innerHTML = `<div class="hm-layout"><div class="hm-y">${DAYS.map(d=>`<span>${d}</span>`).join('')}</div><div class="hm-area">${rows}<div class="hm-x">${xLabels}</div></div></div>`;
-    } else { hmEl.innerHTML = '<div class="empty-state">No data</div>'; }
+    } else if (tab === 'hourly') {
+        const hr = await api(`/history/hourly?camera=${cam}&days=7`);
+        if (hourlyChart) hourlyChart.destroy();
+        hourlyChart = null;
+        if (hr && hr.data && hr.data.length) {
+            await new Promise(r => setTimeout(r, 50));
+            const ctx = document.getElementById('chart-hourly').getContext('2d');
+            const labels = hr.data.map(d => { const h=d.hour; return h===0?'12 AM':h<12?h+' AM':h===12?'12 PM':(h-12)+' PM'; });
+            hourlyChart = new Chart(ctx, {
+                type:'bar',
+                data:{labels, datasets:[{label:'7-Day Average',data:hr.data.map(d=>d.avg_count),backgroundColor:'rgba(59,130,246,0.7)',hoverBackgroundColor:'#3b82f6',borderWidth:0,borderRadius:3,barPercentage:.65}]},
+                options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleColor:'#f1f5f9',bodyColor:'#94a3b8',borderColor:'#334155',borderWidth:1,padding:10,cornerRadius:6}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:12}},y:{beginAtZero:true,grid:{color:'rgba(51,65,85,0.5)'}}}}
+            });
+        }
+    } else if (tab === 'heatmap') {
+        const hm = await api(`/history/heatmap?camera=${cam}&days=7`);
+        const el = document.getElementById('tab-heatmap');
+        if (hm && hm.data && hm.data.length) {
+            const map = {}; let mx = 1;
+            hm.data.forEach(d => { map[d.day_of_week+'-'+d.hour]=d.avg_count; if(d.avg_count>mx) mx=d.avg_count; });
+            let rows = '';
+            for (let d=0;d<7;d++) {
+                let cells = '';
+                for (let h=0;h<24;h++) {
+                    const v = map[d+'-'+h]||0;
+                    const a = v/mx;
+                    // Interpolate from dark blue to bright blue-white for better contrast
+                    const bg = v>0 ? `hsl(217, ${60+a*30}%, ${15+a*45}%)` : 'var(--bg-root)';
+                    cells += `<div class="hm-cell" style="background:${bg}" title="${DAYS[d]} ${h}:00 — avg ${v.toFixed?v.toFixed(1):v}"></div>`;
+                }
+                rows += `<div class="hm-row">${cells}</div>`;
+            }
+            let xLabels = '';
+            for (let h=0;h<24;h+=3) xLabels += `<span>${h}:00</span>`;
+            el.innerHTML = `<div class="hm-layout"><div class="hm-y">${DAYS.map(d=>`<span>${d}</span>`).join('')}</div><div class="hm-area">${rows}<div class="hm-x">${xLabels}</div></div></div>`;
+        } else { el.innerHTML = '<div class="empty-state">No heatmap data yet</div>'; }
+    }
 }
 
 function switchTab(name, btn) {
+    currentTab = name;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.getElementById(`tab-${name}`).classList.add('active');
-    if (name==='timeline' && timelineChart) timelineChart.resize();
-    if (name==='hourly' && hourlyChart) hourlyChart.resize();
+    loadAnalyticsTab(name);
 }
 
 init();
