@@ -180,16 +180,20 @@ def get_hourly_averages(conn: sqlite3.Connection, camera: str, day_type: str = "
 
 
 def get_best_times(conn: sqlite3.Connection, camera: str, days: int = 7) -> list[dict]:
-    """Return hours ranked by lowest average people count (best times to visit)."""
+    """Return hours ranked by lowest average people count (best times to visit).
+    Only includes hours within the location's operating hours."""
     cutoff = (datetime.now(TZ) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+    # Get operating hours for this camera
+    cam_cfg = CAMERAS.get(camera, {})
+    open_start, open_end = cam_cfg.get("open_hours", (0, 24))
     rows = conn.execute("""
         SELECT hour, AVG(count) as avg_count, COUNT(*) as samples
         FROM detections
-        WHERE camera = ? AND timestamp >= ?
+        WHERE camera = ? AND timestamp >= ? AND hour >= ? AND hour < ?
         GROUP BY hour
         HAVING samples >= 3
         ORDER BY avg_count ASC
-    """, (camera, cutoff)).fetchall()
+    """, (camera, cutoff, open_start, open_end)).fetchall()
     return [{"hour": r[0], "avg_count": round(r[1], 1), "samples": r[2]} for r in rows]
 
 

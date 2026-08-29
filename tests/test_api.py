@@ -103,6 +103,18 @@ def test_detection_log_image_proxies_frigate(client):
     assert resp.content == b"fakejpeg"
 
 
+def test_camera_hours(client):
+    """GET /api/cameras/{id}/hours returns the analytics window."""
+    resp = client.get("/api/cameras/coffeecart/hours")
+    assert resp.status_code == 200
+    assert resp.json()["open_hours"] == [7, 17]
+
+
+def test_camera_hours_unknown_camera(client):
+    resp = client.get("/api/cameras/nope/hours")
+    assert resp.status_code == 404
+
+
 def test_snapshot_endpoint_removed(client):
     """The old /api/snapshot/{id} endpoint no longer exists."""
     resp = client.get("/api/snapshot/starbucks")

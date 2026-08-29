@@ -9,7 +9,7 @@ from zoneinfo import ZoneInfo
 
 import httpx
 from fastapi import FastAPI, Query
-from fastapi.responses import FileResponse, HTMLResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 
 from backend.config import CAMERAS, DB_PATH, FRIGATE_HOST, FRIGATE_PORT, HEALTH_TIMEOUT, RETENTION_DAYS, SNAPSHOTS_DIR, TIMEZONE  # noqa: F401 — FRIGATE_* used by detection-log fallback
 from backend.database import (
@@ -357,6 +357,15 @@ async def get_timeline(camera: str = Query(...), date: str = Query(default=None)
 async def best_times(camera: str = Query(...), days: int = Query(default=7)):
     data = get_best_times(_db_conn, camera, days)
     return {"camera": camera, "days": days, "data": data}
+
+
+@app.get("/api/cameras/{camera_id}/hours")
+async def get_camera_hours(camera_id: str):
+    """Return the (start_hour, end_hour) window analytics are scoped to."""
+    cam = CAMERAS.get(camera_id)
+    if not cam:
+        return JSONResponse(status_code=404, content={"detail": "Camera not found"})
+    return {"camera": camera_id, "open_hours": cam.get("open_hours")}
 
 
 @app.get("/api/history/daily")

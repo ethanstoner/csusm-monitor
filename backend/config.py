@@ -41,13 +41,16 @@ FRIGATE_PORT = int(os.getenv("FRIGATE_PORT", "5000"))
 # --- Camera definitions ---
 # Adding a camera only requires a new entry here; a DetectionWorker
 # is auto-spawned for each key at startup.
+# open_hours: (start_hour, end_hour) in 24h format — used to filter analytics
 CAMERAS = {
     "starbucks": {
         "name": "Starbucks (USU)",
         "stream_url": "https://stream.csusm.edu/starbucks.m3u8",
+        "open_hours": (6, 21),  # 6 AM - 9 PM
     },
     "coffeecart": {
         "name": "Campus Coffee Cart",
         "stream_url": "https://stream.csusm.edu/coffeecart.m3u8",
+        "open_hours": (7, 17),  # 7 AM - 5 PM
     },
 }
