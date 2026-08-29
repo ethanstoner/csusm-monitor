@@ -1,5 +1,6 @@
 import sqlite3
 import io
+import re
 import zipfile
 import pytest
 from datetime import datetime, timedelta
@@ -150,31 +151,47 @@ def test_parking_collector_parse(db, monkeypatch):
     assert rows[0] == ("F", 766, 1240)
 
 
-def test_aqi_collector_no_key(db, monkeypatch):
-    import backend.config as cfg
-    monkeypatch.setattr(cfg, "AIRNOW_API_KEY", "")
-
-    from backend.collectors import AirQualityCollector
-    collector = AirQualityCollector(db)
-    collector.collect()
-
-    rows = db.execute("SELECT COUNT(*) FROM air_quality").fetchone()
-    assert rows[0] == 0
-
-
-def test_aqi_collector_with_key(db, monkeypatch):
+def test_parking_collector_fallback_pattern(db, monkeypatch):
+    """ParkingCollector handles alternate HTML formats."""
     import httpx
-    import backend.config as cfg
     from unittest.mock import MagicMock
-
-    monkeypatch.setattr(cfg, "AIRNOW_API_KEY", "test-key-123")
 
     mock_response = MagicMock()
     mock_response.status_code = 200
-    mock_response.json.return_value = [
-        {"AQI": 42, "Category": {"Name": "Good"}, "ParameterName": "PM2.5"},
-        {"AQI": 35, "Category": {"Name": "Good"}, "ParameterName": "O3"},
-    ]
+    mock_response.text = """
+    <html><body>
+    <div>Lot G</div>
+    <div>500/800 Spaces available</div>
+    </body></html>
+    """
+    mock_response.raise_for_status = MagicMock()
+    monkeypatch.setattr(httpx, "get", lambda *a, **kw: mock_response)
+
+    from backend.collectors import ParkingCollector
+    collector = ParkingCollector(db)
+    collector.collect()
+
+    rows = db.execute("SELECT lot_id, available, total FROM parking").fetchall()
+    assert len(rows) == 1
+    assert rows[0] == ("G", 500, 800)
+
+
+def test_aqi_collector_pm25_to_aqi():
+    from backend.collectors import AirQualityCollector
+    assert AirQualityCollector._pm25_to_aqi(5.0) == (21, "Good")
+    assert AirQualityCollector._pm25_to_aqi(25.0) == (78, "Moderate")
+    assert AirQualityCollector._pm25_to_aqi(100.0) == (174, "Unhealthy")
+
+
+def test_aqi_collector_open_meteo(db, monkeypatch):
+    import httpx
+    from unittest.mock import MagicMock
+
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "current": {"pm2_5": 8.5, "pm10": 15.0}
+    }
     mock_response.raise_for_status = MagicMock()
     monkeypatch.setattr(httpx, "get", lambda *a, **kw: mock_response)
 
@@ -184,10 +201,29 @@ def test_aqi_collector_with_key(db, monkeypatch):
 
     rows = db.execute("SELECT aqi, pollutant FROM air_quality").fetchall()
     assert len(rows) == 1
-    assert rows[0][0] == 42
+    assert rows[0][1] == "PM2.5"
+    assert 0 < rows[0][0] <= 50  # 8.5 µg/m³ → "Good" range
 
     with collector._lock:
-        assert collector.latest["aqi"] == 42
+        assert collector.latest["category"] == "Good"
+
+
+def test_aqi_collector_no_data(db, monkeypatch):
+    import httpx
+    from unittest.mock import MagicMock
+
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {"current": {}}
+    mock_response.raise_for_status = MagicMock()
+    monkeypatch.setattr(httpx, "get", lambda *a, **kw: mock_response)
+
+    from backend.collectors import AirQualityCollector
+    collector = AirQualityCollector(db)
+    collector.collect()
+
+    rows = db.execute("SELECT COUNT(*) FROM air_quality").fetchone()
+    assert rows[0] == 0
 
 
 def _make_gtfs_zip():
@@ -241,7 +277,8 @@ def test_transit_collector_parse(db, tmp_path, monkeypatch):
     assert departures[0]["minutes_away"] == 30
 
 
-def test_events_collector_parse(db, monkeypatch):
+def test_events_collector_parse_generic(db, monkeypatch):
+    """EventsCollector parses generic event-title/event-date HTML."""
     import httpx
     from unittest.mock import MagicMock
 
@@ -273,6 +310,81 @@ def test_events_collector_parse(db, monkeypatch):
     rows = db.execute("SELECT title, event_date, location FROM events").fetchall()
     assert len(rows) == 2
     assert rows[0][0] == "ASI Fresh Market Mondays"
+    # Dates are normalised to sortable ISO, never left as scraped text
+    assert re.match(r"^\d{4}-\d{2}-\d{2} 11:00$", rows[0][1])
+
+
+def test_events_collector_parse_kurogo(db, monkeypatch):
+    """EventsCollector parses real Kurogo kgo-list-item HTML."""
+    import httpx
+    from unittest.mock import MagicMock
+
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.text = """
+    <html><body>
+    <div region="items">
+        <a href="/default/events/detail?id=abc123">
+            <div class="kgo-list-item">
+                <div>May 7</div>
+                <div>12:00 PM</div>
+                <div>Chow on Deck: ASI Semester End Celebration</div>
+                <div>Organization: Veterans Services, ASI</div>
+            </div>
+        </a>
+        <a href="/default/events/detail?id=def456">
+            <div class="kgo-list-item">
+                <div>Aug 31</div>
+                <div>5:30 PM</div>
+                <div>ASI - First Night Celebration 2026</div>
+                <div>Organization: ASI description coming soon</div>
+            </div>
+        </a>
+    </div>
+    </body></html>
+    """
+    mock_response.raise_for_status = MagicMock()
+    monkeypatch.setattr(httpx, "get", lambda *a, **kw: mock_response)
+
+    from backend.collectors import EventsCollector
+    collector = EventsCollector(db)
+    collector.collect()
+
+    rows = db.execute("SELECT title, event_date, location FROM events").fetchall()
+    assert len(rows) == 2
+    assert rows[0][0] == "Chow on Deck: ASI Semester End Celebration"
+    assert re.match(r"^\d{4}-05-07 12:00$", rows[0][1])
+    assert re.match(r"^\d{4}-08-31 17:30$", rows[1][1])
+
+
+def test_events_date_normalisation():
+    """Scraped dates become sortable ISO; unparseable ones are rejected."""
+    from backend.collectors import EventsCollector
+    norm = EventsCollector._normalize_event_date
+
+    assert norm("May 7", "12:00 PM").endswith("-05-07 12:00")
+    assert norm("Aug 31", "5:30 PM").endswith("-08-31 17:30")
+    assert norm("May 4, 11:00 AM").endswith("-05-04 11:00")
+    assert norm("September 7, 2027") == "2027-09-07 00:00"
+    assert norm("2026-12-11") == "2026-12-11"          # academic-calendar fallback
+    assert norm("Sometime next week") is None
+    assert norm("") is None
+
+
+def test_upcoming_events_excludes_past_and_sorts(db):
+    """get_upcoming_events() is a string comparison — ISO dates make it correct."""
+    from backend.database import insert_event, get_upcoming_events
+    today = datetime.now()
+    past = (today - timedelta(days=30)).strftime("%Y-%m-%d 12:00")
+    soon = (today + timedelta(days=3)).strftime("%Y-%m-%d 17:30")
+    later = (today + timedelta(days=40)).strftime("%Y-%m-%d")
+
+    insert_event(db, title="Later", event_date=later, location="Campus", description="")
+    insert_event(db, title="Past", event_date=past, location="CSUSM", description="")
+    insert_event(db, title="Soon", event_date=soon, location="CSUSM", description="")
+
+    titles = [e["title"] for e in get_upcoming_events(db)]
+    assert titles == ["Soon", "Later"]
 
 
 @pytest.fixture

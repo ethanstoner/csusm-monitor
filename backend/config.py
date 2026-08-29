@@ -28,10 +28,6 @@ EVENTS_INTERVAL = 21600      # 6 hours
 # --- CSUSM location ---
 CAMPUS_LAT = 33.1284
 CAMPUS_LON = -117.1597
-CAMPUS_ZIP = "92096"
-
-# --- API keys (optional) ---
-AIRNOW_API_KEY = os.getenv("AIRNOW_API_KEY", "")
 
 # --- Data paths ---
 GTFS_DIR = Path(__file__).parent.parent / "data" / "gtfs"

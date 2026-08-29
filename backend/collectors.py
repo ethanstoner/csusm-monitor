@@ -37,10 +37,21 @@ class BaseCollector(threading.Thread):
         self._lock = threading.Lock()
 
     def _open_conn(self):
-        """Open a thread-local SQLite connection."""
-        conn = sqlite3.connect(str(cfg.DB_PATH), check_same_thread=False)
-        conn.execute("PRAGMA journal_mode=WAL")
-        return conn
+        """Open a thread-local SQLite connection with retry for locked DB."""
+        conn = None
+        for attempt in range(3):
+            try:
+                conn = sqlite3.connect(str(cfg.DB_PATH), timeout=5, check_same_thread=False)
+                conn.execute("PRAGMA journal_mode=WAL")
+                return conn
+            except sqlite3.OperationalError:
+                # The PRAGMA can fail after connect() succeeded — don't leak the handle.
+                if conn is not None:
+                    conn.close()
+                    conn = None
+                if attempt == 2:
+                    raise
+                time.sleep(0.5 * (attempt + 1))
 
     def run(self):
         self._conn = self._open_conn()
@@ -96,17 +107,30 @@ class ParkingCollector(BaseCollector):
     NAME = "parking-collector"
     INTERVAL = cfg.PARKING_INTERVAL
 
+    # Regex patterns tried in order — first match wins
+    _PATTERNS = [
+        re.compile(r"<b>\s*(\d+)\s*/\s*(\d+)"),                    # <b>733/1240
+        re.compile(r"(\d+)\s*/\s*(\d+)\s*<small[^>]*>\s*Spaces"),  # N/M <small>Spaces
+        re.compile(r"(\d+)\s*/\s*(\d+)\s*Spaces\s+available"),     # N/M Spaces available
+        re.compile(r"aria-valuenow=[\"']?(\d+).*?aria-valuemax=[\"']?(\d+)"),  # progress bar
+    ]
+
     def collect(self):
         resp = httpx.get("https://parkingstatus.csusm.edu", timeout=10)
         resp.raise_for_status()
-        # Real HTML has: <b>664/1240<small class="text-muted"> Spaces available</small></b>
-        match = re.search(r"<b>(\d+)/(\d+)", resp.text)
-        if not match:
-            logger.warning("Parking: could not parse HTML")
+        html = resp.text
+
+        available = total = None
+        for pat in self._PATTERNS:
+            m = pat.search(html)
+            if m:
+                available, total = int(m.group(1)), int(m.group(2))
+                break
+        if available is None:
+            logger.warning("Parking: could not parse HTML — no pattern matched")
             return
-        available = int(match.group(1))
-        total = int(match.group(2))
-        lot_match = re.search(r"Lot\s+(\w+)", resp.text)
+
+        lot_match = re.search(r"Lot\s+(\w+)", html)
         lot_id = lot_match.group(1) if lot_match else "unknown"
 
         conn = getattr(self, "_conn", self._main_db)
@@ -120,33 +144,45 @@ class AirQualityCollector(BaseCollector):
     NAME = "aqi-collector"
     INTERVAL = cfg.AQI_INTERVAL
 
+    # US AQI breakpoints for PM2.5 (µg/m³) — EPA standard
+    _PM25_BP = [
+        (0.0, 12.0, 0, 50, "Good"),
+        (12.1, 35.4, 51, 100, "Moderate"),
+        (35.5, 55.4, 101, 150, "Unhealthy for Sensitive Groups"),
+        (55.5, 150.4, 151, 200, "Unhealthy"),
+        (150.5, 250.4, 201, 300, "Very Unhealthy"),
+        (250.5, 500.4, 301, 500, "Hazardous"),
+    ]
+
+    @classmethod
+    def _pm25_to_aqi(cls, pm25: float) -> tuple[int, str]:
+        """Convert PM2.5 concentration to US AQI and category."""
+        for c_lo, c_hi, i_lo, i_hi, cat in cls._PM25_BP:
+            if pm25 <= c_hi:
+                aqi = round((i_hi - i_lo) / (c_hi - c_lo) * (pm25 - c_lo) + i_lo)
+                return aqi, cat
+        return 500, "Hazardous"
+
     def collect(self):
-        if not cfg.AIRNOW_API_KEY:
-            return
-        url = "https://www.airnowapi.org/aq/observation/zipCode/current/"
-        params = {
-            "zipCode": cfg.CAMPUS_ZIP,
-            "format": "application/json",
-            "API_KEY": cfg.AIRNOW_API_KEY,
-        }
-        resp = httpx.get(url, params=params, timeout=10)
-        if resp.status_code == 401:
-            logger.warning("AirNow API key is invalid or expired (HTTP 401)")
-            return
+        url = (
+            f"https://air-quality-api.open-meteo.com/v1/air-quality"
+            f"?latitude={cfg.CAMPUS_LAT}&longitude={cfg.CAMPUS_LON}"
+            f"&current=pm2_5,pm10"
+        )
+        resp = httpx.get(url, timeout=10)
         resp.raise_for_status()
-        readings = resp.json()
-        if not readings:
+        current = resp.json().get("current", {})
+        pm25 = current.get("pm2_5")
+        if pm25 is None:
             return
-        dominant = max(readings, key=lambda r: r.get("AQI", 0))
-        aqi = dominant["AQI"]
-        category = dominant.get("Category", {}).get("Name", "Unknown")
-        pollutant = dominant.get("ParameterName", "Unknown")
+        aqi, category = self._pm25_to_aqi(pm25)
+        pollutant = "PM2.5"
 
         conn = getattr(self, "_conn", self._main_db)
         insert_air_quality(conn, aqi=aqi, category=category, pollutant=pollutant)
         with self._lock:
             self.latest = {"aqi": aqi, "category": category, "pollutant": pollutant}
-        logger.info("AQI: %d (%s) — %s", aqi, category, pollutant)
+        logger.info("AQI: %d (%s) — %s (PM2.5=%.1f)", aqi, category, pollutant, pm25)
 
 
 class TransitCollector(BaseCollector):
@@ -279,20 +315,104 @@ class EventsCollector(BaseCollector):
             self.latest = {"events": events, "count": len(events)}
         logger.info("Events: stored %d events", len(events))
 
+    @staticmethod
+    def _normalize_event_date(date_str, time_str=""):
+        """Convert a Kurogo 'May 7' / '5:30 PM' pair into 'YYYY-MM-DD HH:MM'.
+
+        Kurogo omits the year. Listings are forward-looking, so a month/day that
+        already passed is assumed to belong to next year. Returns None if the
+        date cannot be parsed — ordering in get_upcoming_events() is a string
+        comparison, so an unparseable date must never reach the database.
+        """
+        now = datetime.now(TZ)
+        date_str = date_str.strip()
+
+        # Already ISO (the academic-calendar fallback) — leave it alone.
+        try:
+            return datetime.strptime(date_str[:10], "%Y-%m-%d").strftime("%Y-%m-%d")
+        except ValueError:
+            pass
+
+        day = None
+        for fmt in ("%b %d %Y", "%B %d %Y", "%b %d, %Y", "%B %d, %Y"):
+            try:
+                day = datetime.strptime(date_str, fmt).date()
+                break
+            except ValueError:
+                continue
+
+        if day is None:
+            # "May 4, 11:00 AM" — the trailing field is a time, not a year.
+            head, sep, tail = date_str.partition(",")
+            if sep and not time_str:
+                time_str = tail
+            for fmt in ("%b %d", "%B %d"):
+                try:
+                    parsed = datetime.strptime(head.strip(), fmt)
+                except ValueError:
+                    continue
+                day = parsed.replace(year=now.year).date()
+                # Listings only run forward; a date well in the past is next year's.
+                if (now.date() - day).days > 60:
+                    day = day.replace(year=now.year + 1)
+                break
+
+        if day is None:
+            return None
+
+        hhmm = "00:00"
+        for fmt in ("%I:%M %p", "%I %p", "%H:%M"):
+            try:
+                hhmm = datetime.strptime(time_str.strip(), fmt).strftime("%H:%M")
+                break
+            except ValueError:
+                continue
+        return f"{day.isoformat()} {hhmm}"
+
     def _parse_events(self, html):
         events = []
-        # Try structured class-based parsing
-        title_matches = re.findall(r'class="event-title"[^>]*>([^<]+)', html)
-        date_matches = re.findall(r'class="event-date"[^>]*>([^<]+)', html)
-        loc_matches = re.findall(r'class="event-location"[^>]*>([^<]+)', html)
-        desc_matches = re.findall(r'class="event-description"[^>]*>([^<]+)', html)
 
-        for i, title in enumerate(title_matches):
-            events.append({
-                "title": title.strip(),
-                "event_date": date_matches[i].strip() if i < len(date_matches) else None,
-                "location": loc_matches[i].strip() if i < len(loc_matches) else None,
-                "description": desc_matches[i].strip() if i < len(desc_matches) else None,
-            })
+        # Strategy 1: Kurogo kgo-list-item — sequential child <div>s:
+        #   div[0]=date, div[1]=time, div[2]=title, div[3]=org/desc
+        items = re.findall(
+            r'class="kgo-list-item"[^>]*>(.*?)</div>\s*</a>',
+            html, re.DOTALL,
+        )
+        for item_html in items:
+            divs = re.findall(r'<div[^>]*>([^<]+)</div>', item_html)
+            if len(divs) >= 3:
+                date_str = divs[0].strip()
+                time_str = divs[1].strip() if len(divs) > 1 else ""
+                title = divs[2].strip()
+                desc = divs[3].strip() if len(divs) > 3 else None
+                event_date = self._normalize_event_date(date_str, time_str)
+                if event_date is None:
+                    logger.debug("Events: unparseable date %r for %r", date_str, title)
+                    continue
+                events.append({
+                    "title": title,
+                    "event_date": event_date,
+                    "location": "CSUSM",
+                    "description": desc,
+                })
+
+        # Strategy 2: class="event-title" / event-date pattern (generic)
+        if not events:
+            title_matches = re.findall(r'class="event-title"[^>]*>([^<]+)', html)
+            date_matches = re.findall(r'class="event-date"[^>]*>([^<]+)', html)
+            loc_matches = re.findall(r'class="event-location"[^>]*>([^<]+)', html)
+            desc_matches = re.findall(r'class="event-description"[^>]*>([^<]+)', html)
+            for i, title in enumerate(title_matches):
+                raw_date = date_matches[i].strip() if i < len(date_matches) else ""
+                event_date = self._normalize_event_date(raw_date) if raw_date else None
+                if event_date is None:
+                    logger.debug("Events: unparseable date %r for %r", raw_date, title)
+                    continue
+                events.append({
+                    "title": title.strip(),
+                    "event_date": event_date,
+                    "location": loc_matches[i].strip() if i < len(loc_matches) else None,
+                    "description": desc_matches[i].strip() if i < len(desc_matches) else None,
+                })
 
         return events[:20]
