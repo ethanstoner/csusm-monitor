@@ -13,10 +13,18 @@ from backend.config import DETECTION_INTERVAL, FFMPEG_TIMEOUT, TIMEZONE, SNAPSHO
 
 logger = logging.getLogger(__name__)
 
-# Load YOLO model once at module level (downloads yolov8n.pt on first run)
+# Load YOLO model once at module level (downloads yolov8n.pt on first run).
+# One model instance is shared by every camera thread, so inference is
+# serialised — ultralytics makes no thread-safety guarantee.
 model = YOLO("yolov8n.pt")
+_model_lock = threading.Lock()
 
 TZ = ZoneInfo(TIMEZONE)
+
+# A camera whose stream is gone fails in a fraction of a second, so retrying
+# every DETECTION_INTERVAL spawns ffmpeg 12x a minute forever. Back off
+# geometrically instead, up to this ceiling, and reset on the first good frame.
+MAX_BACKOFF = 60  # seconds
 
 # Store latest detection results per camera (frame + boxes)
 # Accessed by the API to serve annotated snapshots
@@ -36,6 +44,20 @@ class StaticObjectFilter:
 
     def __init__(self):
         self._history: list[list[tuple[float, float]]] = []  # ring of center-point lists
+
+    @property
+    def is_warm(self) -> bool:
+        """True once enough history exists for filter_boxes to actually filter.
+
+        Until then every box is passed through, so counts include the very
+        stationary false positives this class exists to remove.
+        """
+        return len(self._history) >= _STATIC_HIT_THRESHOLD
+
+    @property
+    def warmup_progress(self) -> tuple[int, int]:
+        """(frames seen, frames needed) — for logging startup state."""
+        return min(len(self._history), _STATIC_HIT_THRESHOLD), _STATIC_HIT_THRESHOLD
 
     def filter_boxes(self, boxes: list[dict]) -> list[dict]:
         """Return only boxes whose centers have NOT been static over the window."""
@@ -59,10 +81,6 @@ class StaticObjectFilter:
             if hits < _STATIC_HIT_THRESHOLD:
                 kept.append(box)
         return kept
-
-
-# One filter per camera (populated lazily in DetectionWorker._loop)
-_static_filters: dict[str, StaticObjectFilter] = {}
 
 
 def capture_frame(stream_url: str, timeout: int = FFMPEG_TIMEOUT) -> np.ndarray | None:
@@ -104,7 +122,8 @@ def is_static_frame(frame: np.ndarray) -> bool:
 def detect_people(frame: np.ndarray) -> tuple[int, list[dict]]:
     """Run YOLOv8 person detection on a frame. Returns (count, list of box dicts).
     Filters out detections below CONFIDENCE_THRESHOLD."""
-    results = model(frame, verbose=False)
+    with _model_lock:
+        results = model(frame, verbose=False)
     count = 0
     boxes = []
     for result in results:
@@ -163,24 +182,42 @@ class DetectionWorker:
         self.stream_url = stream_url
         self.db_conn = db_conn
         self.running = False
+        self.consecutive_failures = 0
         self._thread: threading.Thread | None = None
+        self._stop_event = threading.Event()
+        self._filter = StaticObjectFilter()
 
     def start(self):
         """Start the detection loop in a background thread."""
         self.running = True
+        self._stop_event.clear()
         self._thread = threading.Thread(target=self._loop, daemon=True)
         self._thread.start()
         logger.info("Detection worker started for %s", self.camera_id)
 
     def stop(self):
-        """Signal the worker to stop."""
+        """Signal the worker to stop and wait for the current cycle to finish."""
         self.running = False
+        self._stop_event.set()  # interrupts the inter-cycle wait immediately
         if self._thread:
             self._thread.join(timeout=15)
+            if self._thread.is_alive():
+                logger.warning(
+                    "[%s] Detection worker did not exit within 15s; it may still "
+                    "hold the database connection", self.camera_id,
+                )
+                return
         logger.info("Detection worker stopped for %s", self.camera_id)
 
+    def next_interval(self) -> float:
+        """Seconds to wait before the next cycle, backing off while failing."""
+        if not self.consecutive_failures:
+            return DETECTION_INTERVAL
+        # Exponent is capped so a camera down for a week does not compute 2**120k
+        return min(DETECTION_INTERVAL * 2 ** min(self.consecutive_failures, 16), MAX_BACKOFF)
+
     def _loop(self):
-        """Main detection loop: capture -> detect -> store -> sleep remainder."""
+        """Main detection loop: capture -> detect -> store -> wait remainder."""
         from backend.database import insert_detection
 
         while self.running:
@@ -188,35 +225,53 @@ class DetectionWorker:
             try:
                 frame = capture_frame(self.stream_url)
                 if frame is None:
-                    logger.warning("[%s] Frame capture failed", self.camera_id)
+                    self.consecutive_failures += 1
+                    logger.warning(
+                        "[%s] Frame capture failed (%d in a row) — retrying in %.0fs",
+                        self.camera_id, self.consecutive_failures, self.next_interval(),
+                    )
                 elif is_frame_too_dark(frame):
+                    # The stream is alive, so this is not a failure — an unlit
+                    # scene at 3 AM should not push the camera into backoff.
+                    self.consecutive_failures = 0
                     logger.warning("[%s] Frame too dark — skipping", self.camera_id)
                 elif is_static_frame(frame):
+                    self.consecutive_failures = 0
                     logger.info("[%s] Static/placeholder frame — skipping detection", self.camera_id)
                 else:
+                    self.consecutive_failures = 0
                     count, boxes = detect_people(frame)
                     # Suppress stationary false positives (signs, poles)
-                    if self.camera_id not in _static_filters:
-                        _static_filters[self.camera_id] = StaticObjectFilter()
-                    boxes = _static_filters[self.camera_id].filter_boxes(boxes)
+                    boxes = self._filter.filter_boxes(boxes)
                     count = len(boxes)
                     now = datetime.now(TZ)
-                    insert_detection(self.db_conn, self.camera_id, count, now)
+                    # Until the filter has history it cannot tell a person from a
+                    # sign, so these counts are inflated. Show them live, but keep
+                    # them out of the history every trend is computed from.
+                    if self._filter.is_warm:
+                        insert_detection(self.db_conn, self.camera_id, count, now)
+                        if count > 0:
+                            save_detection_snapshot(self.camera_id, frame, boxes, count, now)
+                        logger.info("[%s] Detected %d people", self.camera_id, count)
+                    else:
+                        seen, needed = self._filter.warmup_progress
+                        logger.info(
+                            "[%s] Static filter warming up (%d/%d frames) — %d people "
+                            "shown live but not recorded",
+                            self.camera_id, seen, needed, count,
+                        )
                     with _detections_lock:
                         latest_detections[self.camera_id] = {
                             "frame": frame,
                             "boxes": boxes,
                             "count": count,
                             "timestamp": now.isoformat(),
+                            "recorded": self._filter.is_warm,
                         }
-                    if count > 0:
-                        save_detection_snapshot(self.camera_id, frame, boxes, count, now)
-                    logger.info("[%s] Detected %d people", self.camera_id, count)
             except Exception:
+                self.consecutive_failures += 1
                 logger.exception("[%s] Detection cycle error", self.camera_id)
 
-            # Sleep for remainder of interval
+            # Wait out the remainder of the interval, but wake instantly on stop()
             elapsed = time.time() - start_time
-            sleep_time = max(0, DETECTION_INTERVAL - elapsed)
-            if sleep_time > 0:
-                time.sleep(sleep_time)
+            self._stop_event.wait(max(0, self.next_interval() - elapsed))

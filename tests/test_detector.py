@@ -1,5 +1,11 @@
 """Tests for the detection pipeline utilities."""
-from backend.detector import StaticObjectFilter
+import time
+from unittest.mock import patch
+
+import numpy as np
+
+from backend.config import DETECTION_INTERVAL
+from backend.detector import MAX_BACKOFF, DetectionWorker, StaticObjectFilter
 
 
 def _box(x1, y1, x2, y2, conf=0.9):
@@ -44,3 +50,88 @@ def test_static_filter_mixed():
         result = sf.filter_boxes(boxes)
     assert len(result) == 1
     assert result[0]["y1"] == 300  # the moving box survives
+
+
+def test_static_filter_reports_warmup_state():
+    """is_warm flips exactly when filter_boxes starts actually filtering."""
+    sf = StaticObjectFilter()
+    boxes = [_box(100, 100, 200, 200)]
+    for _ in range(11):
+        assert sf.filter_boxes(boxes) == boxes  # passes everything through
+        assert not sf.is_warm
+    sf.filter_boxes(boxes)
+    assert sf.is_warm
+    assert sf.warmup_progress == (12, 12)
+
+
+def test_worker_backs_off_on_repeated_capture_failure():
+    """A dead stream must not be retried every DETECTION_INTERVAL forever."""
+    w = DetectionWorker("starbucks", "http://dead/x.m3u8", db_conn=None)
+    assert w.next_interval() == DETECTION_INTERVAL
+    intervals = []
+    for _ in range(8):
+        w.consecutive_failures += 1
+        intervals.append(w.next_interval())
+    assert intervals[0] > DETECTION_INTERVAL
+    assert intervals == sorted(intervals)          # monotonically increasing
+    assert max(intervals) == MAX_BACKOFF           # and bounded
+    w.consecutive_failures = 0
+    assert w.next_interval() == DETECTION_INTERVAL  # recovers on a good frame
+
+
+def test_worker_recovers_after_transient_failure():
+    """One bad capture followed by good ones leaves no lingering backoff."""
+    frame = np.full((80, 80, 3), 200, dtype=np.uint8)
+    frame[::4, :, :] = 0  # enough edges to clear the static-frame check
+    captures = [None]  # first cycle fails, every later cycle succeeds
+    inserted = []
+
+    def fake_capture(*_a, **_kw):
+        return captures.pop(0) if captures else frame
+
+    with patch("backend.detector.capture_frame", side_effect=fake_capture), \
+         patch("backend.detector.detect_people", return_value=(2, [_box(10, 10, 60, 60)])), \
+         patch("backend.database.insert_detection", side_effect=lambda *a: inserted.append(a)):
+        w = DetectionWorker("coffeecart", "http://x/y.m3u8", db_conn=None)
+        w._filter._history = [[] for _ in range(20)]  # pretend the filter is warm
+        w.start()
+        deadline = time.time() + 30
+        while not inserted and time.time() < deadline:
+            time.sleep(0.05)
+        w.stop()
+
+    assert inserted, "worker never recorded a detection after recovering"
+    assert w.consecutive_failures == 0, "backoff should reset after a good frame"
+
+
+def test_worker_stop_is_prompt_during_backoff():
+    """stop() must not block for the full backoff window."""
+    with patch("backend.detector.capture_frame", return_value=None):
+        w = DetectionWorker("starbucks", "http://dead/x.m3u8", db_conn=None)
+        w.consecutive_failures = 10  # would otherwise wait MAX_BACKOFF seconds
+        w.start()
+        time.sleep(0.5)
+        t0 = time.time()
+        w.stop()
+        elapsed = time.time() - t0
+    assert elapsed < 5, f"stop() took {elapsed:.1f}s, backoff was {MAX_BACKOFF}s"
+
+
+def test_warmup_frames_are_not_recorded():
+    """Counts taken before the static filter is warm stay out of the database."""
+    frame = np.full((80, 80, 3), 200, dtype=np.uint8)
+    frame[::4, :, :] = 0
+    inserted = []
+
+    with patch("backend.detector.capture_frame", return_value=frame), \
+         patch("backend.detector.detect_people", return_value=(1, [_box(10, 10, 60, 60)])), \
+         patch("backend.database.insert_detection", side_effect=lambda *a: inserted.append(a)):
+        w = DetectionWorker("starbucks", "http://x/y.m3u8", db_conn=None)
+        w.start()
+        time.sleep(1.5)   # several cycles, all inside the warmup window
+        w.stop()
+
+    assert inserted == [], "inflated warmup counts must not reach the detections table"
+    from backend.detector import latest_detections
+    assert latest_detections["starbucks"]["recorded"] is False
+    assert latest_detections["starbucks"]["count"] == 1  # still shown live
