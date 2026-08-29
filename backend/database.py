@@ -112,24 +112,30 @@ def get_latest_counts(conn: sqlite3.Connection) -> list[dict]:
 
 
 def get_heatmap_data(conn: sqlite3.Connection, camera: str, days: int = 7) -> list[dict]:
-    """Get average count by day_of_week and hour for the given lookback period."""
+    """Get average count by day_of_week and hour for the given lookback period.
+
+    Returns the sample count per cell as well: detection gaps (a dead stream, a
+    restart, an overnight run of frames too dark to score) leave hours backed by
+    a handful of readings, and an average over 2 samples should not read as
+    confidently as one over 700.
+    """
     cutoff = (datetime.now(TZ) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
     if camera == "_all":
         rows = conn.execute("""
-            SELECT day_of_week, hour, AVG(count) as avg_count
+            SELECT day_of_week, hour, AVG(count) as avg_count, COUNT(*) as samples
             FROM detections WHERE timestamp >= ?
             GROUP BY day_of_week, hour
             ORDER BY day_of_week, hour
         """, (cutoff,)).fetchall()
     else:
         rows = conn.execute("""
-            SELECT day_of_week, hour, AVG(count) as avg_count
+            SELECT day_of_week, hour, AVG(count) as avg_count, COUNT(*) as samples
             FROM detections
             WHERE camera = ? AND timestamp >= ?
             GROUP BY day_of_week, hour
             ORDER BY day_of_week, hour
         """, (camera, cutoff)).fetchall()
-    return [{"day_of_week": r[0], "hour": r[1], "avg_count": round(r[2], 1)} for r in rows]
+    return [{"day_of_week": r[0], "hour": r[1], "avg_count": round(r[2], 1), "samples": r[3]} for r in rows]
 
 
 def get_timeline_data(conn: sqlite3.Connection, camera: str, date: str) -> list[dict]:
@@ -163,20 +169,20 @@ def get_hourly_averages(conn: sqlite3.Connection, camera: str, day_type: str = "
         dow_filter = ""
     if camera == "_all":
         rows = conn.execute(f"""
-            SELECT hour, AVG(count) as avg_count
+            SELECT hour, AVG(count) as avg_count, COUNT(*) as samples
             FROM detections WHERE timestamp >= ? {dow_filter}
             GROUP BY hour
             ORDER BY hour
         """, (cutoff,)).fetchall()
     else:
         rows = conn.execute(f"""
-            SELECT hour, AVG(count) as avg_count
+            SELECT hour, AVG(count) as avg_count, COUNT(*) as samples
             FROM detections
             WHERE camera = ? AND timestamp >= ? {dow_filter}
             GROUP BY hour
             ORDER BY hour
         """, (camera, cutoff)).fetchall()
-    return [{"hour": r[0], "avg_count": round(r[1], 1)} for r in rows]
+    return [{"hour": r[0], "avg_count": round(r[1], 1), "samples": r[2]} for r in rows]
 
 
 def get_best_times(conn: sqlite3.Connection, camera: str, days: int = 7) -> list[dict]:

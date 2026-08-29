@@ -45,6 +45,29 @@ def test_get_heatmap_data(tmp_path):
     assert data[0]["day_of_week"] == today_10am.weekday()
     assert data[0]["hour"] == 10
     assert data[0]["avg_count"] == 4.0
+    assert data[0]["samples"] == 5
+    conn.close()
+
+def test_trend_queries_report_sample_counts(tmp_path):
+    """An hour averaged from 1 reading must be distinguishable from 200."""
+    from zoneinfo import ZoneInfo
+    from backend.database import get_hourly_averages
+    conn = init_db(tmp_path / "test.db")
+    now = datetime.now(ZoneInfo("America/Los_Angeles"))
+    base = (now - timedelta(days=1)).replace(minute=0, second=0, microsecond=0)
+    for i in range(40):                                   # well-covered hour
+        insert_detection(conn, "starbucks", 6, base.replace(hour=11, second=i % 60, minute=i // 60))
+    insert_detection(conn, "starbucks", 6, base.replace(hour=12))  # one lonely reading
+
+    by_hour = {r["hour"]: r for r in get_hourly_averages(conn, "starbucks", days=7)}
+    assert by_hour[11]["samples"] == 40
+    assert by_hour[12]["samples"] == 1
+    # Identical averages, wildly different confidence — the count is the signal
+    assert by_hour[11]["avg_count"] == by_hour[12]["avg_count"] == 6.0
+
+    hm = {(r["day_of_week"], r["hour"]): r["samples"] for r in get_heatmap_data(conn, "starbucks", days=7)}
+    assert hm[(base.weekday(), 11)] == 40
+    assert hm[(base.weekday(), 12)] == 1
     conn.close()
 
 def test_get_timeline_data(tmp_path):

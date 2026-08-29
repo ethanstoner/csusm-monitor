@@ -454,6 +454,9 @@ let timelineChart = null, hourlyChart = null;
 let lastDetIds = '';
 let currentTab = 'log';
 let analyticsLoaded = {};
+// At one detection every 5s a fully covered hour yields ~720 readings, so an
+// hour under this many is a gap in coverage, not a quiet hour.
+const SPARSE_SAMPLES = 60;
 
 Chart.defaults.color = '#94a3b8';
 Chart.defaults.borderColor = '#334155';
@@ -718,7 +721,7 @@ async function loadAnalyticsTab(tab) {
             hourlyChart = new Chart(ctx, {
                 type:'bar',
                 data:{labels, datasets:[{label:'7-Day Average',data:hr.data.map(d=>d.avg_count),backgroundColor:'rgba(59,130,246,0.7)',hoverBackgroundColor:'#3b82f6',borderWidth:0,borderRadius:3,barPercentage:.65}]},
-                options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleColor:'#f1f5f9',bodyColor:'#94a3b8',borderColor:'#334155',borderWidth:1,padding:10,cornerRadius:6}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:12}},y:{beginAtZero:true,grid:{color:'rgba(51,65,85,0.5)'}}}}
+                options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleColor:'#f1f5f9',bodyColor:'#94a3b8',borderColor:'#334155',borderWidth:1,padding:10,cornerRadius:6,callbacks:{footer:items=>{const n=hr.data[items[0].dataIndex].samples;return `${n} reading${n===1?'':'s'}${n<SPARSE_SAMPLES?' — sparse coverage':''}`;}}}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:12}},y:{beginAtZero:true,grid:{color:'rgba(51,65,85,0.5)'}}}}
             });
         }
     } else if (tab === 'heatmap') {
@@ -726,16 +729,26 @@ async function loadAnalyticsTab(tab) {
         const el = document.getElementById('tab-heatmap');
         if (hm && hm.data && hm.data.length) {
             const map = {}; let mx = 1;
-            hm.data.forEach(d => { map[d.day_of_week+'-'+d.hour]=d.avg_count; if(d.avg_count>mx) mx=d.avg_count; });
+            hm.data.forEach(d => { map[d.day_of_week+'-'+d.hour]=d; if(d.avg_count>mx) mx=d.avg_count; });
             let rows = '';
             for (let d=0;d<7;d++) {
                 let cells = '';
                 for (let h=0;h<24;h++) {
-                    const v = map[d+'-'+h]||0;
+                    const cell = map[d+'-'+h];
+                    const v = cell ? cell.avg_count : 0;
+                    const n = cell ? cell.samples : 0;
                     const a = v/mx;
                     // Interpolate from dark blue to bright blue-white for better contrast
                     const bg = v>0 ? `hsl(217, ${60+a*30}%, ${15+a*45}%)` : 'var(--bg-root)';
-                    cells += `<div class="hm-cell" style="background:${bg}" title="${DAYS[d]} ${h}:00 — avg ${v.toFixed?v.toFixed(1):v}"></div>`;
+                    // An hour backed by a couple of readings is hatched, so a
+                    // detection gap doesn't read as a genuinely quiet hour.
+                    const sparse = n > 0 && n < SPARSE_SAMPLES;
+                    const style = sparse
+                        ? `background:repeating-linear-gradient(45deg,${bg},${bg} 2px,transparent 2px,transparent 4px)`
+                        : `background:${bg}`;
+                    const tip = n ? `${DAYS[d]} ${h}:00 — avg ${v.toFixed(1)} over ${n} reading${n===1?'':'s'}${sparse?' (sparse)':''}`
+                                  : `${DAYS[d]} ${h}:00 — no data`;
+                    cells += `<div class="hm-cell" style="${style}" title="${tip}"></div>`;
                 }
                 rows += `<div class="hm-row">${cells}</div>`;
             }
