@@ -1,6 +1,7 @@
 import sqlite3
 import io
 import re
+import time
 import zipfile
 import pytest
 from datetime import datetime, timedelta
@@ -443,3 +444,29 @@ def test_get_events_api(api_client):
     data = resp.json()
     assert len(data["events"]) == 1
     assert data["events"][0]["title"] == "Test Event"
+
+
+def test_collector_stop_terminates_thread(db, monkeypatch):
+    """stop() must end the thread, not just time out waiting on a long sleep."""
+    import threading
+    from backend.collectors import BaseCollector
+
+    collected = threading.Event()
+
+    class SlowIntervalCollector(BaseCollector):
+        NAME = "test-collector"
+        INTERVAL = 3600  # a real collector waits 15 min to a full day
+
+        def collect(self):
+            collected.set()
+
+    c = SlowIntervalCollector(db)
+    c.start()
+    assert collected.wait(5), "collector never ran a cycle"
+
+    t0 = time.time()
+    c.stop()
+    elapsed = time.time() - t0
+
+    assert not c.is_alive(), "thread survived stop() and still holds its DB connection"
+    assert elapsed < 2, f"stop() blocked for {elapsed:.1f}s waiting out the interval"

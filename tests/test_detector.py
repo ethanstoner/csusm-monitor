@@ -2,6 +2,8 @@
 import time
 from unittest.mock import patch
 
+import pytest
+
 import numpy as np
 
 from backend.config import DETECTION_INTERVAL
@@ -10,6 +12,19 @@ from backend.detector import MAX_BACKOFF, DetectionWorker, StaticObjectFilter
 
 def _box(x1, y1, x2, y2, conf=0.9):
     return {"x1": x1, "y1": y1, "x2": x2, "y2": y2, "confidence": conf}
+
+
+@pytest.fixture
+def snapshots_dir(tmp_path):
+    """Redirect snapshot writes away from the real data/snapshots directory.
+
+    Without this a worker test writes JPEGs into live data and, once the
+    directory is at MAX_SNAPSHOTS, deletes real captures to make room.
+    """
+    d = tmp_path / "snapshots"
+    d.mkdir()
+    with patch("backend.detector.SNAPSHOTS_DIR", d):
+        yield d
 
 
 def test_static_filter_passes_during_warmup():
@@ -79,7 +94,7 @@ def test_worker_backs_off_on_repeated_capture_failure():
     assert w.next_interval() == DETECTION_INTERVAL  # recovers on a good frame
 
 
-def test_worker_recovers_after_transient_failure():
+def test_worker_recovers_after_transient_failure(snapshots_dir):
     """One bad capture followed by good ones leaves no lingering backoff."""
     frame = np.full((80, 80, 3), 200, dtype=np.uint8)
     frame[::4, :, :] = 0  # enough edges to clear the static-frame check
@@ -91,6 +106,7 @@ def test_worker_recovers_after_transient_failure():
 
     with patch("backend.detector.capture_frame", side_effect=fake_capture), \
          patch("backend.detector.detect_people", return_value=(2, [_box(10, 10, 60, 60)])), \
+         patch("backend.detector.DETECTION_INTERVAL", 0.2), \
          patch("backend.database.insert_detection", side_effect=lambda *a: inserted.append(a)):
         w = DetectionWorker("coffeecart", "http://x/y.m3u8", db_conn=None)
         w._filter._history = [[] for _ in range(20)]  # pretend the filter is warm
@@ -117,7 +133,7 @@ def test_worker_stop_is_prompt_during_backoff():
     assert elapsed < 5, f"stop() took {elapsed:.1f}s, backoff was {MAX_BACKOFF}s"
 
 
-def test_warmup_frames_are_not_recorded():
+def test_warmup_frames_are_not_recorded(snapshots_dir):
     """Counts taken before the static filter is warm stay out of the database."""
     frame = np.full((80, 80, 3), 200, dtype=np.uint8)
     frame[::4, :, :] = 0

@@ -35,6 +35,7 @@ class BaseCollector(threading.Thread):
         self._running = True
         self.latest = {}
         self._lock = threading.Lock()
+        self._stop_event = threading.Event()
 
     def _open_conn(self):
         """Open a thread-local SQLite connection with retry for locked DB."""
@@ -55,20 +56,29 @@ class BaseCollector(threading.Thread):
 
     def run(self):
         self._conn = self._open_conn()
-        while self._running:
-            try:
-                self.collect()
-            except Exception:
-                logger.exception(f"{self.name} collection failed")
-            time.sleep(self.interval)
-        self._conn.close()
+        try:
+            while self._running:
+                try:
+                    self.collect()
+                except Exception:
+                    logger.exception(f"{self.name} collection failed")
+                # Intervals run from 5 minutes to a day. time.sleep() here meant
+                # stop() could never actually stop the thread — it would sit in
+                # the sleep, still holding this connection, long after the app
+                # had closed the main one.
+                self._stop_event.wait(self.interval)
+        finally:
+            self._conn.close()
 
     def collect(self):
         raise NotImplementedError
 
     def stop(self):
         self._running = False
+        self._stop_event.set()
         self.join(timeout=5)
+        if self.is_alive():
+            logger.warning("%s did not stop within 5s", self.name)
 
 
 class WeatherCollector(BaseCollector):

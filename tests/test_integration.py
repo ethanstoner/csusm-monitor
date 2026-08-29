@@ -19,8 +19,23 @@ def live_client(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "DB_PATH", tmp_path / "test.db")
     monkeypatch.setenv("MQTT_HOST", "localhost")
 
-    with patch("backend.frigate_listener.mqtt.Client") as MockMqttClient:
+    # This test exercises the FrigateListener path, but START_WORKERS also has
+    # to stay True for the listener to start — which incidentally spun up real
+    # YOLO workers against the live CSUSM streams, wrote into data/snapshots,
+    # and added ~20s to teardown. Stub them out.
+    #
+    # Same for the collectors: each one's first cycle runs immediately, so the
+    # suite was calling out to open-meteo, parkingstatus.csusm.edu, NCTD's GTFS
+    # feed and m.csusm.edu. Keep the real objects (the transit API route probes
+    # them by attribute) but make the network cycle a no-op.
+    for name in ("WeatherCollector", "ParkingCollector", "AirQualityCollector",
+                 "TransitCollector", "EventsCollector"):
+        monkeypatch.setattr(f"backend.collectors.{name}.collect", lambda self: None)
+
+    with patch("backend.frigate_listener.mqtt.Client") as MockMqttClient, \
+         patch("backend.detector.DetectionWorker") as MockWorker:
         MockMqttClient.return_value = MagicMock()
+        MockWorker.return_value = MagicMock()
         from backend.main import app
         with TestClient(app) as c:
             # Access the module attribute directly (not a value copy) to get
