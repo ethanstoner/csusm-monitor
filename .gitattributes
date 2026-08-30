@@ -1,0 +1,17 @@
+# This repo is developed on Windows and runs partly on Linux: the benchmark
+# scripts and the LocateAnything service execute inside WSL2, and CI runs on
+# ubuntu-latest. Without this file, git's autocrlf checks .sh files out with
+# CRLF and bash fails on them with `$'\r': command not found` — a failure that
+# only appears on the machines that matter and never on the one you edit from.
+* text=auto eol=lf
+
+# Never touch binary content.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.pt binary
+*.db binary
+*.ts binary
+
+# Windows-only entry point; keep it CRLF so cmd.exe is happy.
+*.bat text eol=crlf

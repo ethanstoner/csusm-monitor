@@ -426,6 +426,7 @@
         <button class="tab-btn" onclick="switchTab('timeline',this)">Timeline</button>
         <button class="tab-btn" onclick="switchTab('hourly',this)">Hourly Avg</button>
         <button class="tab-btn" onclick="switchTab('heatmap',this)">Heatmap</button>
+        <button class="tab-btn" onclick="switchTab('ask',this)">Ask the Campus</button>
     </div>
     <div class="analytics-main">
         <div class="analytics-topbar">
@@ -438,6 +439,7 @@
             <div class="tab-content" id="tab-timeline"><div class="chart-container"><canvas id="chart-timeline"></canvas></div></div>
             <div class="tab-content" id="tab-hourly"><div class="chart-container"><canvas id="chart-hourly"></canvas></div></div>
             <div class="tab-content" id="tab-heatmap"><div class="hm-layout empty-state">Select camera</div></div>
+            <div class="tab-content" id="tab-ask"><div class="empty-state">Loading...</div></div>
         </div>
     </div>
 </div>
@@ -483,12 +485,13 @@ async function init() {
 
         cameras.forEach(cam => {
             CAM_NAMES[cam.id] = cam.name;
+            const offline = cam.stream_status === 'offline';
             const card = document.createElement('div');
             card.className = 'cam-card';
             card.innerHTML = `
                 <div class="cam-header">
                     <span class="cam-name">${cam.name}</span>
-                    <span class="cam-badge badge-live" id="badge-${cam.id}">LIVE</span>
+                    <span class="cam-badge ${offline?'badge-offline':'badge-live'}" id="badge-${cam.id}">${offline?'OFFLINE':'LIVE'}</span>
                 </div>
                 <div class="cam-video-container" id="vid-${cam.id}">
                     <div class="cam-fallback">Connecting...</div>
@@ -500,8 +503,21 @@ async function init() {
             `;
             grid.appendChild(card);
 
-            // HLS stream
             const container = document.getElementById(`vid-${cam.id}`);
+
+            // The API already knows this stream is dead, so do not mount a
+            // player that can only fail. Say so, with the reason.
+            if (offline) {
+                container.innerHTML = `<div class="cam-fallback" style="color:var(--red)">STREAM OFFLINE`
+                    + `<div style="font-weight:400;letter-spacing:0;text-transform:none;margin-top:6px;opacity:.7">`
+                    + `${cam.last_error || 'no signal from source'}</div></div>`;
+                const opt = document.createElement('option');
+                opt.value = cam.id; opt.textContent = cam.name;
+                sel.appendChild(opt);
+                return;
+            }
+
+            // HLS stream
             const video = document.createElement('video');
             video.muted = true; video.playsInline = true;
             if (Hls.isSupported()) {
@@ -543,18 +559,22 @@ async function init() {
 async function pollStatus() {
     const d = await api('/status');
     if (!d) return;
-    let total = 0, healthy = 0;
+    // Cameras with no current reading are excluded from the total rather than
+    // counted as zero: an offline camera means the number is unknown, and
+    // rendering unknown as empty makes campus look quieter than it is.
+    let total = 0, reporting = 0;
     d.cameras.forEach(c => {
-        total += c.count || 0;
-        if (c.healthy) healthy++;
+        const offline = c.stream_status === 'offline' || c.count === null;
+        if (!offline) { total += c.count || 0; reporting++; }
         const cnt = document.getElementById(`cnt-${c.id}`);
         const badge = document.getElementById(`badge-${c.id}`);
         const ts = document.getElementById(`ts-${c.id}`);
-        if (cnt) cnt.textContent = `${c.count} ${c.count===1?'person':'people'}`;
-        if (badge) { badge.className = `cam-badge ${c.healthy?'badge-live':'badge-offline'}`; badge.textContent = c.healthy?'LIVE':'OFFLINE'; }
-        if (ts && c.timestamp) ts.textContent = c.timestamp.split(' ')[1] || c.timestamp;
+        if (cnt) cnt.textContent = offline ? 'no signal' : `${c.count} ${c.count===1?'person':'people'}`;
+        const live = c.healthy && !offline;
+        if (badge) { badge.className = `cam-badge ${live?'badge-live':'badge-offline'}`; badge.textContent = live?'LIVE':'OFFLINE'; }
+        if (ts && c.timestamp) ts.textContent = offline ? '--:--' : (c.timestamp.split(' ')[1] || c.timestamp);
     });
-    document.getElementById('stat-crowd').textContent = total;
+    document.getElementById('stat-crowd').textContent = reporting ? total : '--';
     document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
 }
 
@@ -685,6 +705,27 @@ async function loadAnalyticsTab(tab) {
 
     if (tab === 'log') {
         // already handled by loadDetectionLog interval
+    } else if (tab === 'ask') {
+        const d = await api(`/observations?camera=${cam}`);
+        const el = document.getElementById('tab-ask');
+        if (!d) { el.innerHTML = '<div class="empty-state">Unavailable</div>'; return; }
+        if (!d.enabled) {
+            // "Off" and "found nothing" are different answers and the panel
+            // says which, rather than showing an empty grid for both.
+            el.innerHTML = '<div class="empty-state" style="flex-direction:column;gap:8px;text-align:center">'
+                + '<div>Open-vocabulary detection is disabled</div>'
+                + '<div style="opacity:.6;text-transform:none;letter-spacing:0;font-weight:400;max-width:52ch">'
+                + 'Set VLM_ENABLED=1 and run the LocateAnything-3B service to ask questions '
+                + 'beyond &ldquo;how many people&rdquo;.</div></div>';
+            return;
+        }
+        if (!d.observations.length) { el.innerHTML = '<div class="empty-state">No readings yet</div>'; return; }
+        el.innerHTML = `<div class="best-times-grid">${d.observations.map(o => `
+            <div class="best-time-card">
+                <div class="btime">${o.count}</div>
+                <div class="bcount">${o.label}</div>
+                <div class="bcount" style="opacity:.55">${o.latency_ms ? o.latency_ms + 'ms' : ''} ${(o.timestamp||'').split(' ')[1]||''}</div>
+            </div>`).join('')}</div>`;
     } else if (tab === 'best') {
         const best = await api(`/history/best-times?camera=${cam}&days=7`);
         const el = document.getElementById('tab-best');

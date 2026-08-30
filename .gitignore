@@ -13,3 +13,13 @@ __pycache__/
 *.png
 !assets/*.png
 data/gtfs/
+
+# Benchmark inputs and per-run artefacts. The captured frames are tens of MB of
+# university camera footage, and the annotated frames and contact sheets all
+# regenerate from them. What is committed is the part that cannot be
+# regenerated: the result JSON (the measurements), the hand-written labels, and
+# a few annotated frames in assets/ as evidence.
+bench/frames*/
+bench/results/*_annotated/
+bench/results/sheets*/
+bench/results/probe/

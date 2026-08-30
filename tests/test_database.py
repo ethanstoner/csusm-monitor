@@ -113,6 +113,79 @@ def test_get_best_times_unknown_camera_uses_full_day(tmp_path):
     assert [r["hour"] for r in get_best_times(conn, "mystery", days=7)] == [3]
     conn.close()
 
+def test_observations_are_stored_separately_from_detections(tmp_path):
+    """Open-vocabulary counts must not land in the person-count history.
+
+    `detections.count` carries no label — every trend in the dashboard reads it
+    as 'people'. Writing a bicycle count into the same column would silently
+    change what months of heatmap history mean.
+    """
+    from backend.database import insert_observation
+    conn = init_db(tmp_path / "test.db")
+    insert_detection(conn, "coffeecart", 4, datetime(2026, 4, 12, 10, 0, 0))
+    insert_observation(conn, "coffeecart", "bicycle", 9,
+                       datetime(2026, 4, 12, 10, 0, 0), latency_ms=1234)
+
+    assert conn.execute("SELECT SUM(count) FROM detections").fetchone()[0] == 4
+    assert conn.execute("SELECT SUM(count) FROM observations").fetchone()[0] == 9
+    conn.close()
+
+
+def test_get_latest_observations_returns_one_row_per_label(tmp_path):
+    """The newest reading for each (camera, label) pair, not the newest overall."""
+    from backend.database import insert_observation, get_latest_observations
+    conn = init_db(tmp_path / "test.db")
+    base = datetime(2026, 4, 12, 10, 0, 0)
+    insert_observation(conn, "coffeecart", "person in line", 2, base)
+    insert_observation(conn, "coffeecart", "person in line", 7, base.replace(second=30))
+    insert_observation(conn, "coffeecart", "bicycle", 3, base.replace(second=10))
+
+    latest = {(r["camera"], r["label"]): r for r in get_latest_observations(conn)}
+    assert latest[("coffeecart", "person in line")]["count"] == 7
+    assert latest[("coffeecart", "bicycle")]["count"] == 3
+    conn.close()
+
+
+def test_get_latest_observations_filters_by_camera(tmp_path):
+    from backend.database import insert_observation, get_latest_observations
+    conn = init_db(tmp_path / "test.db")
+    ts = datetime(2026, 4, 12, 10, 0, 0)
+    insert_observation(conn, "coffeecart", "bicycle", 3, ts)
+    insert_observation(conn, "starbucks", "bicycle", 8, ts)
+
+    rows = get_latest_observations(conn, camera="starbucks")
+    assert [r["count"] for r in rows] == [8]
+    conn.close()
+
+
+def test_observation_history_is_scoped_to_one_label(tmp_path):
+    """Two labels on the same camera must not average into each other."""
+    from zoneinfo import ZoneInfo
+    from backend.database import insert_observation, get_observation_history
+    conn = init_db(tmp_path / "test.db")
+    now = datetime.now(ZoneInfo("America/Los_Angeles"))
+    base = (now - timedelta(days=1)).replace(hour=11, minute=0, second=0, microsecond=0)
+    for i in range(4):
+        insert_observation(conn, "coffeecart", "person in line", 10, base.replace(second=i))
+        insert_observation(conn, "coffeecart", "bicycle", 0, base.replace(second=i))
+
+    queue = get_observation_history(conn, "coffeecart", "person in line", days=7)
+    assert [r["avg_count"] for r in queue] == [10.0]
+    assert queue[0]["samples"] == 4
+    conn.close()
+
+
+def test_cleanup_removes_old_observations_too(tmp_path):
+    """Retention has to cover every time-series table, not just detections."""
+    from backend.database import insert_observation
+    conn = init_db(tmp_path / "test.db")
+    insert_observation(conn, "coffeecart", "bicycle", 1, datetime.now() - timedelta(days=60))
+    insert_observation(conn, "coffeecart", "bicycle", 2, datetime.now() - timedelta(days=5))
+    cleanup_old_data(conn, retention_days=30)
+    assert conn.execute("SELECT count(*) FROM observations").fetchone()[0] == 1
+    conn.close()
+
+
 def test_cleanup_old_data(tmp_path):
     db_path = tmp_path / "test.db"
     conn = init_db(db_path)

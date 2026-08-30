@@ -1,0 +1,1319 @@
+{
+  "backend": "yolov8n",
+  "frames_dir": "bench/frames_people",
+  "records": [
+    {
+      "frame": "frame_001.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1025.9,
+      "warmup": true
+    },
+    {
+      "frame": "frame_002.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.0,
+      "warmup": true
+    },
+    {
+      "frame": "frame_003.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.0,
+      "warmup": true
+    },
+    {
+      "frame": "frame_004.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_005.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_006.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_007.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_008.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_009.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_010.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_011.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_012.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_013.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_014.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_015.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_016.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_017.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_018.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_019.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_020.jpg",
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 628,
+          "y1": 653,
+          "x2": 742,
+          "y2": 893,
+          "confidence": 0.78
+        },
+        {
+          "x1": 709,
+          "y1": 538,
+          "x2": 782,
+          "y2": 740,
+          "confidence": 0.76
+        }
+      ],
+      "latency_ms": 17.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_021.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_022.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_023.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_024.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 13.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_025.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_026.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 12.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_027.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 10.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_028.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 14.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_029.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_030.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 14.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_031.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_032.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_033.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_034.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_035.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_036.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_037.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_038.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_039.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_040.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_041.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_042.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_043.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_044.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_045.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_046.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_047.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_048.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_049.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_050.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_051.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_052.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 14.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_053.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_054.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_055.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_056.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_057.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_058.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_059.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_060.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_061.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_062.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_063.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_064.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_065.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_066.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_067.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_068.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_069.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_070.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_071.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_072.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_073.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_074.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_075.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 14.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_076.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_077.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_078.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_079.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_080.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_081.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_082.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_083.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 22.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_084.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_085.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_086.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_087.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_088.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_089.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_090.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_091.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_092.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_093.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_094.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_095.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_096.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_097.jpg",
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1272,
+          "y1": 664,
+          "x2": 1361,
+          "y2": 915,
+          "confidence": 0.85
+        }
+      ],
+      "latency_ms": 19.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_098.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_099.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_100.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_101.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_102.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_103.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_104.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_105.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_106.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_107.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_108.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_109.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_110.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_111.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_112.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_113.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_114.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_115.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_116.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_117.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_118.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_119.jpg",
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 575,
+          "y1": 654,
+          "x2": 652,
+          "y2": 867,
+          "confidence": 0.81
+        },
+        {
+          "x1": 512,
+          "y1": 656,
+          "x2": 587,
+          "y2": 852,
+          "confidence": 0.78
+        }
+      ],
+      "latency_ms": 18.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_120.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_121.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_122.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_123.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_124.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 14.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_125.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_126.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_127.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_128.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_129.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_130.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_131.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_132.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_133.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_134.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_135.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 21.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_136.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 23.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_137.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_138.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_139.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 22.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_140.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_141.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 21.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_142.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_143.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_144.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_145.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_146.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_147.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_148.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 21.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_149.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_150.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 22.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_151.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_152.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 22.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_153.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 23.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_154.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 21.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_155.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_156.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 22.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_157.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_158.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 21.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_159.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_160.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_161.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_162.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_163.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_164.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_165.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_166.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 22.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_167.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_168.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_169.jpg",
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 1569,
+          "y1": 480,
+          "x2": 1648,
+          "y2": 676,
+          "confidence": 0.85
+        },
+        {
+          "x1": 1337,
+          "y1": 481,
+          "x2": 1441,
+          "y2": 702,
+          "confidence": 0.83
+        }
+      ],
+      "latency_ms": 20.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_170.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_171.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_172.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_173.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 22.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_174.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_175.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_176.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 21.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_177.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 22.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_178.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_179.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_180.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 24.8,
+      "warmup": false
+    }
+  ]
+}

@@ -40,6 +40,27 @@ def init_db(db_path: Path) -> sqlite3.Connection:
         )
     conn.commit()
 
+    # --- Open-vocabulary observations ---
+    # Open-vocabulary results get their own table rather than a `label` column
+    # bolted onto `detections`. Every trend query in the dashboard reads
+    # `detections.count` as a person count and has months of history computed
+    # that way; a bicycle count sharing that column would change what the
+    # heatmap means without changing a single line of the query that draws it.
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS observations (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            camera      TEXT NOT NULL,
+            label       TEXT NOT NULL,
+            count       INTEGER NOT NULL,
+            timestamp   DATETIME NOT NULL,
+            day_of_week INTEGER NOT NULL,
+            hour        INTEGER NOT NULL,
+            latency_ms  INTEGER
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_observations_latest ON observations(camera, label, timestamp)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_observations_trends ON observations(camera, label, day_of_week, hour)")
+
     # --- Collector tables ---
     conn.execute("""
         CREATE TABLE IF NOT EXISTS weather (
@@ -90,6 +111,66 @@ def insert_detection(conn: sqlite3.Connection, camera: str, count: int, ts: date
         (camera, count, naive_str, pacific_ts.weekday(), pacific_ts.hour),
     )
     conn.commit()
+
+
+def insert_observation(conn: sqlite3.Connection, camera: str, label: str, count: int,
+                       ts: datetime, latency_ms: int | None = None) -> None:
+    """Record one open-vocabulary count for a (camera, label) pair.
+
+    `latency_ms` is stored alongside the reading rather than only logged: the
+    cost of a grounding model is the thing that decides whether it can move any
+    closer to the hot path, and that argument needs data, not recollection.
+    """
+    pacific_ts = ts.replace(tzinfo=TZ) if ts.tzinfo is None else ts.astimezone(TZ)
+    naive_str = pacific_ts.strftime("%Y-%m-%d %H:%M:%S")
+    conn.execute(
+        "INSERT INTO observations (camera, label, count, timestamp, day_of_week, hour, latency_ms)"
+        " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (camera, label, count, naive_str, pacific_ts.weekday(), pacific_ts.hour, latency_ms),
+    )
+    conn.commit()
+
+
+def get_latest_observations(conn: sqlite3.Connection, camera: str | None = None) -> list[dict]:
+    """Most recent reading for every (camera, label) pair.
+
+    Grouped by label, not taken as the single newest row: the labels are polled
+    in sequence, so the newest row overall is whichever label happened to run
+    last and says nothing about the others.
+    """
+    sql = """
+        SELECT o.camera, o.label, o.count, o.timestamp, o.latency_ms
+        FROM observations o
+        JOIN (
+            SELECT camera, label, MAX(id) AS id
+            FROM observations
+            GROUP BY camera, label
+        ) newest ON newest.id = o.id
+    """
+    params: tuple = ()
+    if camera:
+        sql += " WHERE o.camera = ?"
+        params = (camera,)
+    sql += " ORDER BY o.camera, o.label"
+    rows = conn.execute(sql, params).fetchall()
+    return [
+        {"camera": r[0], "label": r[1], "count": r[2], "timestamp": r[3], "latency_ms": r[4]}
+        for r in rows
+    ]
+
+
+def get_observation_history(conn: sqlite3.Connection, camera: str, label: str,
+                            days: int = 7) -> list[dict]:
+    """Average count by hour for one label, with the sample count behind it."""
+    cutoff = (datetime.now(TZ) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+    rows = conn.execute("""
+        SELECT hour, AVG(count) as avg_count, COUNT(*) as samples
+        FROM observations
+        WHERE camera = ? AND label = ? AND timestamp >= ?
+        GROUP BY hour
+        ORDER BY hour
+    """, (camera, label, cutoff)).fetchall()
+    return [{"hour": r[0], "avg_count": round(r[1], 1), "samples": r[2]} for r in rows]
 
 
 def get_latest_counts(conn: sqlite3.Connection) -> list[dict]:
@@ -222,11 +303,13 @@ def get_daily_totals(conn: sqlite3.Connection, camera: str, days: int = 30) -> l
 
 
 def cleanup_old_data(conn: sqlite3.Connection, retention_days: int = RETENTION_DAYS) -> int:
-    """Delete detections older than retention_days. Returns number of rows deleted."""
+    """Delete time-series rows older than retention_days. Returns rows deleted."""
     cutoff = (datetime.now(TZ) - timedelta(days=retention_days)).strftime("%Y-%m-%d %H:%M:%S")
-    cursor = conn.execute("DELETE FROM detections WHERE timestamp < ?", (cutoff,))
+    deleted = 0
+    for table in ("detections", "observations"):
+        deleted += conn.execute(f"DELETE FROM {table} WHERE timestamp < ?", (cutoff,)).rowcount
     conn.commit()
-    return cursor.rowcount
+    return deleted
 
 
 def insert_weather(conn, *, temperature, apparent_temperature, humidity,

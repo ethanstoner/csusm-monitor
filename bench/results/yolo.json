@@ -1,0 +1,426 @@
+{
+  "backend": "yolov8n",
+  "frames_dir": "bench/frames",
+  "records": [
+    {
+      "frame": "frame_01.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 3023.0,
+      "warmup": true
+    },
+    {
+      "frame": "frame_02.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.9,
+      "warmup": true
+    },
+    {
+      "frame": "frame_03.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 23.6,
+      "warmup": true
+    },
+    {
+      "frame": "frame_04.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_05.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_06.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_07.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_08.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_09.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 14.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_10.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_11.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 14.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_12.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_13.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_14.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_15.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_16.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_17.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 14.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_18.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 14.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_19.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 14.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_20.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_21.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_22.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_23.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_24.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_25.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_26.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_27.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_28.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_29.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_30.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_31.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_32.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_33.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 14.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_34.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_35.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.7,
+      "warmup": false
+    },
+    {
+      "frame": "frame_36.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_37.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_38.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_39.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_40.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_41.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.4,
+      "warmup": false
+    },
+    {
+      "frame": "frame_42.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_43.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_44.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.2,
+      "warmup": false
+    },
+    {
+      "frame": "frame_45.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_46.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_47.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 14.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_48.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 14.1,
+      "warmup": false
+    },
+    {
+      "frame": "frame_49.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 15.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_50.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_51.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_52.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.6,
+      "warmup": false
+    },
+    {
+      "frame": "frame_53.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 18.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_54.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 20.9,
+      "warmup": false
+    },
+    {
+      "frame": "frame_55.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 19.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_56.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.5,
+      "warmup": false
+    },
+    {
+      "frame": "frame_57.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 16.8,
+      "warmup": false
+    },
+    {
+      "frame": "frame_58.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.3,
+      "warmup": false
+    },
+    {
+      "frame": "frame_59.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.0,
+      "warmup": false
+    },
+    {
+      "frame": "frame_60.jpg",
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 17.3,
+      "warmup": false
+    }
+  ]
+}

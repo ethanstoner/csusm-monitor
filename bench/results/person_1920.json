@@ -1,0 +1,132 @@
+{
+  "backend": "LocateAnything-3B",
+  "snapshot": "<hf-cache>/hub/models--nvidia--LocateAnything-3B/snapshots/c32291ca5e996f5a7a485845b4f57a233936bba0",
+  "device": "NVIDIA GeForce RTX 4090",
+  "query": "person",
+  "max_side": 1920,
+  "attn": "sdpa",
+  "scheduler": "eager",
+  "coord_order": "xyxy",
+  "max_new_tokens": 2048,
+  "temperature": 0.0,
+  "top_p": 0.9,
+  "repetition_penalty": 1.1,
+  "repeats": 1,
+  "count_spread": {},
+  "model_load_s": 2.9,
+  "peak_vram_gb": 25.75,
+  "latency": {
+    "n": 6,
+    "min_ms": 11909.2,
+    "median_ms": 34864.5,
+    "p95_ms": 44639.6,
+    "max_ms": 44639.6,
+    "mean_ms": 29755.7
+  },
+  "records": [
+    {
+      "frame": "frame_01.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1920,
+        1080
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 10502.2,
+      "warmup": true,
+      "raw_response": "<ref>person</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_02.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1920,
+        1080
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 12581.9,
+      "warmup": true,
+      "raw_response": "<ref>person</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_03.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1920,
+        1080
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 26963.0,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_04.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1920,
+        1080
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 11909.2,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_05.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1920,
+        1080
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 21763.5,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_06.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1920,
+        1080
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 34864.5,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_07.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1920,
+        1080
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 38394.2,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_08.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1920,
+        1080
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 44639.6,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box>None</box><|im_end|>"
+    }
+  ]
+}

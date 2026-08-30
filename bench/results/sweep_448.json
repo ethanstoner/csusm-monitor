@@ -1,0 +1,284 @@
+{
+  "backend": "LocateAnything-3B",
+  "snapshot": "<hf-cache>/hub/models--nvidia--LocateAnything-3B/snapshots/c32291ca5e996f5a7a485845b4f57a233936bba0",
+  "device": "NVIDIA GeForce RTX 4090",
+  "query": "trash can",
+  "max_side": 448,
+  "attn": "sdpa",
+  "scheduler": "eager",
+  "coord_order": "xyxy",
+  "max_new_tokens": 2048,
+  "temperature": 0.0,
+  "top_p": 0.9,
+  "repetition_penalty": 1.1,
+  "repeats": 1,
+  "count_spread": {},
+  "model_load_s": 2.5,
+  "peak_vram_gb": 8.07,
+  "latency": {
+    "n": 6,
+    "min_ms": 190.2,
+    "median_ms": 307.4,
+    "p95_ms": 329.4,
+    "max_ms": 329.4,
+    "mean_ms": 286.4
+  },
+  "records": [
+    {
+      "frame": "frame_01.jpg",
+      "repeat": 0,
+      "inference_size": [
+        448,
+        252
+      ],
+      "count": 3,
+      "boxes": [
+        {
+          "x1": 476,
+          "y1": 427,
+          "x2": 560,
+          "y2": 556
+        },
+        {
+          "x1": 529,
+          "y1": 390,
+          "x2": 612,
+          "y2": 532
+        },
+        {
+          "x1": 1520,
+          "y1": 0,
+          "x2": 1697,
+          "y2": 157
+        }
+      ],
+      "latency_ms": 684.5,
+      "warmup": true,
+      "raw_response": "<ref>trash can</ref><box><248><396><292><515></box><box><276><362><319><493></box><box><792><0><884><146></box><|im_end|>"
+    },
+    {
+      "frame": "frame_02.jpg",
+      "repeat": 0,
+      "inference_size": [
+        448,
+        252
+      ],
+      "count": 3,
+      "boxes": [
+        {
+          "x1": 476,
+          "y1": 427,
+          "x2": 560,
+          "y2": 558
+        },
+        {
+          "x1": 529,
+          "y1": 390,
+          "x2": 612,
+          "y2": 531
+        },
+        {
+          "x1": 1520,
+          "y1": 0,
+          "x2": 1697,
+          "y2": 157
+        }
+      ],
+      "latency_ms": 317.7,
+      "warmup": true,
+      "raw_response": "<ref>trash can</ref><box><248><396><292><517></box><box><276><362><319><492></box><box><792><0><884><146></box><|im_end|>"
+    },
+    {
+      "frame": "frame_03.jpg",
+      "repeat": 0,
+      "inference_size": [
+        448,
+        252
+      ],
+      "count": 3,
+      "boxes": [
+        {
+          "x1": 476,
+          "y1": 427,
+          "x2": 560,
+          "y2": 556
+        },
+        {
+          "x1": 529,
+          "y1": 390,
+          "x2": 612,
+          "y2": 532
+        },
+        {
+          "x1": 1520,
+          "y1": 0,
+          "x2": 1693,
+          "y2": 157
+        }
+      ],
+      "latency_ms": 307.4,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><248><396><292><515></box><box><276><362><319><493></box><box><792><0><882><146></box><|im_end|>"
+    },
+    {
+      "frame": "frame_04.jpg",
+      "repeat": 0,
+      "inference_size": [
+        448,
+        252
+      ],
+      "count": 3,
+      "boxes": [
+        {
+          "x1": 476,
+          "y1": 427,
+          "x2": 560,
+          "y2": 558
+        },
+        {
+          "x1": 529,
+          "y1": 390,
+          "x2": 612,
+          "y2": 531
+        },
+        {
+          "x1": 1520,
+          "y1": 0,
+          "x2": 1693,
+          "y2": 157
+        }
+      ],
+      "latency_ms": 329.4,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><248><396><292><517></box><box><276><362><319><492></box><box><792><0><882><146></box><|im_end|>"
+    },
+    {
+      "frame": "frame_05.jpg",
+      "repeat": 0,
+      "inference_size": [
+        448,
+        252
+      ],
+      "count": 3,
+      "boxes": [
+        {
+          "x1": 476,
+          "y1": 427,
+          "x2": 560,
+          "y2": 558
+        },
+        {
+          "x1": 529,
+          "y1": 390,
+          "x2": 612,
+          "y2": 531
+        },
+        {
+          "x1": 1520,
+          "y1": 0,
+          "x2": 1697,
+          "y2": 157
+        }
+      ],
+      "latency_ms": 321.3,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><248><396><292><517></box><box><276><362><319><492></box><box><792><0><884><146></box><|im_end|>"
+    },
+    {
+      "frame": "frame_06.jpg",
+      "repeat": 0,
+      "inference_size": [
+        448,
+        252
+      ],
+      "count": 3,
+      "boxes": [
+        {
+          "x1": 476,
+          "y1": 427,
+          "x2": 560,
+          "y2": 556
+        },
+        {
+          "x1": 529,
+          "y1": 390,
+          "x2": 612,
+          "y2": 532
+        },
+        {
+          "x1": 1520,
+          "y1": 0,
+          "x2": 1697,
+          "y2": 157
+        }
+      ],
+      "latency_ms": 298.6,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><248><396><292><515></box><box><276><362><319><493></box><box><792><0><884><146></box><|im_end|>"
+    },
+    {
+      "frame": "frame_07.jpg",
+      "repeat": 0,
+      "inference_size": [
+        448,
+        252
+      ],
+      "count": 3,
+      "boxes": [
+        {
+          "x1": 476,
+          "y1": 427,
+          "x2": 560,
+          "y2": 558
+        },
+        {
+          "x1": 526,
+          "y1": 390,
+          "x2": 612,
+          "y2": 531
+        },
+        {
+          "x1": 1518,
+          "y1": 0,
+          "x2": 1697,
+          "y2": 159
+        }
+      ],
+      "latency_ms": 190.2,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><248><396><292><517></box><box><274><362><319><492></box><box><791><0><884><148></box><|im_end|>"
+    },
+    {
+      "frame": "frame_08.jpg",
+      "repeat": 0,
+      "inference_size": [
+        448,
+        252
+      ],
+      "count": 3,
+      "boxes": [
+        {
+          "x1": 476,
+          "y1": 427,
+          "x2": 560,
+          "y2": 558
+        },
+        {
+          "x1": 526,
+          "y1": 390,
+          "x2": 612,
+          "y2": 531
+        },
+        {
+          "x1": 1518,
+          "y1": 0,
+          "x2": 1703,
+          "y2": 157
+        }
+      ],
+      "latency_ms": 271.5,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><248><396><292><517></box><box><274><362><319><492></box><box><791><0><887><146></box><|im_end|>"
+    }
+  ]
+}

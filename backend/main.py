@@ -11,7 +11,7 @@ import httpx
 from fastapi import FastAPI, Query
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 
-from backend.config import CAMERAS, DB_PATH, FRIGATE_HOST, FRIGATE_PORT, HEALTH_TIMEOUT, RETENTION_DAYS, SNAPSHOTS_DIR, TIMEZONE  # noqa: F401 — FRIGATE_* used by detection-log fallback
+from backend.config import CAMERAS, DB_PATH, FRIGATE_HOST, FRIGATE_PORT, HEALTH_TIMEOUT, RETENTION_DAYS, SNAPSHOTS_DIR, TIMEZONE, VLM_ENABLED  # noqa: F401 — FRIGATE_* used by detection-log fallback
 from backend.database import (
     cleanup_old_data,
     get_best_times,
@@ -19,6 +19,8 @@ from backend.database import (
     get_heatmap_data,
     get_hourly_averages,
     get_latest_counts,
+    get_latest_observations,
+    get_observation_history,
     get_timeline_data,
     get_latest_weather,
     get_latest_air_quality,
@@ -66,6 +68,17 @@ async def lifespan(app: FastAPI):
             worker = DetectionWorker(cam_id, cam["stream_url"], _db_conn)
             worker.start()
             _workers.append(worker)
+
+        # Optionally start the open-vocabulary workers. Off unless a grounding
+        # service is configured: the model is Linux-only, NVIDIA-licensed for
+        # research use, and nothing on the person-count path depends on it.
+        if VLM_ENABLED:
+            from backend.vlm import OpenVocabWorker
+            for cam_id in CAMERAS:
+                worker = OpenVocabWorker(cam_id, _db_conn)
+                worker.start()
+                if worker.running:
+                    _workers.append(worker)
 
         # Optionally start Frigate MQTT listener if MQTT_HOST is configured
         if os.getenv("MQTT_HOST"):
@@ -139,6 +152,9 @@ async def root():
 
 @app.get("/api/status")
 async def get_status():
+    # Imported here, not at module scope: backend.detector loads the YOLO
+    # weights on import, which the API has no reason to pay for at startup.
+    from backend.detector import get_camera_health
     rows = get_latest_counts(_db_conn)
     # Timestamps stored as naive Pacific local time strings; compare against naive local now
     now_naive = datetime.now(TZ).replace(tzinfo=None)
@@ -160,18 +176,27 @@ async def get_status():
             with _frigate_listener._counts_lock:
                 if r["id"] in _frigate_listener.latest_counts:
                     live_count = _frigate_listener.latest_counts[r["id"]]
+        health = get_camera_health(r["id"])
+        # A camera that cannot produce a frame has no current occupancy. Serving
+        # the last row from the table instead means a stream that died in May
+        # keeps reporting May's crowd as if it were now.
+        if health["stream_status"] == "offline":
+            live_count = None
         cameras.append({
             "id": r["id"],
             "name": r["name"],
             "count": live_count,
             "timestamp": r["timestamp"],
             "healthy": healthy,
+            "stream_status": health["stream_status"],
+            "last_error": health["last_error"],
         })
     return {"cameras": cameras}
 
 
 @app.get("/api/cameras")
 async def get_cameras():
+    from backend.detector import get_camera_health
     rows = get_latest_counts(_db_conn)
     now_naive = datetime.now(TZ).replace(tzinfo=None)
     cameras = []
@@ -185,12 +210,15 @@ async def get_cameras():
         # Use proxy URL so browser can load HLS without CORS issues
         stream_filename = r["stream_url"].rsplit("/", 1)[-1]
         proxy_url = f"/api/stream/{r['id']}/{stream_filename}"
+        health = get_camera_health(r["id"])
         cameras.append({
             "id": r["id"],
             "name": r["name"],
             "stream_url": proxy_url,
             "active": r["active"],
             "healthy": healthy,
+            "stream_status": health["stream_status"],
+            "last_error": health["last_error"],
         })
     return {"cameras": cameras}
 
@@ -288,16 +316,47 @@ async def proxy_stream(camera_id: str, path: str):
         cached = _manifest_cache.get(camera_id)
         if cached and (time.time() - cached[0]) < _MANIFEST_TTL:
             return Response(content=cached[1], media_type="application/vnd.apple.mpegurl")
-        resp = await _http_client.get(url)
+        try:
+            resp = await _http_client.get(url)
+        except httpx.HTTPError as e:
+            return _offline_manifest_response(camera_id, f"{type(e).__name__}: {e}")
+        if resp.status_code != 200:
+            return _offline_manifest_response(camera_id, f"upstream HTTP {resp.status_code}")
         content = _trim_manifest(resp.content.decode())
+        # A decommissioned CSUSM camera keeps answering 200 with a zero-byte
+        # manifest. Forwarding that as 200 gave hls.js something it could never
+        # parse and no way for the dashboard to tell an outage from a slow load.
+        if not _manifest_has_segments(content):
+            return _offline_manifest_response(camera_id, "upstream manifest has no segments")
         _manifest_cache[camera_id] = (time.time(), content)
         return Response(content=content, media_type="application/vnd.apple.mpegurl")
 
-    resp = await _http_client.get(url)
+    # Segments get the same treatment as manifests: a stream that has gone away
+    # mid-playback should read as an outage, not as a fault in this API.
+    try:
+        resp = await _http_client.get(url)
+    except httpx.HTTPError as e:
+        return _offline_manifest_response(camera_id, f"{type(e).__name__}: {e}")
     content_type = resp.headers.get("content-type", "application/octet-stream")
     if path.endswith(".ts"):
         content_type = "video/mp2t"
     return Response(content=resp.content, status_code=resp.status_code, media_type=content_type)
+
+
+def _manifest_has_segments(manifest: bytes) -> bool:
+    """True if a trimmed manifest actually references at least one segment."""
+    return b"#EXTINF:" in manifest
+
+
+def _offline_manifest_response(camera_id: str, reason: str) -> Response:
+    """Tell the client the stream is down, in a way the dashboard can act on."""
+    logger.warning("[%s] Stream unavailable: %s", camera_id, reason)
+    return Response(
+        status_code=502,
+        content=f"camera stream unavailable: {reason}",
+        media_type="text/plain",
+        headers={"X-Stream-Status": "offline", "Cache-Control": "no-store"},
+    )
 
 
 def _trim_manifest(manifest: str) -> bytes:
@@ -379,6 +438,26 @@ async def get_camera_hours(camera_id: str):
 async def get_daily(camera: str = Query(...), days: int = Query(default=30)):
     data = get_daily_totals(_db_conn, camera, days)
     return {"camera": camera, "days": days, "data": data}
+
+
+@app.get("/api/observations")
+async def get_observations(camera: str = Query(default=None)):
+    """Latest open-vocabulary count per (camera, label).
+
+    `enabled` reports whether a grounding service is configured at all, so the
+    dashboard can tell "the model is off" from "the model found nothing".
+    """
+    return {
+        "enabled": VLM_ENABLED,
+        "observations": get_latest_observations(_db_conn, camera),
+    }
+
+
+@app.get("/api/observations/history")
+async def observation_history(camera: str = Query(...), label: str = Query(...),
+                              days: int = Query(default=7)):
+    data = get_observation_history(_db_conn, camera, label, days)
+    return {"camera": camera, "label": label, "days": days, "data": data}
 
 
 @app.get("/api/conditions")

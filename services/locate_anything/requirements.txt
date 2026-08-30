@@ -1,0 +1,30 @@
+# Dependencies for the out-of-process LocateAnything-3B service.
+#
+# Deliberately NOT in backend/requirements.txt: the monitor must install and run
+# without any of this. The model is Linux + NVIDIA only, and the weights carry a
+# non-commercial licence (see the note in the top-level README).
+#
+# torch must be installed first, matched to your CUDA version, e.g.:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+#
+# Then:
+#   pip install -r services/locate_anything/requirements.txt
+#   hf download nvidia/LocateAnything-3B
+#   python services/locate_anything/server.py --port 8100
+
+transformers==4.57.1
+Pillow==11.1.0
+opencv-python-headless==4.11.0.86
+accelerate
+huggingface_hub
+peft
+einops
+
+# Imported by the model's remote code at load time even for image-only
+# inference; without them AutoProcessor.from_pretrained refuses to build.
+decord==0.6.0
+lmdb==1.7.5
+
+# The service itself
+fastapi==0.115.12
+uvicorn==0.34.2

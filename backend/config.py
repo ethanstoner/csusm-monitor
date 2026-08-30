@@ -32,6 +32,27 @@ CAMPUS_LON = -117.1597
 # --- Data paths ---
 GTFS_DIR = Path(__file__).parent.parent / "data" / "gtfs"
 
+# --- Open-vocabulary detection (LocateAnything-3B, out of process) ---
+# Off unless a grounding service is configured. The weights are NVIDIA-licensed
+# for academic and non-profit research only, so this cannot be the default
+# backend of a repo other people clone (see the licence note in the README).
+VLM_ENABLED = os.getenv("VLM_ENABLED", "0") == "1"
+VLM_BASE_URL = os.getenv("VLM_BASE_URL", "http://localhost:8100")
+VLM_TIMEOUT = float(os.getenv("VLM_TIMEOUT", "120"))  # a 3B VLM is not a 10s request
+# MoonViT tokenises at the image's native resolution, so a 1920x1080 frame is
+# the single largest cost in the pipeline. See bench/README.md for the measured
+# latency and VRAM at each setting — this default is chosen from that sweep, not
+# from taste.
+VLM_MAX_IMAGE_SIDE = int(os.getenv("VLM_MAX_IMAGE_SIDE", "1440"))
+OPEN_VOCAB_INTERVAL = float(os.getenv("OPEN_VOCAB_INTERVAL", "300"))  # seconds per camera
+
+# Natural-language queries asked of each camera. Adding a question here is the
+# entire cost of adding one — no retraining, no labelled data, no new model.
+OPEN_VOCAB_QUERIES = {
+    "coffeecart": ["person", "bicycle", "backpack"],
+    "starbucks": ["person", "bicycle", "backpack"],
+}
+
 # --- Frigate / MQTT (override via .env) ---
 MQTT_HOST = os.getenv("MQTT_HOST", "localhost")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))

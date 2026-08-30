@@ -1,0 +1,20 @@
+{
+  "_comment": [
+    "Hand-labelled ground truth for bench/frames_people (180 frames, 2026-08-29,",
+    "16:05-19:05 PDT, CSUSM Coffee Cart, 40s apart).",
+    "",
+    "Every one of the 180 frames was reviewed by eye via bench/contact_sheet.py,",
+    "not just the ones a detector flagged. Labelling only the frames YOLO fired on",
+    "would bake its misses into the ground truth and make its recall 100% by",
+    "construction.",
+    "",
+    "Frames not listed here contain zero people. 176 of the 180 are empty: this is",
+    "a Saturday evening on a campus between sessions."
+  ],
+  "people": {
+    "frame_020.jpg": 2,
+    "frame_097.jpg": 1,
+    "frame_119.jpg": 2,
+    "frame_169.jpg": 2
+  }
+}

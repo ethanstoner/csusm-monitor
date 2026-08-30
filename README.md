@@ -61,12 +61,22 @@ CSUSM HLS Streams
 CSUSM HLS Streams --> Frigate (Docker) --> MQTT --> FastAPI --> SQLite
 ```
 
+**Optional open-vocabulary path** (natural-language queries, off by default). Reuses the
+frame the YOLO worker already captured, so there is no second ffmpeg and both models
+score identical pixels:
+```
+captured frame --> HTTP --> LocateAnything-3B service --> boxes --> observations table
+   (every 300s)              (separate process, GPU)
+```
+
 ### Key Components
 
 | Component | File | Purpose |
 |---|---|---|
 | **Detection Worker** | `backend/detector.py` | Captures HLS frames via ffmpeg, runs YOLOv8 inference, filters static objects, saves annotated snapshots |
 | **Frigate Listener** | `backend/frigate_listener.py` | MQTT subscriber that receives person counts from Frigate NVR as an alternative detection backend |
+| **Open-Vocabulary Backend** | `backend/vlm.py` | Decodes LocateAnything-3B coordinate tokens, talks to the grounding service, polls natural-language queries on a slow interval |
+| **Grounding Service** | `services/locate_anything/server.py` | Out-of-process LocateAnything-3B host (Linux + NVIDIA GPU, optional) |
 | **Database** | `backend/database.py` | SQLite with WAL mode, time-series schema with composite indexes, retention cleanup |
 | **API Server** | `backend/main.py` | FastAPI app with lifespan management, HLS proxy, REST endpoints for status/history/heatmap |
 | **Dashboard** | `frontend/index.html` | Dark-themed SPA with live video (hls.js), interactive charts (Chart.js), detection log with lightbox |
@@ -108,6 +118,20 @@ The self-calibration has a cost worth naming: for those first 12 frames the filt
 
 **Solution:** Consecutive capture failures back off geometrically from 5s to a 60s ceiling and reset on the first good frame; a dark or static frame means the stream is alive, so those don't count as failures. The inter-cycle wait is an `Event`, so shutdown interrupts a backoff instead of waiting it out. Trend queries return a sample count per bucket, and the heatmap hatches any hour with sparse coverage so a gap reads as a gap rather than as a quiet hour.
 
+### 7. A 200 OK That Means the Camera Is Gone
+**Problem:** CSUSM took the Starbucks camera down, and the URL kept answering `200 OK` — with a zero-byte manifest. Everything downstream believed it. The HLS proxy forwarded a body of `b'\n'` as a valid playlist, so hls.js sat on a manifest it could never parse and the card spun indefinitely with no way to distinguish "loading" from "decommissioned". Worse, `/api/status` fell back to the newest row in the table for a camera that had not produced a frame since May, so a four-month-old crowd count was served as current occupancy and summed into the campus total.
+
+**Solution:** The proxy now rejects an upstream response that carries no `#EXTINF` segment, returning `502` with an `X-Stream-Status: offline` header instead of a playlist that cannot work. Detection workers record capture outcomes in a shared health map; three consecutive failures mark a camera offline, and one good frame clears it, so a single dropped segment does not flap the dashboard. An offline camera reports `count: null` rather than a stale number, the dashboard renders an explicit offline card with the reason instead of mounting a doomed video element, and the campus total excludes cameras that are not reporting rather than counting them as zero.
+
+### 8. Counting Things Nobody Trained a Class For
+**Problem:** The monitor counts exactly one thing, because YOLOv8n was trained to. Every question beyond "how many people" — how many bicycles are at the rack, how long the queue is as distinct from people merely standing nearby — needs a different model or a fine-tune, which is a semester of labelling rather than a weekend.
+
+**Solution:** Added [`nvidia/LocateAnything-3B`](https://huggingface.co/nvidia/LocateAnything-3B), an open-vocabulary grounding model, as a **third** detection backend — prompted in English, no retraining. It does not replace YOLO. It runs out-of-process behind HTTP on a long interval, writes to its own `observations` table, and reuses the frame the YOLO worker already captured so both models score identical pixels.
+
+Measuring it against YOLOv8n on 240 real frames — including 180 with hand-labelled ground truth, every frame reviewed by eye — produced the argument for that split. On person counting the two tie exactly (180/180 frames correct, 7/7 people, no false positives either way) and LocateAnything is **69× slower** for the identical answer. What it buys is the question YOLO cannot answer at all: prompt it `trash can` and it finds all six, having never been trained on the class. Four things had to be fixed before any of it was trustworthy, including a sampling default that made the same frame return different counts and a generation runaway that returned 340 boxes for a 6-object query. All of it, with the numbers, is in **[bench/README.md](bench/README.md)**.
+
+> **Licence note.** The MIT `LICENSE` at the root covers *this code*. It does not cover the LocateAnything-3B weights, which are released under the [NVIDIA License](https://huggingface.co/nvidia/LocateAnything-3B/blob/main/LICENSE) for **academic and non-profit research purposes only**. That is why this backend is off unless `VLM_ENABLED=1`, why the model runs behind a process boundary rather than being imported, and why nothing in this repo ships the weights. If you clone this and intend to deploy it commercially, that backend has to be swapped for something you are licensed to use.
+
 ---
 
 ## Features
@@ -120,7 +144,8 @@ The self-calibration has a cost worth naming: for those first 12 frames the filt
 - **Daily Trends** — Total and average counts per day with interactive zoom/pan
 - **Best Times to Visit** — Ranked hours by lowest average crowd, scoped to each location's opening hours
 - **Campus Context** — Weather, air quality, parking availability, Sprinter departures and upcoming events alongside the feeds
-- **Coverage Honesty** — Hours backed by too few readings are marked, so outages don't masquerade as quiet periods
+- **Ask the Campus** — Optional open-vocabulary counts driven by a natural-language prompt, on their own schedule and their own table
+- **Coverage Honesty** — Hours backed by too few readings are marked, so outages don't masquerade as quiet periods; a camera that is down reports no count rather than its last one
 - **Automatic Data Cleanup** — Retention policy deletes rows older than 30 days
 
 ---
@@ -130,6 +155,7 @@ The self-calibration has a cost worth naming: for those first 12 frames the filt
 | Layer | Technology |
 |---|---|
 | **Detection** | YOLOv8 (ultralytics), OpenCV, ffmpeg |
+| **Open-vocabulary** | NVIDIA LocateAnything-3B (Qwen2.5-3B + MoonViT), PyTorch, CUDA |
 | **Backend** | Python, FastAPI, SQLite (WAL mode), paho-mqtt |
 | **Frontend** | Vanilla JS, hls.js, Chart.js (with zoom plugin) |
 | **Infrastructure** | Docker Compose (full stack), Dockerfile, uvicorn |
@@ -184,6 +210,8 @@ Open [http://localhost:8000](http://localhost:8000)
 | `GET` | `/api/history/timeline?camera=X` | Minute-by-minute time series |
 | `GET` | `/api/history/best-times?camera=X` | Hours ranked by lowest crowd, within opening hours |
 | `GET` | `/api/history/daily?camera=X` | Daily totals and averages |
+| `GET` | `/api/observations` | Latest open-vocabulary count per (camera, label) |
+| `GET` | `/api/observations/history?camera=X&label=Y` | Hourly averages for one label |
 | `GET` | `/api/conditions` | Latest weather and air quality |
 | `GET` | `/api/parking` | Latest campus parking availability |
 | `GET` | `/api/parking/trends?lot=X` | Parking availability by day × hour |
@@ -199,7 +227,7 @@ Open [http://localhost:8000](http://localhost:8000)
 pytest -v
 ```
 
-66 tests covering the API layer, database and trend queries, the data collectors' HTML/GTFS parsing, configuration validation, the `StaticObjectFilter` and detection-worker lifecycle (backoff, prompt shutdown, warm-up suppression), the Frigate MQTT listener, and a full integration smoke test with a mocked detection pipeline.
+114 tests covering the API layer, database and trend queries, the data collectors' HTML/GTFS parsing, configuration validation, the `StaticObjectFilter` and detection-worker lifecycle (backoff, prompt shutdown, warm-up suppression), camera-health and offline-stream handling, the open-vocabulary box decoder and every grounding-service failure mode (unreachable, timeout, malformed payload, runaway generation), the Frigate MQTT listener, and a full integration smoke test with a mocked detection pipeline.
 
 ---
 
@@ -212,9 +240,19 @@ csusm-monitor/
 │   ├── detector.py           # YOLOv8 detection worker + frame filters
 │   ├── collectors.py         # Weather, parking, AQI, transit, events collectors
 │   ├── frigate_listener.py   # MQTT subscriber for Frigate NVR
+│   ├── vlm.py                # Open-vocabulary backend: box decoding + worker
 │   ├── database.py           # SQLite schema, queries, cleanup
 │   ├── config.py             # All tunable parameters
 │   └── requirements.txt
+├── services/
+│   └── locate_anything/
+│       └── server.py         # Out-of-process LocateAnything-3B HTTP service
+├── bench/
+│   ├── README.md             # Measured latency, VRAM, accuracy; how to reproduce
+│   ├── la3b_bench.py         # LocateAnything-3B benchmark harness
+│   ├── yolo_bench.py         # YOLOv8n baseline over the same frames
+│   ├── capture_frames.sh     # Freeze a benchmark frame set from a live stream
+│   └── sweep_resolution.sh   # Latency/VRAM/recall vs input resolution
 ├── frontend/
 │   └── index.html            # Dashboard SPA
 ├── frigate/
@@ -228,6 +266,7 @@ csusm-monitor/
 │   ├── test_database.py      # SQLite schema & query tests
 │   ├── test_detector.py      # StaticObjectFilter + worker lifecycle tests
 │   ├── test_frigate_listener.py  # MQTT listener unit tests
+│   ├── test_vlm.py           # Box decoding, service failure modes, worker
 │   └── test_integration.py   # End-to-end smoke test
 ├── Dockerfile                # Backend container (Python + ffmpeg + YOLO)
 ├── .dockerignore             # Docker build exclusions

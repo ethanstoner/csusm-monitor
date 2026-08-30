@@ -1,0 +1,832 @@
+{
+  "backend": "LocateAnything-3B",
+  "snapshot": "<hf-cache>/hub/models--nvidia--LocateAnything-3B/snapshots/c32291ca5e996f5a7a485845b4f57a233936bba0",
+  "device": "NVIDIA GeForce RTX 4090",
+  "query": "trash can",
+  "max_side": 1280,
+  "attn": "sdpa",
+  "scheduler": "eager",
+  "coord_order": "xyxy",
+  "max_new_tokens": 2048,
+  "temperature": 0.7,
+  "top_p": 0.9,
+  "repetition_penalty": 1.1,
+  "repeats": 5,
+  "count_spread": {
+    "frames_repeated": 5,
+    "frames_disagreeing_with_themselves": 4,
+    "max_spread": 2
+  },
+  "model_load_s": 3.2,
+  "peak_vram_gb": 11.76,
+  "latency": {
+    "n": 23,
+    "min_ms": 878.1,
+    "median_ms": 1046.2,
+    "p95_ms": 1196.1,
+    "max_ms": 1355.5,
+    "mean_ms": 1045.2
+  },
+  "records": [
+    {
+      "frame": "frame_01.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 4,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 550
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 610,
+          "y2": 538
+        },
+        {
+          "x1": 579,
+          "y1": 376,
+          "x2": 658,
+          "y2": 521
+        },
+        {
+          "x1": 1522,
+          "y1": 0,
+          "x2": 1699,
+          "y2": 162
+        }
+      ],
+      "latency_ms": 1757.8,
+      "warmup": true,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><510></box><box><277><367><318><499></box><box><302><349><343><483></box><box><793><0><885><150></box><|im_end|>"
+    },
+    {
+      "frame": "frame_01.jpg",
+      "repeat": 1,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 5,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 550
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 610,
+          "y2": 538
+        },
+        {
+          "x1": 585,
+          "y1": 379,
+          "x2": 660,
+          "y2": 522
+        },
+        {
+          "x1": 1522,
+          "y1": 0,
+          "x2": 1699,
+          "y2": 162
+        },
+        {
+          "x1": 1875,
+          "y1": 171,
+          "x2": 1918,
+          "y2": 328
+        }
+      ],
+      "latency_ms": 1329.1,
+      "warmup": true,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><510></box><box><277><367><318><499></box><box><305><351><344><484></box><box><793><0><885><150></box><box><977><159><999><304></box><|im_end|>"
+    },
+    {
+      "frame": "frame_01.jpg",
+      "repeat": 2,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 4,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 550
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 610,
+          "y2": 538
+        },
+        {
+          "x1": 1520,
+          "y1": 6,
+          "x2": 1633,
+          "y2": 164
+        },
+        {
+          "x1": 1608,
+          "y1": 0,
+          "x2": 1699,
+          "y2": 141
+        }
+      ],
+      "latency_ms": 1355.5,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><510></box><box><277><367><318><499></box><box><792><6><851><152></box><box><838><0><885><131></box><|im_end|>"
+    },
+    {
+      "frame": "frame_01.jpg",
+      "repeat": 3,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 3,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 550
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 610,
+          "y2": 538
+        },
+        {
+          "x1": 1518,
+          "y1": 1,
+          "x2": 1699,
+          "y2": 162
+        }
+      ],
+      "latency_ms": 1110.5,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><510></box><box><277><367><318><499></box><box><791><1><885><150></box><|im_end|>"
+    },
+    {
+      "frame": "frame_01.jpg",
+      "repeat": 4,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 4,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 550
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 610,
+          "y2": 538
+        },
+        {
+          "x1": 577,
+          "y1": 376,
+          "x2": 658,
+          "y2": 522
+        },
+        {
+          "x1": 1522,
+          "y1": 0,
+          "x2": 1699,
+          "y2": 162
+        }
+      ],
+      "latency_ms": 1196.1,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><510></box><box><277><367><318><499></box><box><301><349><343><484></box><box><793><0><885><150></box><|im_end|>"
+    },
+    {
+      "frame": "frame_02.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 550
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 610,
+          "y2": 538
+        }
+      ],
+      "latency_ms": 1110.5,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><510></box><box><277><367><318><499></box><box><793><350><344><482></box><|im_end|>"
+    },
+    {
+      "frame": "frame_02.jpg",
+      "repeat": 1,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 550
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 610,
+          "y2": 538
+        }
+      ],
+      "latency_ms": 1090.3,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><510></box><box><277><367><318><499></box><box><793><350><344><482></box><|im_end|>"
+    },
+    {
+      "frame": "frame_02.jpg",
+      "repeat": 2,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 550
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 610,
+          "y2": 538
+        }
+      ],
+      "latency_ms": 1118.1,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><510></box><box><277><367><318><499></box><box><793><350><344><482></box><|im_end|>"
+    },
+    {
+      "frame": "frame_02.jpg",
+      "repeat": 3,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 550
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 610,
+          "y2": 538
+        }
+      ],
+      "latency_ms": 997.8,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><510></box><box><277><367><318><499></box><box><793><350><344><482></box><|im_end|>"
+    },
+    {
+      "frame": "frame_02.jpg",
+      "repeat": 4,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 550
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 610,
+          "y2": 538
+        }
+      ],
+      "latency_ms": 952.9,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><510></box><box><277><367><318><499></box><box><793><350><344><482></box><|im_end|>"
+    },
+    {
+      "frame": "frame_03.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 3,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 551
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 612,
+          "y2": 538
+        },
+        {
+          "x1": 574,
+          "y1": 376,
+          "x2": 662,
+          "y2": 521
+        }
+      ],
+      "latency_ms": 1119.4,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><511></box><box><277><367><319><499></box><box><299><349><345><483></box><|im_end|>"
+    },
+    {
+      "frame": "frame_03.jpg",
+      "repeat": 1,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 551
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 612,
+          "y2": 538
+        }
+      ],
+      "latency_ms": 878.1,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><511></box><box><277><367><319><499></box><|im_end|>"
+    },
+    {
+      "frame": "frame_03.jpg",
+      "repeat": 2,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 551
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 612,
+          "y2": 538
+        }
+      ],
+      "latency_ms": 910.9,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><511></box><box><277><367><319><499></box><|im_end|>"
+    },
+    {
+      "frame": "frame_03.jpg",
+      "repeat": 3,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 551
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 612,
+          "y2": 538
+        }
+      ],
+      "latency_ms": 894.2,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><511></box><box><277><367><319><499></box><|im_end|>"
+    },
+    {
+      "frame": "frame_03.jpg",
+      "repeat": 4,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 551
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 612,
+          "y2": 538
+        }
+      ],
+      "latency_ms": 902.4,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><511></box><box><277><367><319><499></box><|im_end|>"
+    },
+    {
+      "frame": "frame_04.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 3,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 552
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 612,
+          "y2": 538
+        },
+        {
+          "x1": 1522,
+          "y1": 0,
+          "x2": 1699,
+          "y2": 159
+        }
+      ],
+      "latency_ms": 1041.9,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><512></box><box><277><367><319><499></box><box><793><0><885><148></box><|im_end|>"
+    },
+    {
+      "frame": "frame_04.jpg",
+      "repeat": 1,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 3,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 552
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 612,
+          "y2": 538
+        },
+        {
+          "x1": 1520,
+          "y1": 4,
+          "x2": 1701,
+          "y2": 165
+        }
+      ],
+      "latency_ms": 1046.2,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><512></box><box><277><367><319><499></box><box><792><4><886><153></box><|im_end|>"
+    },
+    {
+      "frame": "frame_04.jpg",
+      "repeat": 2,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 4,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 552
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 612,
+          "y2": 538
+        },
+        {
+          "x1": 579,
+          "y1": 375,
+          "x2": 660,
+          "y2": 519
+        },
+        {
+          "x1": 1522,
+          "y1": 0,
+          "x2": 1701,
+          "y2": 162
+        }
+      ],
+      "latency_ms": 1059.5,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><512></box><box><277><367><319><499></box><box><302><348><344><481></box><box><793><0><886><150></box><|im_end|>"
+    },
+    {
+      "frame": "frame_04.jpg",
+      "repeat": 3,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 3,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 552
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 612,
+          "y2": 538
+        },
+        {
+          "x1": 1520,
+          "y1": 0,
+          "x2": 1701,
+          "y2": 164
+        }
+      ],
+      "latency_ms": 1059.3,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><512></box><box><277><367><319><499></box><box><792><0><886><152></box><|im_end|>"
+    },
+    {
+      "frame": "frame_04.jpg",
+      "repeat": 4,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 3,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 552
+        },
+        {
+          "x1": 531,
+          "y1": 396,
+          "x2": 612,
+          "y2": 538
+        },
+        {
+          "x1": 1520,
+          "y1": 0,
+          "x2": 1699,
+          "y2": 163
+        }
+      ],
+      "latency_ms": 1061.7,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><512></box><box><277><367><319><499></box><box><792><0><885><151></box><|im_end|>"
+    },
+    {
+      "frame": "frame_05.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 3,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 551
+        },
+        {
+          "x1": 524,
+          "y1": 396,
+          "x2": 612,
+          "y2": 538
+        },
+        {
+          "x1": 1522,
+          "y1": 0,
+          "x2": 1697,
+          "y2": 163
+        }
+      ],
+      "latency_ms": 1010.8,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><511></box><box><273><367><319><499></box><box><793><0><884><151></box><|im_end|>"
+    },
+    {
+      "frame": "frame_05.jpg",
+      "repeat": 1,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 5,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 551
+        },
+        {
+          "x1": 524,
+          "y1": 396,
+          "x2": 612,
+          "y2": 538
+        },
+        {
+          "x1": 1522,
+          "y1": 7,
+          "x2": 1626,
+          "y2": 162
+        },
+        {
+          "x1": 1589,
+          "y1": 0,
+          "x2": 1658,
+          "y2": 139
+        },
+        {
+          "x1": 1639,
+          "y1": 0,
+          "x2": 1699,
+          "y2": 125
+        }
+      ],
+      "latency_ms": 1068.3,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><511></box><box><273><367><319><499></box><box><793><7><847><150></box><box><828><0><864><129></box><box><854><0><885><116></box><|im_end|>"
+    },
+    {
+      "frame": "frame_05.jpg",
+      "repeat": 2,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 3,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 551
+        },
+        {
+          "x1": 524,
+          "y1": 396,
+          "x2": 612,
+          "y2": 538
+        },
+        {
+          "x1": 1522,
+          "y1": 5,
+          "x2": 1697,
+          "y2": 164
+        }
+      ],
+      "latency_ms": 1013.6,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><511></box><box><273><367><319><499></box><box><793><5><884><152></box><|im_end|>"
+    },
+    {
+      "frame": "frame_05.jpg",
+      "repeat": 3,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 3,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 551
+        },
+        {
+          "x1": 524,
+          "y1": 396,
+          "x2": 612,
+          "y2": 538
+        },
+        {
+          "x1": 1522,
+          "y1": 1,
+          "x2": 1697,
+          "y2": 160
+        }
+      ],
+      "latency_ms": 1004.5,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><511></box><box><273><367><319><499></box><box><793><1><884><149></box><|im_end|>"
+    },
+    {
+      "frame": "frame_05.jpg",
+      "repeat": 4,
+      "inference_size": [
+        1280,
+        720
+      ],
+      "count": 4,
+      "boxes": [
+        {
+          "x1": 470,
+          "y1": 425,
+          "x2": 562,
+          "y2": 551
+        },
+        {
+          "x1": 524,
+          "y1": 396,
+          "x2": 612,
+          "y2": 538
+        },
+        {
+          "x1": 1522,
+          "y1": 9,
+          "x2": 1647,
+          "y2": 162
+        },
+        {
+          "x1": 1616,
+          "y1": 0,
+          "x2": 1699,
+          "y2": 136
+        }
+      ],
+      "latency_ms": 1037.2,
+      "warmup": false,
+      "raw_response": "<ref>trash can</ref><box><245><394><293><511></box><box><273><367><319><499></box><box><793><9><858><150></box><box><842><0><885><126></box><|im_end|>"
+    }
+  ]
+}

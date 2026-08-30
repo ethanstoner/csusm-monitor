@@ -31,6 +31,54 @@ MAX_BACKOFF = 60  # seconds
 latest_detections: dict[str, dict] = {}
 _detections_lock = threading.Lock()
 
+# --- Camera health ---
+# A camera that has been taken down still answers HTTP, so the only thing that
+# actually knows a stream is dead is the worker that keeps failing to pull a
+# frame from it. Record that here so the API can say "offline" instead of
+# handing the dashboard a video element that will never load.
+OFFLINE_AFTER_FAILURES = 3  # consecutive failed captures before we call it dead
+camera_health: dict[str, dict] = {}
+_health_lock = threading.Lock()
+
+
+def record_camera_health(camera_id: str, ok: bool, error: str | None = None) -> None:
+    """Record the outcome of one capture attempt for a camera.
+
+    A single success clears the failure streak: a stream that drops one segment
+    is not an outage, and treating it as one would flap the dashboard.
+    """
+    now = datetime.now(TZ).isoformat()
+    with _health_lock:
+        health = camera_health.setdefault(
+            camera_id, {"consecutive_failures": 0, "last_success": None, "last_error": None}
+        )
+        if ok:
+            health["consecutive_failures"] = 0
+            health["last_success"] = now
+            health["last_error"] = None
+        else:
+            health["consecutive_failures"] += 1
+            health["last_error"] = error
+
+
+def get_camera_health(camera_id: str) -> dict:
+    """Return a snapshot of one camera's stream health.
+
+    `stream_status` is "offline" once a camera has failed OFFLINE_AFTER_FAILURES
+    captures in a row, and "live" otherwise — including for a camera no worker
+    has reported on yet, since "we have not looked" is not evidence of an outage.
+    """
+    with _health_lock:
+        health = camera_health.get(camera_id)
+        if health is None:
+            return {"stream_status": "live", "last_error": None, "consecutive_failures": 0}
+        offline = health["consecutive_failures"] >= OFFLINE_AFTER_FAILURES
+        return {
+            "stream_status": "offline" if offline else "live",
+            "last_error": health["last_error"] if offline else None,
+            "consecutive_failures": health["consecutive_failures"],
+        }
+
 # --- Static object filter ---
 # Tracks bounding box centers over a rolling window to suppress stationary
 # false positives (signs, poles, furniture) that YOLO misidentifies as people.
@@ -226,6 +274,7 @@ class DetectionWorker:
                 frame = capture_frame(self.stream_url)
                 if frame is None:
                     self.consecutive_failures += 1
+                    record_camera_health(self.camera_id, ok=False, error="no frame from stream")
                     logger.warning(
                         "[%s] Frame capture failed (%d in a row) — retrying in %.0fs",
                         self.camera_id, self.consecutive_failures, self.next_interval(),
@@ -234,12 +283,15 @@ class DetectionWorker:
                     # The stream is alive, so this is not a failure — an unlit
                     # scene at 3 AM should not push the camera into backoff.
                     self.consecutive_failures = 0
+                    record_camera_health(self.camera_id, ok=True)
                     logger.warning("[%s] Frame too dark — skipping", self.camera_id)
                 elif is_static_frame(frame):
                     self.consecutive_failures = 0
+                    record_camera_health(self.camera_id, ok=True)
                     logger.info("[%s] Static/placeholder frame — skipping detection", self.camera_id)
                 else:
                     self.consecutive_failures = 0
+                    record_camera_health(self.camera_id, ok=True)
                     count, boxes = detect_people(frame)
                     # Suppress stationary false positives (signs, poles)
                     boxes = self._filter.filter_boxes(boxes)
@@ -268,8 +320,9 @@ class DetectionWorker:
                             "timestamp": now.isoformat(),
                             "recorded": self._filter.is_warm,
                         }
-            except Exception:
+            except Exception as e:
                 self.consecutive_failures += 1
+                record_camera_health(self.camera_id, ok=False, error=f"{type(e).__name__}: {e}")
                 logger.exception("[%s] Detection cycle error", self.camera_id)
 
             # Wait out the remainder of the interval, but wake instantly on stop()
