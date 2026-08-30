@@ -31,7 +31,7 @@ I built a full-stack monitoring system that:
 
 The system runs a detection cycle every 5 seconds per camera and can optionally offload detection to [Frigate NVR](https://frigate.video) via MQTT as a third backend.
 
-**Measured, on 420 frames with hand-labelled ground truth.** On an easy daylight set the two backends tie exactly. On a harder dusk set — people at frame edges, people in shadow — they separate: **YOLOv8n misses 11 of 21 people**, including two standing at the cart in plain view, while LocateAnything misses 2. The grounding model costs **69× more per frame** for that. Both numbers are the point, and both are in **[bench/README.md](bench/README.md)** along with the five defects found getting there.
+**Measured, on 820 frames with hand-labelled ground truth** spanning daylight, dusk and six hours of night. Across 33 people, **YOLOv8n finds 20 and LocateAnything finds 31**; neither invents anybody. The misses are not marginal — two people standing at the cart in plain view, two more walking across a lit plaza at night. The grounding model costs **69× more per frame** for that. Both numbers are the point, and both are in **[bench/README.md](bench/README.md)**, along with the five defects found getting there and one measurement that overturned a design decision made three commits earlier.
 
 ---
 
@@ -150,7 +150,7 @@ Benchmarking later showed the grounding model has *the same* failure — prompte
 
 **Solution:** Switched person detection to [`nvidia/LocateAnything-3B`](https://huggingface.co/nvidia/LocateAnything-3B), an open-vocabulary grounding model prompted in English. The same weights that count people also answer anything else you can name, so the product stopped being "occupancy" and started being "ask the campus a question" — with no retraining and no labelled data.
 
-**The measurements justify this, but only on a scene hard enough to test it.** On an easy daylight set the two backends are indistinguishable. On a dusk set with people at frame edges and in shadow, YOLOv8n misses **11 of 21 people** — including `frame_233`, two people standing at the cart, fully visible, reported as zero — while LocateAnything misses 2. For a product whose whole job is telling you whether the cart is busy, that is a failure of the core function, and it is invisible without ground truth because the wrong counts look perfectly plausible.
+**The measurements justify this, but only on scenes hard enough to test it.** On an easy daylight set the two backends are indistinguishable. Across the two harder sets — 640 frames through dusk and into the night — YOLOv8n misses **13 of 26 people**, including `frame_233`, two people standing at the cart, fully visible, reported as zero — while LocateAnything misses 2. For a product whose whole job is telling you whether the cart is busy, that is a failure of the core function, and it is invisible without ground truth because the wrong counts look perfectly plausible.
 
 The grounding model costs **69× more per frame** (1,215 ms vs 17.6 ms) and 14.5 GB of VRAM for that. And prompt it `trash can` and it finds all six on a frame YOLO has no class for:
 

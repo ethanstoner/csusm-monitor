@@ -16,11 +16,13 @@ frozen with `bench/capture_frames.sh` so every backend scores identical pixels:
 | `frames` | 60 | 15:15–15:35, 20s apart | no (empty scene) | 0 |
 | `frames_people` | 180 | 16:05–19:05, 40s apart | yes | 7 |
 | `frames_people2` | 240 | 18:06–19:06, 15s apart | yes | 21 |
+| `frames_night` | 400 | 18:15–00:55, 60s apart | yes | 5 |
 
 Reproduce with `bench/yolo_bench.py`, `bench/la3b_bench.py`,
 `bench/sweep_resolution.sh` and `bench/compare.py`. Raw per-frame results are
 the `*.json` files in `bench/results/`; hand-written ground truth is
-`bench/people_labels.json` and `bench/people2_labels.json`.
+`bench/people_labels.json`, `bench/people2_labels.json` and
+`bench/night_labels.json`.
 
 ---
 
@@ -321,15 +323,68 @@ still have a job", and that needs a night capture to answer.
 
 ---
 
+## Night, and whether `StaticObjectFilter` still has a job
+
+`bench/frames_night`: 400 frames, 60 seconds apart, 18:15 through 00:55 —
+sunset, dusk and six hours of dark. **5 people, in 4 frames.**
+
+The plaza is lit. Mean frame brightness is 72.9 against a `MIN_FRAME_BRIGHTNESS`
+gate of 15, so **not one frame in this set would be skipped as too dark** in
+production. Both detectors get a usable image; nothing here is explained away by
+darkness.
+
+| | YOLOv8n | LocateAnything-3B `"pedestrian"` |
+|---|---|---|
+| Frames exactly correct | 399 / 400 (99.8%) | **400 / 400 (100%)** |
+| People found (truth 5) | 3 | **5** |
+| Missed | 2 | **0** |
+| **Invented** | **0** | **0** |
+
+Same pattern as the dusk set, smaller: the grounding model finds two people
+walking across the lit plaza at ~21:40 that YOLOv8n reports as zero, and neither
+invents anybody.
+
+### The answer
+
+`StaticObjectFilter` exists because YOLOv8n at a 0.45 confidence threshold calls
+signs and poles people. Across **880 benchmark frames** — full daylight, dusk,
+and six hours of night — **YOLOv8n produced zero stationary false positives.**
+Every one of its detections in every set is a real person. Its problem on this
+camera is the opposite one: it misses 13 of 26 people across the labelled sets.
+
+That is not the same as saying the filter never worked, and the distinction
+matters:
+
+> **The filter's successes are invisible from production data.** Snapshots and
+> database rows are both written *after* filtering, so anything it removed left
+> no trace to count. Only the benchmark can answer the question, because
+> `bench/yolo_bench.py` calls `detect_people` raw, with no filter in the path.
+> That is the only reason this is measurable at all.
+
+So the finding is specifically: **on this camera, on this scene, over 880 frames,
+there was nothing for it to remove.** One camera, one scene, one day. The tent
+gets moved, sandwich boards appear, the light changes with the season — none of
+which this set covers.
+
+What has changed is the cost side, and it got worse. YOLO is now the *fallback*,
+running only when the GPU service is unreachable. The filter's ~60-second warm-up
+discard therefore bites exactly when the system is already degraded: an outage
+now loses its first minute of fallback readings too, on top of the outage.
+
+The filter is still in the code. Deleting a safety mechanism on one day of
+evidence from one camera is a bigger call than this data supports, and it is not
+a call worth making at 1 a.m. from a benchmark. It is written down here so the
+decision is made against numbers instead of memory.
+
+---
+
 ## What this still does *not* establish
 
 - **Crowds.** The largest count in either benchmark set is 2. Nothing here says
   how either model behaves at a queue of fifteen with mutual occlusion, which is
   the case the product actually exists for.
-- **Night.** Both sets end at dusk. The archived May snapshots show YOLO firing
-  at 22:00, and whether those were people or the false positives
-  `StaticObjectFilter` exists to remove is unresolved. A night capture is the
-  one measurement that would settle whether that filter still has a job.
+- ~~**Night.**~~ Answered — see the night section above. 400 frames through
+  midnight, on a lit plaza no frame of which is dark enough to be skipped.
 - **Distant people.** The resolution sweep showed recall on small distant
   objects collapsing below native resolution. Everyone in both sets is
   reasonably near the camera. A person at the far end of the plaza, at 1440px,

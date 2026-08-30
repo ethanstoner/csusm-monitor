@@ -1,0 +1,38 @@
+{
+  "_comment": [
+    "Hand-labelled ground truth for bench/frames_night (400 frames, 2026-08-29",
+    "18:15 through 2026-08-30 00:55, CSUSM Coffee Cart, 60s apart). This set",
+    "exists to answer one question the roadmap had open for months: does",
+    "StaticObjectFilter still have a job?",
+    "",
+    "The plaza is lit at night. Mean frame brightness is 72.9 against a",
+    "MIN_FRAME_BRIGHTNESS gate of 15, so not one frame in this set would be",
+    "skipped as too dark in production. Whatever the detectors do here, they do",
+    "with a usable image.",
+    "",
+    "Labelling method. Eyeballing 400 near-identical night frames is unreliable",
+    "in a way that biases the result, so candidates were found three ways and",
+    "the union was inspected:",
+    "  1. bench/find_motion.py -- a temporal-median background and blob",
+    "     detection, using pixels only, so the candidate list owes nothing to",
+    "     either detector and can be used to score both. Run per lighting",
+    "     segment: over the whole capture the dusk-to-night illumination change",
+    "     swamps everything else.",
+    "  2. Contact sheets over the sunset transition (frames 40-115), where the",
+    "     background model is blind because the light is changing faster than",
+    "     anything in the scene.",
+    "  3. Every detection from both backends, cropped and magnified.",
+    "",
+    "Frames not listed contain zero people. 396 of 400 are empty."
+  ],
+  "_notes": {
+    "frame_150.jpg": "Motion detector flagged a ~460px blob here and at 154. Both are the door-light glow shifting, not a person. Inspected at full resolution across 149-155.",
+    "frame_207.jpg": "Two people walking across the lit plaza at roughly 21:40, clearly visible. YOLOv8n reported zero; LocateAnything-3B found both. The only night frame that separates the two backends."
+  },
+  "people": {
+    "frame_009.jpg": 1,
+    "frame_011.jpg": 1,
+    "frame_056.jpg": 1,
+    "frame_207.jpg": 2
+  }
+}

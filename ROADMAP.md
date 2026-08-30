@@ -110,15 +110,21 @@ client: `trash can` 4, `red tent` 1, `lamp post` 1, all in ~1–2 s. Greedy
 decoding does not ignore nucleus sampling in this runtime. The client also
 discards any answer over `MAX_PLAUSIBLE_BOXES`, which is unit-tested.
 
-**Person counting has been measured against hand-labelled ground truth**, on two
-sets totalling 420 frames, every frame reviewed by eye rather than labelling
-whatever a detector flagged.
+**Person counting has been measured against hand-labelled ground truth**, on
+three sets totalling 820 frames and 33 people, every frame reviewed by eye
+rather than labelling whatever a detector flagged.
 
-On the easy set (180 frames, 7 people, daylight, all unoccluded) the two
-backends tie exactly and the honest reading is that the scene could not separate
-them. On the harder set (240 frames into dusk, 21 people, several at frame edges
-or in shadow) they separate decisively: **YOLOv8n misses 11 of 21**, including
-two people standing at the cart in plain view, while LocateAnything misses 2.
+| Set | People | YOLOv8n found | LocateAnything found |
+|---|---|---|---|
+| 180 frames, daylight, unoccluded | 7 | 7 | 7 |
+| 240 frames, dusk, edges and shadow | 21 | **10** | 19 |
+| 400 frames, sunset to 00:55 | 5 | 3 | **5** |
+| **Total** | **33** | **20** | **31** |
+
+The easy set could not separate them. The other two do: **YOLOv8n misses 13 of
+33 people**, including two standing at the cart in plain view and two walking
+across a lit plaza at night, while LocateAnything misses 2 — both more than half
+outside the frame. Neither invents anybody.
 
 **A prompt beat a filter.** Prompted `"person"`, the grounding model found all 21
 and invented 6 — four of them the plaza's trash receptacles, the same failure
@@ -132,25 +138,36 @@ positives were real people missed during labelling; the model was right and the
 grader was wrong. `bench/people2_labels.json` records the correction rather than
 hiding it, and cropping every disputed detection is now part of the method.
 
+**The `StaticObjectFilter` question is answered, and the answer is uncomfortable.**
+A 400-frame capture running to 00:55 on a lit plaza — no frame dark enough for
+the brightness gate to skip — brings the total to **880 benchmark frames across
+full daylight, dusk and six hours of night in which raw YOLOv8n produced zero
+stationary false positives.** Every detection it made in every set is a real
+person. The filter was built to remove signs and poles it never saw.
+
+The methodological point matters more than the result: **the filter's successes
+are unmeasurable from production data**, because snapshots and database rows are
+both written after filtering. Only `bench/yolo_bench.py`, which calls
+`detect_people` raw, could answer this at all. It is also now more expensive than
+it was — YOLO is the fallback, so its ~60-second warm-up discard costs data
+precisely during a GPU outage, when the system is already degraded.
+
+It has not been deleted. One camera, one scene, one day is thin evidence for
+removing a safety mechanism, and the scene changes with the season. The numbers
+are in `bench/README.md` so the call gets made against data rather than memory.
+
 ### Still open
 
-1. **Does `StaticObjectFilter` still have a job?** Across 480 daylight and dusk
-   frames, YOLO ran *without* it and produced zero false positives — its problem
-   on this scene is the opposite one, missing people. That is not permission to
-   delete it: the false positives it was built for came from evening and night
-   frames, and no benchmark set here goes past dusk. A night capture decides it.
-   Note the grounding model *does* show that failure mode in daylight, and is
-   fixed by prompt rather than by the filter.
-2. **Crowds and distance, the two untested cases most likely to break.** The
+1. **Crowds and distance, the two untested cases most likely to break.** The
    largest count in any set is 2, and everyone is reasonably near the camera. The
    resolution sweep already showed recall on small distant objects collapsing
    below native resolution, and the only two people `"pedestrian"` still misses
    are both half outside the frame — plausibly the same weakness. A busy weekday
    lunch rush is the measurement that matters and does not exist yet.
-3. **Whether native resolution is reachable another way.** Tiling the frame and
+2. **Whether native resolution is reachable another way.** Tiling the frame and
    scoring each tile separately would get full recall inside the VRAM budget at
    the cost of overlap handling and N× latency. Worth trying, not yet tried.
-4. **Batching across cameras.** The runtime supports it and there is currently
+3. **Batching across cameras.** The runtime supports it and there is currently
    one live camera, so it buys nothing today.
 
 ---
@@ -165,3 +182,6 @@ Not yet argued through; listed so they are not forgotten.
   now correctly reported as offline rather than silently stale, but nothing
   alerts on the transition — a camera can die and the only evidence is a badge
   nobody is looking at.
+- Decide `StaticObjectFilter`'s fate against the evidence above: keep it as
+  cheap insurance against a scene that changes, or drop it and its warm-up
+  discard. Either is defensible; leaving it undecided is the only bad option.
