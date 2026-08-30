@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 
-from backend.config import DETECTION_BACKEND, DETECTION_INTERVAL, FFMPEG_TIMEOUT, TIMEZONE, SNAPSHOTS_DIR, MAX_SNAPSHOTS, CONFIDENCE_THRESHOLD, MIN_FRAME_BRIGHTNESS, MIN_BOX_AREA, VLM_PROBE_INTERVAL
+from backend.config import DETECTION_BACKEND, DETECTION_INTERVAL, PERSON_QUERY, FFMPEG_TIMEOUT, TIMEZONE, SNAPSHOTS_DIR, MAX_SNAPSHOTS, CONFIDENCE_THRESHOLD, MIN_FRAME_BRIGHTNESS, MIN_BOX_AREA, VLM_PROBE_INTERVAL
 
 logger = logging.getLogger(__name__)
 
@@ -242,13 +242,15 @@ class PersonCounters:
     """
 
     def __init__(self, backend: str = DETECTION_BACKEND, client=None,
-                 probe_interval: float = VLM_PROBE_INTERVAL):
+                 probe_interval: float = VLM_PROBE_INTERVAL,
+                 query: str = PERSON_QUERY):
         if backend not in _VALID_BACKENDS:
             raise ValueError(
                 f"DETECTION_BACKEND must be one of {_VALID_BACKENDS}, got {backend!r}"
             )
         self.backend = backend
         self.probe_interval = probe_interval
+        self.query = query
         self.active_source: str | None = None
         self._client = client
         self._available = True      # optimistic: try once before writing it off
@@ -289,7 +291,7 @@ class PersonCounters:
     def count_people(self, frame) -> tuple[int, list[dict], str] | None:
         """Return (count, boxes, source), or None if no backend could answer."""
         if self._should_try_vlm():
-            result = self.client.locate(frame, "person")
+            result = self.client.locate(frame, self.query)
             if result is not None:
                 self._note_vlm_state(True)
                 self.active_source = VLM_SOURCE

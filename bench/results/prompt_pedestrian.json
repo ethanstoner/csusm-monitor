@@ -1,0 +1,442 @@
+{
+  "backend": "LocateAnything-3B",
+  "snapshot": "<hf-cache>/hub/models--nvidia--LocateAnything-3B/snapshots/c32291ca5e996f5a7a485845b4f57a233936bba0",
+  "device": "NVIDIA GeForce RTX 4090",
+  "query": "pedestrian",
+  "max_side": 1440,
+  "attn": "sdpa",
+  "scheduler": "eager",
+  "coord_order": "xyxy",
+  "max_new_tokens": 2048,
+  "temperature": 0.0,
+  "top_p": 0.9,
+  "repetition_penalty": 1.1,
+  "repeats": 1,
+  "count_spread": {},
+  "model_load_s": 2.3,
+  "peak_vram_gb": 13.88,
+  "latency": {
+    "n": 20,
+    "min_ms": 1232.9,
+    "median_ms": 1243.2,
+    "p95_ms": 1310.2,
+    "max_ms": 1310.2,
+    "mean_ms": 1251.4
+  },
+  "records": [
+    {
+      "frame": "frame_013.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 1710,
+          "y1": 477,
+          "x2": 1797,
+          "y2": 681
+        },
+        {
+          "x1": 1749,
+          "y1": 531,
+          "x2": 1873,
+          "y2": 733
+        }
+      ],
+      "latency_ms": 1864.4,
+      "warmup": true,
+      "raw_response": "<ref>pedestrian</ref><box><891><442><936><631></box><box><911><492><976><679></box><|im_end|>"
+    },
+    {
+      "frame": "frame_014.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 178,
+          "y1": 525,
+          "x2": 280,
+          "y2": 738
+        },
+        {
+          "x1": 259,
+          "y1": 546,
+          "x2": 349,
+          "y2": 765
+        }
+      ],
+      "latency_ms": 1269.6,
+      "warmup": true,
+      "raw_response": "<ref>pedestrian</ref><box><93><487><146><684></box><box><135><506><182><709></box><|im_end|>"
+    },
+    {
+      "frame": "frame_032.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1244.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_035.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1310.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_038.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1251.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_054.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1243.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_062.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_066.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 796,
+          "y1": 447,
+          "x2": 875,
+          "y2": 631
+        }
+      ],
+      "latency_ms": 1234.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><415><414><456><585></box><|im_end|>"
+    },
+    {
+      "frame": "frame_073.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1670,
+          "y1": 677,
+          "x2": 1774,
+          "y2": 893
+        }
+      ],
+      "latency_ms": 1245.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><870><627><924><827></box><|im_end|>"
+    },
+    {
+      "frame": "frame_078.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_117.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1549,
+          "y1": 132,
+          "x2": 1620,
+          "y2": 298
+        }
+      ],
+      "latency_ms": 1232.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><807><123><844><276></box><|im_end|>"
+    },
+    {
+      "frame": "frame_118.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 0,
+          "y1": 735,
+          "x2": 67,
+          "y2": 921
+        }
+      ],
+      "latency_ms": 1243.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><0><681><35><853></box><|im_end|>"
+    },
+    {
+      "frame": "frame_164.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 0,
+          "y1": 928,
+          "x2": 48,
+          "y2": 1080
+        }
+      ],
+      "latency_ms": 1258.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><0><860><25><1000></box><|im_end|>"
+    },
+    {
+      "frame": "frame_165.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_168.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 163,
+          "y1": 951,
+          "x2": 282,
+          "y2": 1080
+        }
+      ],
+      "latency_ms": 1233.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><85><881><147><1000></box><|im_end|>"
+    },
+    {
+      "frame": "frame_193.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_194.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1449,
+          "y1": 265,
+          "x2": 1537,
+          "y2": 489
+        }
+      ],
+      "latency_ms": 1298.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><755><246><801><453></box><|im_end|>"
+    },
+    {
+      "frame": "frame_209.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 754,
+          "y1": 460,
+          "x2": 833,
+          "y2": 651
+        }
+      ],
+      "latency_ms": 1237.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><393><426><434><603></box><|im_end|>"
+    },
+    {
+      "frame": "frame_210.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1772,
+          "y1": 0,
+          "x2": 1833,
+          "y2": 116
+        }
+      ],
+      "latency_ms": 1242.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><923><0><955><108></box><|im_end|>"
+    },
+    {
+      "frame": "frame_232.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 1057,
+          "y1": 970,
+          "x2": 1150,
+          "y2": 1080
+        },
+        {
+          "x1": 1194,
+          "y1": 1028,
+          "x2": 1249,
+          "y2": 1080
+        }
+      ],
+      "latency_ms": 1270.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><551><899><599><1000></box><box><622><952><651><1000></box><|im_end|>"
+    },
+    {
+      "frame": "frame_233.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 827,
+          "y1": 351,
+          "x2": 902,
+          "y2": 564
+        },
+        {
+          "x1": 858,
+          "y1": 425,
+          "x2": 936,
+          "y2": 600
+        }
+      ],
+      "latency_ms": 1266.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><431><325><470><523></box><box><447><394><488><556></box><|im_end|>"
+    },
+    {
+      "frame": "frame_234.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 1142,
+          "y1": 281,
+          "x2": 1207,
+          "y2": 479
+        },
+        {
+          "x1": 1173,
+          "y1": 343,
+          "x2": 1234,
+          "y2": 511
+        }
+      ],
+      "latency_ms": 1273.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><595><261><629><444></box><box><611><318><643><474></box><|im_end|>"
+    }
+  ]
+}

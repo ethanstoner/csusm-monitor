@@ -1,0 +1,48 @@
+{
+  "_comment": [
+    "Hand-labelled ground truth for bench/frames_people2 (240 frames, 2026-08-29,",
+    "18:06-19:06 PDT, CSUSM Coffee Cart, 15s apart, late afternoon into dusk).",
+    "",
+    "Labelling method, which matters more than the labels:",
+    "  1. All 240 frames reviewed as contact sheets (bench/contact_sheet.py).",
+    "  2. Every frame that looked occupied was then opened at full resolution --",
+    "     thumbnails are not reliable for a person at the frame edge, and two of",
+    "     my own thumbnail reads turned out to be wrong in both directions.",
+    "  3. The frames on either side of every run of people were checked too,",
+    "     since pedestrians appear across consecutive frames and a run clipped at",
+    "     the wrong end silently loses people.",
+    "",
+    "Ground truth was NOT taken from any detector's output. Labelling only the",
+    "frames YOLO fired on would have hidden all eleven of the people it missed and",
+    "reported its recall as 100%.",
+    "",
+    "Frames not listed contain zero people. 227 of the 240 are empty.",
+    "",
+    "REVISION 2026-08-29: frames 164 and 165 were corrected from 0 after the disputed detections were cropped and magnified. Contact sheets cannot resolve a head entering at the frame edge; only the crops could. Ground truth built by eye has its own error rate, and this file records where mine was wrong rather than quietly editing it."
+  ],
+  "_notes": {
+    "frame_118.jpg": "Person at the extreme left edge, roughly 80% out of frame -- only a leg and part of a torso are visible. Counted as 1 because they are unambiguously a person, but this is the single most arguable label in the set.",
+    "frame_164.jpg": "CORRECTED. Originally labelled 0. LocateAnything-3B reported 2, which scored as a false positive until the disputed regions were cropped and magnified: one person at the left edge and one whose head is just entering at the bottom edge. Both are real. The model was right and the first pass of this file was wrong.",
+    "frame_165.jpg": "CORRECTED. Originally labelled 0, same reason as frame_164 \u2014 a head entering at the bottom edge, too small to resolve on a contact sheet.",
+    "frame_193.jpg": "A dog crosses the plaza alone. Labelled 0 people on purpose: it is a negative that a naive 'something is moving' detector would fail, and an open-vocabulary model can be asked about it directly.",
+    "frame_232.jpg": "Two people entering at the bottom edge, both partially cut off.",
+    "frame_233.jpg": "Two people standing at the cart, fully visible and unoccluded. The clearest miss in the set."
+  },
+  "people": {
+    "frame_013.jpg": 2,
+    "frame_014.jpg": 2,
+    "frame_066.jpg": 1,
+    "frame_073.jpg": 1,
+    "frame_117.jpg": 1,
+    "frame_118.jpg": 1,
+    "frame_164.jpg": 2,
+    "frame_165.jpg": 1,
+    "frame_168.jpg": 1,
+    "frame_194.jpg": 1,
+    "frame_209.jpg": 1,
+    "frame_210.jpg": 1,
+    "frame_232.jpg": 2,
+    "frame_233.jpg": 2,
+    "frame_234.jpg": 2
+  }
+}

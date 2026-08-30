@@ -40,12 +40,14 @@ class _Service:
         self.up = up
         self.count = count
         self.calls = 0
+        self.queries = []
         self.last_error = "grounding service unreachable"
         self.timeout = 5
         self.max_image_side = 1440
 
     def locate(self, frame, query):
         self.calls += 1
+        self.queries.append(query)
         if not self.up:
             return None
         boxes = [_box(10 * i, 10, 10 * i + 50, 200) for i in range(self.count)]
@@ -59,6 +61,27 @@ def test_auto_prefers_the_grounding_model(frame):
     count, boxes, source = counters.count_people(frame)
     assert source == "LocateAnything-3B"
     assert count == 3
+
+
+def test_the_person_prompt_is_the_measured_one(frame):
+    """The prompt is a tuned parameter, not an incidental string.
+
+    "person" made the model report the plaza's trash receptacles as people on 6
+    of 240 hand-labelled frames; "pedestrian" produced none. Anything that
+    silently reverts this undoes a measured result, so the default is asserted.
+    """
+    from backend.config import PERSON_QUERY
+
+    assert PERSON_QUERY == "pedestrian"
+    service = _Service(up=True)
+    PersonCounters(backend="auto", client=service).count_people(frame)
+    assert service.queries == ["pedestrian"]
+
+
+def test_the_person_prompt_is_overridable(frame):
+    service = _Service(up=True)
+    PersonCounters(backend="auto", client=service, query="student").count_people(frame)
+    assert service.queries == ["student"]
 
 
 def test_auto_falls_back_to_yolo_when_the_service_is_down(frame):

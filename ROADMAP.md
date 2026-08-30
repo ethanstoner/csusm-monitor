@@ -110,26 +110,43 @@ client: `trash can` 4, `red tent` 1, `lamp post` 1, all in ~1–2 s. Greedy
 decoding does not ignore nucleus sampling in this runtime. The client also
 discards any answer over `MAX_PLAUSIBLE_BOXES`, which is unit-tested.
 
-**Person counting has been measured against hand-labelled ground truth** —
-180 frames, every one reviewed by eye rather than labelling whatever a detector
-flagged. Both backends scored 180/180 exact, 7/7 people, zero false positives
-and zero misses. That is a tie, and the honest reading is that the scene was too
-easy to separate them: 7 people, all near, all unoccluded, all in daylight. The
-useful number is the cost of the tie — LocateAnything is 69× slower for an
-identical answer, which is the argument for the split that shipped.
+**Person counting has been measured against hand-labelled ground truth**, on two
+sets totalling 420 frames, every frame reviewed by eye rather than labelling
+whatever a detector flagged.
+
+On the easy set (180 frames, 7 people, daylight, all unoccluded) the two
+backends tie exactly and the honest reading is that the scene could not separate
+them. On the harder set (240 frames into dusk, 21 people, several at frame edges
+or in shadow) they separate decisively: **YOLOv8n misses 11 of 21**, including
+two people standing at the cart in plain view, while LocateAnything misses 2.
+
+**A prompt beat a filter.** Prompted `"person"`, the grounding model found all 21
+and invented 6 — four of them the plaza's trash receptacles, the same failure
+`StaticObjectFilter` was written for. Prompted `"pedestrian"`, false positives
+went to zero at a cost of 2 in recall, and frame-exact accuracy went 97.5% →
+99.2%. That is a precision/recall trade made by editing a string, which is the
+capability argument for an open-vocabulary detector made concrete.
+
+**Ground truth had its own bugs.** Three of the nine originally-scored false
+positives were real people missed during labelling; the model was right and the
+grader was wrong. `bench/people2_labels.json` records the correction rather than
+hiding it, and cropping every disputed detection is now part of the method.
 
 ### Still open
 
-1. **Does `StaticObjectFilter` still have a job?** The benchmark runs YOLO
-   *without* it and got zero false positives across 240 daylight frames. That is
-   not permission to delete it — the false positives it was built for came from
-   evening and night frames, and neither benchmark set contains any. A night
-   capture decides this.
+1. **Does `StaticObjectFilter` still have a job?** Across 480 daylight and dusk
+   frames, YOLO ran *without* it and produced zero false positives — its problem
+   on this scene is the opposite one, missing people. That is not permission to
+   delete it: the false positives it was built for came from evening and night
+   frames, and no benchmark set here goes past dusk. A night capture decides it.
+   Note the grounding model *does* show that failure mode in daylight, and is
+   fixed by prompt rather than by the filter.
 2. **Crowds and distance, the two untested cases most likely to break.** The
-   largest count in any set is 2, and every person is near the camera. The
+   largest count in any set is 2, and everyone is reasonably near the camera. The
    resolution sweep already showed recall on small distant objects collapsing
-   below native resolution, so a person at the far end of the plaza at 1440px is
-   the known weak spot with no measurement behind it.
+   below native resolution, and the only two people `"pedestrian"` still misses
+   are both half outside the frame — plausibly the same weakness. A busy weekday
+   lunch rush is the measurement that matters and does not exist yet.
 3. **Whether native resolution is reachable another way.** Tiling the frame and
    scoring each tile separately would get full recall inside the VRAM budget at
    the cost of overlap handling and N× latency. Worth trying, not yet tried.

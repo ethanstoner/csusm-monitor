@@ -31,7 +31,7 @@ I built a full-stack monitoring system that:
 
 The system runs a detection cycle every 5 seconds per camera and can optionally offload detection to [Frigate NVR](https://frigate.video) via MQTT as a third backend.
 
-**Choosing the grounding model was not a free upgrade, and the repo says so.** Measured against YOLOv8n on 180 frames with hand-labelled ground truth, the two are indistinguishable at counting people — 180/180 frames exact, 7/7 people, no false positives either way — and LocateAnything costs **69× more per frame** for that identical answer. It earns its place on the questions YOLO cannot answer at all, not on counting people better. Every number, and the four defects found getting there, are in **[bench/README.md](bench/README.md)**.
+**Measured, on 420 frames with hand-labelled ground truth.** On an easy daylight set the two backends tie exactly. On a harder dusk set — people at frame edges, people in shadow — they separate: **YOLOv8n misses 11 of 21 people**, including two standing at the cart in plain view, while LocateAnything misses 2. The grounding model costs **69× more per frame** for that. Both numbers are the point, and both are in **[bench/README.md](bench/README.md)** along with the five defects found getting there.
 
 ---
 
@@ -113,6 +113,8 @@ CSUSM HLS Streams --> Frigate (Docker) --> MQTT --> FastAPI --> SQLite
 
 The self-calibration has a cost worth naming: for those first 12 frames the filter has no history, so it passes everything through and the counts are inflated by exactly the objects it exists to remove. Those counts are shown live but deliberately **not** written to the database, because every trend in the dashboard is an average and a restart would otherwise bake a minute of false positives into the seven-day view.
 
+Benchmarking later showed the grounding model has *the same* failure — prompted `"person"` it called the plaza's trash receptacles people too. It is not filtered there, because a filter that suppresses anything holding still would also erase someone standing in a queue, which is the flagship use case. It is fixed by prompt instead (challenge 10).
+
 ### 2. HLS Manifest Bloat
 **Problem:** CSUSM's HLS streams never reset `EXT-X-MEDIA-SEQUENCE`, causing manifests to grow past 360KB by midday. hls.js would try to buffer from the playlist start, causing massive latency.
 
@@ -148,7 +150,9 @@ The self-calibration has a cost worth naming: for those first 12 frames the filt
 
 **Solution:** Switched person detection to [`nvidia/LocateAnything-3B`](https://huggingface.co/nvidia/LocateAnything-3B), an open-vocabulary grounding model prompted in English. The same weights that count people also answer anything else you can name, so the product stopped being "occupancy" and started being "ask the campus a question" — with no retraining and no labelled data.
 
-**The measurements do not flatter this decision, and the repo reports them anyway.** On person counting, against 180 frames with hand-labelled ground truth, the grounding model and YOLOv8n are indistinguishable — both 180/180 frames exact, 7/7 people, zero false positives, zero misses — and LocateAnything costs **69× more per frame** (1,215 ms vs 17.6 ms) and 14.5 GB of VRAM for that identical answer. The switch is justified by capability, not accuracy. Prompt it `trash can` and it finds all six on a frame YOLO has no class for:
+**The measurements justify this, but only on a scene hard enough to test it.** On an easy daylight set the two backends are indistinguishable. On a dusk set with people at frame edges and in shadow, YOLOv8n misses **11 of 21 people** — including `frame_233`, two people standing at the cart, fully visible, reported as zero — while LocateAnything misses 2. For a product whose whole job is telling you whether the cart is busy, that is a failure of the core function, and it is invisible without ground truth because the wrong counts look perfectly plausible.
+
+The grounding model costs **69× more per frame** (1,215 ms vs 17.6 ms) and 14.5 GB of VRAM for that. And prompt it `trash can` and it finds all six on a frame YOLO has no class for:
 
 ![LocateAnything-3B correctly boxing six trash receptacles it was never trained to find](assets/locateanything-native-1920.jpg)
 
@@ -172,7 +176,21 @@ Verified by killing the GPU service mid-run and watching the switch happen, then
 18:50:15  INFO     Grounding service reachable — counting people with LocateAnything-3B
 ```
 
-Four defects had to be fixed before any of this was trustworthy, including a sampling default that made the same frame return different counts on 4 of 5 tries, and a generation runaway that returned 340 boxes for a 6-object query with every box individually well-formed. All of it, with the numbers, is in **[bench/README.md](bench/README.md)**.
+### 10. The Fix for a Hallucinating Detector Was One Word
+**Problem:** Prompted with the obvious string, `"person"`, LocateAnything found every one of the 21 people in the dusk set — and invented 6 more. Four of those were the plaza's trash receptacles, repeatedly reported as people. That is precisely the failure `StaticObjectFilter` was written for, so the grounding model does not escape it by being smarter; it has the same problem.
+
+**Solution:** Prompted `"pedestrian"` instead, on identical frames and identical settings, the false positives went to **zero** — trash cans included — costing 2 in recall (both figures more than half outside the frame). Frame-exact accuracy went 97.5% → **99.2%**.
+
+| Prompt | Found (truth 21) | Missed | Invented |
+|---|---|---|---|
+| `person` | 27 | 0 | 6 |
+| **`pedestrian`** | 19 | 2 | **0** |
+| `student` | 19 | 2 | **0** |
+| `person walking` | 18 | 3 | **0** |
+
+This is the case for open-vocabulary detection stated as plainly as it gets. YOLOv8n's precision/recall balance is fixed at training time — the only knobs are a confidence threshold and a hand-written filter for one specific failure mode. Here the same trade was made by editing a string, measured in about four minutes. `PERSON_QUERY` in `backend/config.py` holds that string and defaults to the measured winner, with a test asserting it so nobody reverts a measured result by accident.
+
+Five defects had to be found and fixed before any of this was trustworthy, including a sampling default that made the same frame return different counts on 4 of 5 tries, a generation runaway that returned 340 boxes for a 6-object query with every box individually well-formed, and three real people I had missed while hand-labelling that the model correctly found and was scored against. All of it, with the numbers, is in **[bench/README.md](bench/README.md)**.
 
 > **Licence note.** The MIT `LICENSE` at the root covers *this code*. It does not cover the LocateAnything-3B weights, which are released under the [NVIDIA License](https://huggingface.co/nvidia/LocateAnything-3B/blob/main/LICENSE) for **academic and non-profit research purposes only**. That is why this backend is off unless `VLM_ENABLED=1`, why the model runs behind a process boundary rather than being imported, and why nothing in this repo ships the weights. If you clone this and intend to deploy it commercially, that backend has to be swapped for something you are licensed to use.
 
@@ -274,7 +292,7 @@ Open [http://localhost:8000](http://localhost:8000)
 pytest -v
 ```
 
-131 tests covering the API layer, database and trend queries, the data collectors' HTML/GTFS parsing, configuration validation, the `StaticObjectFilter` and detection-worker lifecycle (backoff, prompt shutdown, warm-up suppression), camera-health and offline-stream handling, detection-backend selection and fallback, the open-vocabulary box decoder and every grounding-service failure mode (unreachable, timeout, malformed payload, runaway generation), the Frigate MQTT listener, and a full integration smoke test with a mocked detection pipeline.
+133 tests covering the API layer, database and trend queries, the data collectors' HTML/GTFS parsing, configuration validation, the `StaticObjectFilter` and detection-worker lifecycle (backoff, prompt shutdown, warm-up suppression), camera-health and offline-stream handling, detection-backend selection and fallback, the open-vocabulary box decoder and every grounding-service failure mode (unreachable, timeout, malformed payload, runaway generation), the Frigate MQTT listener, and a full integration smoke test with a mocked detection pipeline.
 
 ---
 

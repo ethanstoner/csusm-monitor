@@ -8,13 +8,19 @@ copied from a model card.
 torch 2.11.0+cu128 · transformers 4.57.1 · attention backend `sdpa`
 (FlashAttention and MagiAttention both fall back on this GPU).
 
-**Frame set:** 60 frames from `https://stream.csusm.edu/coffeecart.m3u8`,
-captured 20 seconds apart on 2026-08-29, 1920×1080. Frozen with
-`bench/capture_frames.sh` so both backends score identical pixels.
+**Frame sets**, all 1920×1080 from `https://stream.csusm.edu/coffeecart.m3u8`,
+frozen with `bench/capture_frames.sh` so every backend scores identical pixels:
 
-Reproduce with `bench/yolo_bench.py`, `bench/la3b_bench.py` and
-`bench/sweep_resolution.sh`. Raw per-frame results are the `*.json` files in
-`bench/results/`.
+| Set | Frames | When | Labelled | People |
+|---|---|---|---|---|
+| `frames` | 60 | 15:15–15:35, 20s apart | no (empty scene) | 0 |
+| `frames_people` | 180 | 16:05–19:05, 40s apart | yes | 7 |
+| `frames_people2` | 240 | 18:06–19:06, 15s apart | yes | 21 |
+
+Reproduce with `bench/yolo_bench.py`, `bench/la3b_bench.py`,
+`bench/sweep_resolution.sh` and `bench/compare.py`. Raw per-frame results are
+the `*.json` files in `bench/results/`; hand-written ground truth is
+`bench/people_labels.json` and `bench/people2_labels.json`.
 
 ---
 
@@ -29,26 +35,28 @@ per frame** to do it.
 | Median latency / frame | **17.6 ms** | **1,215 ms** |
 | p95 latency | 20.8 ms | 1,331 ms |
 | Peak VRAM | negligible | 14.5 GB |
-| Person-count accuracy (180 labelled frames) | 180/180 | 180/180 |
+| Frame-exact accuracy (240 harder labelled frames) | 233/240 | **238/240** |
+| People missed (of 21) | **11** | **2** |
+| People invented | 0 | 0 |
 | Categories | 1 (`person`, filtered from COCO's 80) | anything you can name |
 | Adding a category | retrain or fine-tune | edit a string in `config.py` |
 | Runs without a GPU | yes | no |
 
-**The grounding model is the primary detector anyway, and these numbers are the
-argument for how.** It is not more accurate — on person counting the two are
-indistinguishable — so it cannot be justified on quality. It is justified on
-capability: the same weights answer every other question, which turns a
-single-purpose occupancy counter into something you can interrogate. The cost of
-that is 69× the latency and a hard dependency on a Linux host with an NVIDIA
-GPU, which is exactly why YOLOv8n stayed in the codebase as an automatic
-fallback rather than being deleted.
+**The grounding model is the primary detector, and it earns that on accuracy as
+well as capability** — but only once its prompt was tuned, and only on a scene
+hard enough to tell the two apart. On an easy daylight set they tie exactly. On
+a dusk set with people at frame edges and in shadow, YOLOv8n misses 11 of 21
+people and LocateAnything misses 2. The cost is 69× the latency and a hard
+dependency on a Linux host with an NVIDIA GPU, which is exactly why YOLOv8n
+stayed in the codebase as an automatic fallback rather than being deleted.
 
-The rest of this page is the evidence, including four defects that had to be
-fixed before any of it could be trusted.
+The rest of this page is the evidence, including five defects that had to be
+found and fixed before any of it could be trusted — two of them only visible by
+running the whole pipeline, and one of them mine rather than the model's.
 
 ---
 
-## Three things that had to be fixed before any of it was trustworthy
+## Things that had to be fixed before any of it was trustworthy
 
 ### 1. The published box order is ambiguous, and one of the two is wrong
 
@@ -195,7 +203,73 @@ budget, not the model thinking harder.
 
 ---
 
-## Counting people, against hand-labelled ground truth
+## Counting people on a harder set, and the one-word fix
+
+A second labelled set, `bench/frames_people2`: 240 frames, 15 seconds apart,
+18:06–19:06 PDT, afternoon into dusk. Same labelling method as below — every
+frame reviewed, plus the frames bracketing each run of pedestrians. **21 people
+across 13 frames**, 227 empty.
+
+This set separates the two backends completely, where the first one could not.
+
+| | YOLOv8n | LocateAnything-3B `"person"` | LocateAnything-3B `"pedestrian"` |
+|---|---|---|---|
+| Frames exactly correct | 233 / 240 (97.1%) | 234 / 240 (97.5%) | **238 / 240 (99.2%)** |
+| People found (truth 21) | 10 | 21 | 19 |
+| **Missed** | **11** | **0** | 2 |
+| **Invented** | **0** | **6** | **0** |
+
+**YOLOv8n misses over half the people.** Not marginal cases: `frame_233` is two
+people standing at the cart, fully visible and unoccluded, reported as zero.
+`frame_014` is two people in shadow beside the building, reported as zero. For a
+product whose entire job is telling you whether the coffee cart is busy, missing
+11 of 21 is a failure of the core function — and it is invisible without ground
+truth, because the counts look plausible.
+
+**LocateAnything-3B misses nobody, but hallucinates.** With the obvious prompt,
+`"person"`, it found every one of the 21 and added 6 that were not there. Four
+of those six were the same three trash receptacles by the far wall, repeatedly
+called people — which is *exactly* the failure mode `StaticObjectFilter` was
+written for. The grounding model does not escape that problem by being smarter;
+it has it too.
+
+**The fix was a word, not a filter.** Prompted `"pedestrian"` instead of
+`"person"`, on identical frames and identical settings, the false positives went
+to **zero** — including the trash cans — at a cost of 2 in recall. Both losses
+are the same two figures entering at the very edge of frame in `frame_164` and
+`frame_165`, more than half outside the image.
+
+| Prompt | Found (truth 21) | Missed | Invented |
+|---|---|---|---|
+| `person` | 27 | 0 | 6 |
+| `pedestrian` | 19 | 2 | **0** |
+| `student` | 19 | 2 | **0** |
+| `person walking` | 18 | 3 | **0** |
+
+This is the argument for an open-vocabulary detector stated as plainly as it can
+be. YOLOv8n's precision/recall balance is fixed at training time; the only knobs
+are a confidence threshold and a post-hoc filter for one specific failure. Here
+the same trade was made by editing a string, measured in about four minutes, and
+it moved frame-exact accuracy from 97.5% to 99.2%. `PERSON_QUERY` in
+`backend/config.py` is that string, and it defaults to the measured winner.
+
+### A correction, kept in the record
+
+The first version of `people2_labels.json` scored `"person"` with **9** false
+positives, not 6. Three of the nine were real people that *I* had missed while
+labelling — two entering at the bottom edge of `frame_164`, one in
+`frame_165` — small enough that a contact sheet cannot resolve them. They were
+only found by cropping and magnifying every disputed detection, which is now a
+step in the method rather than an afterthought.
+
+So the model was right and the ground truth was wrong, and the first scoring
+punished it for being more careful than the person grading it. Hand-built ground
+truth has its own error rate; `bench/people2_labels.json` records where mine was,
+rather than quietly editing the numbers.
+
+---
+
+## Counting people on the easier set
 
 A second set, `bench/frames_people`: 180 frames, 40 seconds apart, 16:05–19:05
 PDT. This one has people in it.
@@ -222,15 +296,16 @@ happens to be right for the wrong reason:
 
 ![LocateAnything-3B boxing two pedestrians correctly](../assets/locateanything-people.jpg)
 
-**The honest reading of this is that the test was too easy to separate them.**
-Seven people, all unoccluded, all in daylight, none smaller than ~200 px tall.
-A 3B grounding model matching a 6 MB detector on that is not evidence it is
-better; it is evidence the scene did not stress either. What it does establish
-is the direction of the trade — LocateAnything is **69× slower for an identical
-answer** — and that is the number the architecture is built around: the
-grounding model is primary for what it uniquely enables, and YOLO stays wired in
-as an automatic fallback because 17.6 ms on any machine beats 1,215 ms on one
-machine when the GPU service is not there.
+**This set was too easy to separate them**, which is why the harder set above
+exists. Seven people, all unoccluded, all in daylight, none smaller than ~200 px
+tall. A 3B grounding model matching a 6 MB detector on that is not evidence it
+is better; it is evidence the scene did not stress either. The `frames_people2`
+set, captured into dusk with people at frame edges and in shadow, does separate
+them — decisively.
+
+What this set still establishes is the price: LocateAnything is **69× slower**,
+which is why YOLO stays wired in as an automatic fallback. 17.6 ms on any machine
+beats 1,215 ms on one machine when the GPU service is not there.
 
 One consequence worth stating plainly: because the two backends alternate rather
 than run together, the live system can never A/B them on the same frame. That is
@@ -251,13 +326,15 @@ still have a job", and that needs a night capture to answer.
 - **Crowds.** The largest count in either benchmark set is 2. Nothing here says
   how either model behaves at a queue of fifteen with mutual occlusion, which is
   the case the product actually exists for.
-- **Low light.** Both sets are daylight. The archived May snapshots show YOLO
-  firing at 22:00, and whether those were people or the false positives
-  `StaticObjectFilter` exists to remove is unresolved.
+- **Night.** Both sets end at dusk. The archived May snapshots show YOLO firing
+  at 22:00, and whether those were people or the false positives
+  `StaticObjectFilter` exists to remove is unresolved. A night capture is the
+  one measurement that would settle whether that filter still has a job.
 - **Distant people.** The resolution sweep showed recall on small distant
-  objects collapsing below native resolution. Every person in this set is near
-  the camera. A person at the far end of the plaza, at 1440px, is the untested
-  case most likely to break.
+  objects collapsing below native resolution. Everyone in both sets is
+  reasonably near the camera. A person at the far end of the plaza, at 1440px,
+  is the untested case most likely to break — and it is plausibly the same
+  weakness behind the two edge-of-frame misses `"pedestrian"` still has.
 
 The archived annotated snapshots in `data/snapshots/` do contain crowds, but
 they are unusable as inputs: they have green boxes and the word "Person" drawn

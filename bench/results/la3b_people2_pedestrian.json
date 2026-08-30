@@ -1,0 +1,3276 @@
+{
+  "backend": "LocateAnything-3B (\"pedestrian\")",
+  "snapshot": "<hf-cache>/hub/models--nvidia--LocateAnything-3B/snapshots/c32291ca5e996f5a7a485845b4f57a233936bba0",
+  "device": "NVIDIA GeForce RTX 4090",
+  "query": "pedestrian",
+  "max_side": 1440,
+  "attn": "sdpa",
+  "scheduler": "eager",
+  "coord_order": "xyxy",
+  "max_new_tokens": 2048,
+  "temperature": 0.0,
+  "top_p": 0.9,
+  "repetition_penalty": 1.1,
+  "repeats": 1,
+  "count_spread": {},
+  "model_load_s": 2.4,
+  "peak_vram_gb": 14.58,
+  "latency": {
+    "n": 238,
+    "min_ms": 1228.7,
+    "median_ms": 1240.4,
+    "p95_ms": 1252.7,
+    "max_ms": 1269.2,
+    "mean_ms": 1240.6
+  },
+  "records": [
+    {
+      "frame": "frame_001.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1703.3,
+      "warmup": true,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_002.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1257.6,
+      "warmup": true,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_003.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1247.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_004.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1255.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_005.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1239.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_006.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1248.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_007.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_008.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1255.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_009.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_010.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1246.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_011.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_012.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1246.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_013.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 1710,
+          "y1": 477,
+          "x2": 1797,
+          "y2": 681
+        },
+        {
+          "x1": 1749,
+          "y1": 531,
+          "x2": 1873,
+          "y2": 733
+        }
+      ],
+      "latency_ms": 1269.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><891><442><936><631></box><box><911><492><976><679></box><|im_end|>"
+    },
+    {
+      "frame": "frame_014.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 178,
+          "y1": 525,
+          "x2": 280,
+          "y2": 738
+        },
+        {
+          "x1": 259,
+          "y1": 546,
+          "x2": 349,
+          "y2": 765
+        }
+      ],
+      "latency_ms": 1264.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><93><487><146><684></box><box><135><506><182><709></box><|im_end|>"
+    },
+    {
+      "frame": "frame_015.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1233.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_016.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1235.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_017.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_018.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_019.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1229.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_020.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_021.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1239.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_022.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_023.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1228.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_024.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_025.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_026.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1235.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_027.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1230.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_028.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1246.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_029.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1231.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_030.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1235.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_031.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1247.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_032.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1249.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_033.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1235.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_034.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1238.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_035.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_036.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1244.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_037.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1237.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_038.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1242.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_039.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1238.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_040.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1248.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_041.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1233.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_042.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1238.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_043.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_044.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1245.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_045.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1243.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_046.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1242.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_047.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_048.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1253.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_049.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1237.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_050.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1243.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_051.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1237.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_052.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1251.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_053.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_054.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1239.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_055.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1230.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_056.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1245.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_057.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_058.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_059.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1238.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_060.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1256.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_061.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1242.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_062.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1244.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_063.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1243.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_064.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1247.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_065.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1242.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_066.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 796,
+          "y1": 447,
+          "x2": 875,
+          "y2": 631
+        }
+      ],
+      "latency_ms": 1249.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><415><414><456><585></box><|im_end|>"
+    },
+    {
+      "frame": "frame_067.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_068.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1238.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_069.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1233.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_070.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1237.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_071.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1229.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_072.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_073.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1670,
+          "y1": 677,
+          "x2": 1774,
+          "y2": 893
+        }
+      ],
+      "latency_ms": 1240.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><870><627><924><827></box><|im_end|>"
+    },
+    {
+      "frame": "frame_074.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_075.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1233.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_076.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1238.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_077.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_078.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1235.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_079.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_080.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_081.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1233.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_082.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_083.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_084.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1230.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_085.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_086.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_087.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1235.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_088.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1244.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_089.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_090.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1247.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_091.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1238.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_092.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1245.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_093.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1245.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_094.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1243.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_095.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_096.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1238.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_097.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1238.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_098.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1243.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_099.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_100.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_101.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_102.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1245.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_103.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_104.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_105.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_106.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1242.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_107.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_108.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1252.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_109.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1233.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_110.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1239.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_111.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1231.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_112.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_113.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1231.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_114.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1242.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_115.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_116.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1245.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_117.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1549,
+          "y1": 132,
+          "x2": 1620,
+          "y2": 298
+        }
+      ],
+      "latency_ms": 1242.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><807><123><844><276></box><|im_end|>"
+    },
+    {
+      "frame": "frame_118.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 0,
+          "y1": 735,
+          "x2": 67,
+          "y2": 921
+        }
+      ],
+      "latency_ms": 1249.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><0><681><35><853></box><|im_end|>"
+    },
+    {
+      "frame": "frame_119.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1242.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_120.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_121.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1246.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_122.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1247.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_123.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_124.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1235.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_125.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1231.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_126.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1235.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_127.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1232.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_128.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1244.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_129.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1245.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_130.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_131.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1233.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_132.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1232.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_133.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1231.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_134.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_135.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1247.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_136.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1243.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_137.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_138.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1235.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_139.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1230.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_140.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_141.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_142.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1245.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_143.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1243.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_144.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_145.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1239.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_146.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1244.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_147.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1244.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_148.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1246.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_149.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_150.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1239.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_151.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1232.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_152.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1233.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_153.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1231.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_154.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1237.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_155.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1233.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_156.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1253.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_157.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1242.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_158.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_159.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_160.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1238.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_161.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_162.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1243.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_163.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1246.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_164.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 0,
+          "y1": 928,
+          "x2": 48,
+          "y2": 1080
+        }
+      ],
+      "latency_ms": 1244.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><0><860><25><1000></box><|im_end|>"
+    },
+    {
+      "frame": "frame_165.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1239.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_166.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_167.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_168.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 163,
+          "y1": 951,
+          "x2": 282,
+          "y2": 1080
+        }
+      ],
+      "latency_ms": 1245.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><85><881><147><1000></box><|im_end|>"
+    },
+    {
+      "frame": "frame_169.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1245.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_170.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1246.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_171.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_172.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1244.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_173.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1242.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_174.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1244.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_175.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1242.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_176.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1246.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_177.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1242.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_178.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_179.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_180.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1244.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_181.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_182.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1246.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_183.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1239.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_184.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1242.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_185.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_186.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1245.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_187.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1247.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_188.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1243.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_189.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_190.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1246.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_191.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1242.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_192.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1242.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_193.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_194.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1449,
+          "y1": 265,
+          "x2": 1537,
+          "y2": 489
+        }
+      ],
+      "latency_ms": 1245.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><755><246><801><453></box><|im_end|>"
+    },
+    {
+      "frame": "frame_195.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1240.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_196.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1243.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_197.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1244.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_198.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1248.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_199.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1246.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_200.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1244.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_201.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1244.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_202.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1246.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_203.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1246.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_204.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1254.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_205.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1239.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_206.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1237.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_207.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1232.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_208.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1233.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_209.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 754,
+          "y1": 460,
+          "x2": 833,
+          "y2": 651
+        }
+      ],
+      "latency_ms": 1243.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><393><426><434><603></box><|im_end|>"
+    },
+    {
+      "frame": "frame_210.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1772,
+          "y1": 0,
+          "x2": 1833,
+          "y2": 116
+        }
+      ],
+      "latency_ms": 1234.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><923><0><955><108></box><|im_end|>"
+    },
+    {
+      "frame": "frame_211.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1239.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_212.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1231.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_213.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1239.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_214.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_215.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.5,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_216.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1233.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_217.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.2,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_218.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1233.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_219.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_220.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1239.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_221.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_222.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.1,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_223.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_224.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_225.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1238.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_226.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1235.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_227.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1233.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_228.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1237.4,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_229.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1230.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_230.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1230.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_231.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1236.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_232.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 1057,
+          "y1": 970,
+          "x2": 1150,
+          "y2": 1080
+        },
+        {
+          "x1": 1194,
+          "y1": 1028,
+          "x2": 1249,
+          "y2": 1080
+        }
+      ],
+      "latency_ms": 1265.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><551><899><599><1000></box><box><622><952><651><1000></box><|im_end|>"
+    },
+    {
+      "frame": "frame_233.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 827,
+          "y1": 351,
+          "x2": 902,
+          "y2": 564
+        },
+        {
+          "x1": 858,
+          "y1": 425,
+          "x2": 936,
+          "y2": 600
+        }
+      ],
+      "latency_ms": 1262.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><431><325><470><523></box><box><447><394><488><556></box><|im_end|>"
+    },
+    {
+      "frame": "frame_234.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 1142,
+          "y1": 281,
+          "x2": 1207,
+          "y2": 479
+        },
+        {
+          "x1": 1173,
+          "y1": 343,
+          "x2": 1234,
+          "y2": 511
+        }
+      ],
+      "latency_ms": 1262.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box><595><261><629><444></box><box><611><318><643><474></box><|im_end|>"
+    },
+    {
+      "frame": "frame_235.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1235.6,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_236.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.0,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_237.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.8,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_238.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1232.3,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_239.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.9,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_240.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1235.7,
+      "warmup": false,
+      "raw_response": "<ref>pedestrian</ref><box>None</box><|im_end|>"
+    }
+  ]
+}

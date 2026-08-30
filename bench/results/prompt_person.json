@@ -1,0 +1,497 @@
+{
+  "backend": "LocateAnything-3B",
+  "snapshot": "<hf-cache>/hub/models--nvidia--LocateAnything-3B/snapshots/c32291ca5e996f5a7a485845b4f57a233936bba0",
+  "device": "NVIDIA GeForce RTX 4090",
+  "query": "person",
+  "max_side": 1440,
+  "attn": "sdpa",
+  "scheduler": "eager",
+  "coord_order": "xyxy",
+  "max_new_tokens": 2048,
+  "temperature": 0.0,
+  "top_p": 0.9,
+  "repetition_penalty": 1.1,
+  "repeats": 1,
+  "count_spread": {},
+  "model_load_s": 2.5,
+  "peak_vram_gb": 13.88,
+  "latency": {
+    "n": 20,
+    "min_ms": 1231.3,
+    "median_ms": 1244.8,
+    "p95_ms": 1288.9,
+    "max_ms": 1288.9,
+    "mean_ms": 1249.8
+  },
+  "records": [
+    {
+      "frame": "frame_013.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 1708,
+          "y1": 477,
+          "x2": 1793,
+          "y2": 680
+        },
+        {
+          "x1": 1747,
+          "y1": 531,
+          "x2": 1873,
+          "y2": 733
+        }
+      ],
+      "latency_ms": 1762.1,
+      "warmup": true,
+      "raw_response": "<ref>person</ref><box><890><442><934><630></box><box><910><492><976><679></box><|im_end|>"
+    },
+    {
+      "frame": "frame_014.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 176,
+          "y1": 524,
+          "x2": 280,
+          "y2": 738
+        },
+        {
+          "x1": 257,
+          "y1": 545,
+          "x2": 349,
+          "y2": 766
+        }
+      ],
+      "latency_ms": 1271.2,
+      "warmup": true,
+      "raw_response": "<ref>person</ref><box><92><486><146><684></box><box><134><505><182><710></box><|im_end|>"
+    },
+    {
+      "frame": "frame_032.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1862,
+          "y1": 0,
+          "x2": 1918,
+          "y2": 15
+        }
+      ],
+      "latency_ms": 1246.6,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><970><0><999><14></box><|im_end|>"
+    },
+    {
+      "frame": "frame_035.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1862,
+          "y1": 0,
+          "x2": 1918,
+          "y2": 15
+        }
+      ],
+      "latency_ms": 1254.0,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><970><0><999><14></box><|im_end|>"
+    },
+    {
+      "frame": "frame_038.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1557,
+          "y1": 0,
+          "x2": 1597,
+          "y2": 74
+        }
+      ],
+      "latency_ms": 1242.4,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><811><0><832><69></box><|im_end|>"
+    },
+    {
+      "frame": "frame_054.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1543,
+          "y1": 0,
+          "x2": 1582,
+          "y2": 74
+        }
+      ],
+      "latency_ms": 1238.8,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><804><0><824><69></box><|im_end|>"
+    },
+    {
+      "frame": "frame_062.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1543,
+          "y1": 0,
+          "x2": 1582,
+          "y2": 72
+        }
+      ],
+      "latency_ms": 1232.3,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><804><0><824><67></box><|im_end|>"
+    },
+    {
+      "frame": "frame_066.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 796,
+          "y1": 447,
+          "x2": 875,
+          "y2": 631
+        }
+      ],
+      "latency_ms": 1231.3,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><415><414><456><585></box><|im_end|>"
+    },
+    {
+      "frame": "frame_073.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1670,
+          "y1": 678,
+          "x2": 1774,
+          "y2": 893
+        }
+      ],
+      "latency_ms": 1245.6,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><870><628><924><827></box><|im_end|>"
+    },
+    {
+      "frame": "frame_078.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1539,
+          "y1": 0,
+          "x2": 1582,
+          "y2": 24
+        }
+      ],
+      "latency_ms": 1288.9,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><802><0><824><23></box><|im_end|>"
+    },
+    {
+      "frame": "frame_117.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1551,
+          "y1": 132,
+          "x2": 1620,
+          "y2": 298
+        }
+      ],
+      "latency_ms": 1233.6,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><808><123><844><276></box><|im_end|>"
+    },
+    {
+      "frame": "frame_118.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 0,
+          "y1": 735,
+          "x2": 67,
+          "y2": 921
+        }
+      ],
+      "latency_ms": 1244.8,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><0><681><35><853></box><|im_end|>"
+    },
+    {
+      "frame": "frame_164.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 0,
+          "y1": 927,
+          "x2": 48,
+          "y2": 1078
+        },
+        {
+          "x1": 716,
+          "y1": 1056,
+          "x2": 760,
+          "y2": 1080
+        }
+      ],
+      "latency_ms": 1274.4,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><0><859><25><999></box><box><373><978><396><1000></box><|im_end|>"
+    },
+    {
+      "frame": "frame_165.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 554,
+          "y1": 1054,
+          "x2": 593,
+          "y2": 1080
+        }
+      ],
+      "latency_ms": 1240.0,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><289><976><309><1000></box><|im_end|>"
+    },
+    {
+      "frame": "frame_168.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 163,
+          "y1": 949,
+          "x2": 282,
+          "y2": 1080
+        }
+      ],
+      "latency_ms": 1237.6,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><85><879><147><1000></box><|im_end|>"
+    },
+    {
+      "frame": "frame_193.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1232.2,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_194.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1449,
+          "y1": 265,
+          "x2": 1537,
+          "y2": 489
+        }
+      ],
+      "latency_ms": 1247.2,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><755><246><801><453></box><|im_end|>"
+    },
+    {
+      "frame": "frame_209.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 756,
+          "y1": 460,
+          "x2": 831,
+          "y2": 650
+        }
+      ],
+      "latency_ms": 1242.1,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><394><426><433><602></box><|im_end|>"
+    },
+    {
+      "frame": "frame_210.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1772,
+          "y1": 0,
+          "x2": 1833,
+          "y2": 116
+        }
+      ],
+      "latency_ms": 1240.6,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><923><0><955><108></box><|im_end|>"
+    },
+    {
+      "frame": "frame_232.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 1057,
+          "y1": 969,
+          "x2": 1152,
+          "y2": 1080
+        },
+        {
+          "x1": 1192,
+          "y1": 1027,
+          "x2": 1249,
+          "y2": 1080
+        }
+      ],
+      "latency_ms": 1276.2,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><551><898><600><1000></box><box><621><951><651><1000></box><|im_end|>"
+    },
+    {
+      "frame": "frame_233.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 825,
+          "y1": 351,
+          "x2": 900,
+          "y2": 563
+        },
+        {
+          "x1": 858,
+          "y1": 424,
+          "x2": 935,
+          "y2": 599
+        }
+      ],
+      "latency_ms": 1273.2,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><430><325><469><522></box><box><447><393><487><555></box><|im_end|>"
+    },
+    {
+      "frame": "frame_234.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 1140,
+          "y1": 281,
+          "x2": 1205,
+          "y2": 479
+        },
+        {
+          "x1": 1173,
+          "y1": 342,
+          "x2": 1234,
+          "y2": 511
+        }
+      ],
+      "latency_ms": 1273.5,
+      "warmup": false,
+      "raw_response": "<ref>person</ref><box><594><261><628><444></box><box><611><317><643><474></box><|im_end|>"
+    }
+  ]
+}

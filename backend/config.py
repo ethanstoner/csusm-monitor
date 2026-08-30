@@ -42,6 +42,13 @@ GTFS_DIR = Path(__file__).parent.parent / "data" / "gtfs"
 # "yolo"  — YOLOv8n only, the pre-2026-08 behaviour.
 DETECTION_BACKEND = os.getenv("DETECTION_BACKEND", "auto")
 
+# The prompt the grounding model is given to count people. Not cosmetic: on 240
+# hand-labelled frames, "person" made the model call the plaza's trash
+# receptacles people 6 times, while "pedestrian" produced zero false positives
+# and cost 2 of 21 in recall (both figures half out of frame). Frame-exact
+# accuracy went 97.5% -> 99.2%. See bench/README.md before changing it.
+PERSON_QUERY = os.getenv("PERSON_QUERY", "pedestrian")
+
 # How long a failed grounding-service probe is trusted before trying again.
 # Without this, every cycle on a machine with no GPU pays a connection attempt
 # and its timeout before falling back.

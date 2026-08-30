@@ -1,0 +1,442 @@
+{
+  "backend": "LocateAnything-3B",
+  "snapshot": "<hf-cache>/hub/models--nvidia--LocateAnything-3B/snapshots/c32291ca5e996f5a7a485845b4f57a233936bba0",
+  "device": "NVIDIA GeForce RTX 4090",
+  "query": "student",
+  "max_side": 1440,
+  "attn": "sdpa",
+  "scheduler": "eager",
+  "coord_order": "xyxy",
+  "max_new_tokens": 2048,
+  "temperature": 0.0,
+  "top_p": 0.9,
+  "repetition_penalty": 1.1,
+  "repeats": 1,
+  "count_spread": {},
+  "model_load_s": 2.3,
+  "peak_vram_gb": 13.88,
+  "latency": {
+    "n": 20,
+    "min_ms": 1230.6,
+    "median_ms": 1244.3,
+    "p95_ms": 1372.9,
+    "max_ms": 1372.9,
+    "mean_ms": 1257.4
+  },
+  "records": [
+    {
+      "frame": "frame_013.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 1710,
+          "y1": 478,
+          "x2": 1789,
+          "y2": 679
+        },
+        {
+          "x1": 1749,
+          "y1": 532,
+          "x2": 1870,
+          "y2": 731
+        }
+      ],
+      "latency_ms": 1845.2,
+      "warmup": true,
+      "raw_response": "<ref>student</ref><box><891><443><932><629></box><box><911><493><974><677></box><|im_end|>"
+    },
+    {
+      "frame": "frame_014.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 261,
+          "y1": 547,
+          "x2": 347,
+          "y2": 736
+        },
+        {
+          "x1": 180,
+          "y1": 528,
+          "x2": 276,
+          "y2": 735
+        }
+      ],
+      "latency_ms": 1272.8,
+      "warmup": true,
+      "raw_response": "<ref>student</ref><box><136><507><181><682></box><box><94><489><144><681></box><|im_end|>"
+    },
+    {
+      "frame": "frame_032.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1253.5,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_035.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1248.7,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_038.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1255.1,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_054.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1241.0,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_062.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1244.3,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_066.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 798,
+          "y1": 447,
+          "x2": 873,
+          "y2": 630
+        }
+      ],
+      "latency_ms": 1230.6,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box><416><414><455><584></box><|im_end|>"
+    },
+    {
+      "frame": "frame_073.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1670,
+          "y1": 679,
+          "x2": 1774,
+          "y2": 893
+        }
+      ],
+      "latency_ms": 1248.5,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box><870><629><924><827></box><|im_end|>"
+    },
+    {
+      "frame": "frame_078.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1234.1,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_117.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1551,
+          "y1": 133,
+          "x2": 1618,
+          "y2": 297
+        }
+      ],
+      "latency_ms": 1239.1,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box><808><124><843><275></box><|im_end|>"
+    },
+    {
+      "frame": "frame_118.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 0,
+          "y1": 735,
+          "x2": 65,
+          "y2": 920
+        }
+      ],
+      "latency_ms": 1236.8,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box><0><681><34><852></box><|im_end|>"
+    },
+    {
+      "frame": "frame_164.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 0,
+          "y1": 927,
+          "x2": 46,
+          "y2": 1080
+        }
+      ],
+      "latency_ms": 1372.9,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box><0><859><24><1000></box><|im_end|>"
+    },
+    {
+      "frame": "frame_165.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1239.5,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_168.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 165,
+          "y1": 950,
+          "x2": 280,
+          "y2": 1080
+        }
+      ],
+      "latency_ms": 1238.6,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box><86><880><146><1000></box><|im_end|>"
+    },
+    {
+      "frame": "frame_193.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 0,
+      "boxes": [],
+      "latency_ms": 1235.3,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box>None</box><|im_end|>"
+    },
+    {
+      "frame": "frame_194.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1451,
+          "y1": 266,
+          "x2": 1536,
+          "y2": 487
+        }
+      ],
+      "latency_ms": 1253.2,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box><756><247><800><451></box><|im_end|>"
+    },
+    {
+      "frame": "frame_209.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 756,
+          "y1": 460,
+          "x2": 831,
+          "y2": 649
+        }
+      ],
+      "latency_ms": 1232.8,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box><394><426><433><601></box><|im_end|>"
+    },
+    {
+      "frame": "frame_210.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 1,
+      "boxes": [
+        {
+          "x1": 1772,
+          "y1": 0,
+          "x2": 1833,
+          "y2": 116
+        }
+      ],
+      "latency_ms": 1244.1,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box><923><0><955><108></box><|im_end|>"
+    },
+    {
+      "frame": "frame_232.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 1057,
+          "y1": 970,
+          "x2": 1150,
+          "y2": 1080
+        },
+        {
+          "x1": 1194,
+          "y1": 1028,
+          "x2": 1249,
+          "y2": 1080
+        }
+      ],
+      "latency_ms": 1275.4,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box><551><899><599><1000></box><box><622><952><651><1000></box><|im_end|>"
+    },
+    {
+      "frame": "frame_233.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 827,
+          "y1": 352,
+          "x2": 900,
+          "y2": 562
+        },
+        {
+          "x1": 858,
+          "y1": 425,
+          "x2": 935,
+          "y2": 598
+        }
+      ],
+      "latency_ms": 1364.8,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box><431><326><469><521></box><box><447><394><487><554></box><|im_end|>"
+    },
+    {
+      "frame": "frame_234.jpg",
+      "repeat": 0,
+      "inference_size": [
+        1440,
+        810
+      ],
+      "count": 2,
+      "boxes": [
+        {
+          "x1": 1142,
+          "y1": 281,
+          "x2": 1205,
+          "y2": 479
+        },
+        {
+          "x1": 1175,
+          "y1": 343,
+          "x2": 1234,
+          "y2": 510
+        }
+      ],
+      "latency_ms": 1260.2,
+      "warmup": false,
+      "raw_response": "<ref>student</ref><box><595><261><628><444></box><box><612><318><643><473></box><|im_end|>"
+    }
+  ]
+}
