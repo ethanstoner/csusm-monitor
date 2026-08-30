@@ -279,6 +279,48 @@ def test_status_reports_stream_status_too(client):
     assert cams["starbucks"]["stream_status"] == "offline"
 
 
+def test_status_names_the_detector_behind_each_count(client):
+    """Which model produced the number is part of the number's meaning."""
+    from datetime import datetime as dt
+    from backend.detector import _detections_lock, latest_detections
+
+    with _detections_lock:
+        latest_detections["coffeecart"] = {
+            "frame": None, "boxes": [], "count": 4,
+            "timestamp": dt(2026, 8, 29, 10, 0).isoformat(),
+            "recorded": True, "source": "LocateAnything-3B",
+        }
+    try:
+        cams = {c["id"]: c for c in client.get("/api/status").json()["cameras"]}
+        assert cams["coffeecart"]["detector"] == "LocateAnything-3B"
+        assert cams["starbucks"]["detector"] is None  # no reading yet
+    finally:
+        with _detections_lock:
+            latest_detections.clear()
+
+
+def test_detector_breakdown_endpoint(client):
+    """The dashboard can show what a camera's history was actually computed by."""
+    from datetime import datetime as dt, timedelta as td
+    from zoneinfo import ZoneInfo
+    from backend.database import insert_detection
+    from backend.main import get_db
+
+    conn = get_db()
+    base = (dt.now(ZoneInfo("America/Los_Angeles")) - td(days=1)).replace(
+        minute=0, second=0, microsecond=0)
+    for i in range(3):
+        insert_detection(conn, "coffeecart", 1, base.replace(second=i), source="yolov8n")
+    insert_detection(conn, "coffeecart", 1, base.replace(second=30),
+                     source="LocateAnything-3B")
+
+    data = client.get("/api/history/sources?camera=coffeecart").json()
+    assert data["data"] == [
+        {"source": "yolov8n", "samples": 3},
+        {"source": "LocateAnything-3B", "samples": 1},
+    ]
+
+
 def test_observations_endpoint_is_empty_without_a_grounding_service(client):
     """The open-vocabulary panel degrades to 'nothing yet', not an error."""
     resp = client.get("/api/observations")

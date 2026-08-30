@@ -113,6 +113,78 @@ def test_get_best_times_unknown_camera_uses_full_day(tmp_path):
     assert [r["hour"] for r in get_best_times(conn, "mystery", days=7)] == [3]
     conn.close()
 
+def test_detections_record_which_model_produced_them(tmp_path):
+    """A count is only interpretable if you know what counted.
+
+    Two detectors now write to this table. Averaging a bucket produced by
+    YOLOv8n together with one produced by a grounding model, with no way to
+    tell them apart afterwards, is how a heatmap quietly starts meaning
+    something different from what it meant last week.
+    """
+    conn = init_db(tmp_path / "test.db")
+    insert_detection(conn, "coffeecart", 3, datetime(2026, 4, 12, 10, 0, 0), source="yolov8n")
+    insert_detection(conn, "coffeecart", 4, datetime(2026, 4, 12, 10, 0, 5),
+                     source="LocateAnything-3B")
+
+    rows = conn.execute("SELECT count, source FROM detections ORDER BY id").fetchall()
+    assert rows == [(3, "yolov8n"), (4, "LocateAnything-3B")]
+    conn.close()
+
+
+def test_source_defaults_when_the_caller_does_not_say(tmp_path):
+    """An unlabelled write is recorded as unknown, never silently as YOLO."""
+    conn = init_db(tmp_path / "test.db")
+    insert_detection(conn, "coffeecart", 1, datetime(2026, 4, 12, 10, 0, 0))
+    assert conn.execute("SELECT source FROM detections").fetchone()[0] == "unknown"
+    conn.close()
+
+
+def test_existing_database_gains_the_source_column(tmp_path):
+    """init_db migrates a table created before the column existed."""
+    import sqlite3 as sq
+    db = tmp_path / "legacy.db"
+    legacy = sq.connect(str(db))
+    legacy.execute("""
+        CREATE TABLE detections (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            camera TEXT NOT NULL, count INTEGER NOT NULL,
+            timestamp DATETIME NOT NULL,
+            day_of_week INTEGER NOT NULL, hour INTEGER NOT NULL
+        )
+    """)
+    legacy.execute(
+        "INSERT INTO detections (camera, count, timestamp, day_of_week, hour)"
+        " VALUES ('coffeecart', 9, '2026-04-12 10:00:00', 6, 10)")
+    legacy.commit()
+    legacy.close()
+
+    conn = init_db(db)
+    row = conn.execute("SELECT count, source FROM detections").fetchone()
+    # The pre-existing row predates the split, so it is labelled with the only
+    # detector that existed then rather than left null.
+    assert row == (9, "yolov8n")
+    conn.close()
+
+
+def test_source_breakdown_reports_what_produced_a_camera_history(tmp_path):
+    from zoneinfo import ZoneInfo
+    from backend.database import get_detection_sources
+    conn = init_db(tmp_path / "test.db")
+    # Inside the default 30-day lookback, or the query correctly excludes it.
+    base = (datetime.now(ZoneInfo("America/Los_Angeles")) - timedelta(days=1)).replace(
+        minute=0, second=0, microsecond=0)
+    for i in range(3):
+        insert_detection(conn, "coffeecart", 1, base.replace(second=i), source="yolov8n")
+    insert_detection(conn, "coffeecart", 1, base.replace(second=30),
+                     source="LocateAnything-3B")
+
+    assert get_detection_sources(conn, "coffeecart") == [
+        {"source": "yolov8n", "samples": 3},
+        {"source": "LocateAnything-3B", "samples": 1},
+    ]
+    conn.close()
+
+
 def test_observations_are_stored_separately_from_detections(tmp_path):
     """Open-vocabulary counts must not land in the person-count history.
 

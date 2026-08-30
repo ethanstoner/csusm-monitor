@@ -7,7 +7,19 @@ import pytest
 import numpy as np
 
 from backend.config import DETECTION_INTERVAL
-from backend.detector import MAX_BACKOFF, DetectionWorker, StaticObjectFilter
+from backend.detector import MAX_BACKOFF, DetectionWorker, PersonCounters, StaticObjectFilter
+
+
+def _yolo_worker(camera_id, stream_url, db_conn=None):
+    """A worker pinned to YOLO.
+
+    These tests are about the capture loop — backoff, shutdown, warm-up — not
+    about backend selection, which has its own file. Pinning the backend keeps
+    them off the network: on "auto" the worker would try to reach a grounding
+    service that is not running and pay its timeout every cycle.
+    """
+    return DetectionWorker(camera_id, stream_url, db_conn,
+                           counters=PersonCounters(backend="yolo"))
 
 
 def _box(x1, y1, x2, y2, conf=0.9):
@@ -81,7 +93,7 @@ def test_static_filter_reports_warmup_state():
 
 def test_worker_backs_off_on_repeated_capture_failure():
     """A dead stream must not be retried every DETECTION_INTERVAL forever."""
-    w = DetectionWorker("starbucks", "http://dead/x.m3u8", db_conn=None)
+    w = _yolo_worker("starbucks", "http://dead/x.m3u8")
     assert w.next_interval() == DETECTION_INTERVAL
     intervals = []
     for _ in range(8):
@@ -107,8 +119,8 @@ def test_worker_recovers_after_transient_failure(snapshots_dir):
     with patch("backend.detector.capture_frame", side_effect=fake_capture), \
          patch("backend.detector.detect_people", return_value=(2, [_box(10, 10, 60, 60)])), \
          patch("backend.detector.DETECTION_INTERVAL", 0.2), \
-         patch("backend.database.insert_detection", side_effect=lambda *a: inserted.append(a)):
-        w = DetectionWorker("coffeecart", "http://x/y.m3u8", db_conn=None)
+         patch("backend.database.insert_detection", side_effect=lambda *a, **kw: inserted.append((a, kw))):
+        w = _yolo_worker("coffeecart", "http://x/y.m3u8")
         w._filter._history = [[] for _ in range(20)]  # pretend the filter is warm
         w.start()
         deadline = time.time() + 30
@@ -123,7 +135,7 @@ def test_worker_recovers_after_transient_failure(snapshots_dir):
 def test_worker_stop_is_prompt_during_backoff():
     """stop() must not block for the full backoff window."""
     with patch("backend.detector.capture_frame", return_value=None):
-        w = DetectionWorker("starbucks", "http://dead/x.m3u8", db_conn=None)
+        w = _yolo_worker("starbucks", "http://dead/x.m3u8")
         w.consecutive_failures = 10  # would otherwise wait MAX_BACKOFF seconds
         w.start()
         time.sleep(0.5)
@@ -141,8 +153,8 @@ def test_warmup_frames_are_not_recorded(snapshots_dir):
 
     with patch("backend.detector.capture_frame", return_value=frame), \
          patch("backend.detector.detect_people", return_value=(1, [_box(10, 10, 60, 60)])), \
-         patch("backend.database.insert_detection", side_effect=lambda *a: inserted.append(a)):
-        w = DetectionWorker("starbucks", "http://x/y.m3u8", db_conn=None)
+         patch("backend.database.insert_detection", side_effect=lambda *a, **kw: inserted.append((a, kw))):
+        w = _yolo_worker("starbucks", "http://x/y.m3u8")
         w.start()
         time.sleep(1.5)   # several cycles, all inside the warmup window
         w.stop()

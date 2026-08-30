@@ -145,6 +145,13 @@
         .person-count { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .person-icon { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 8px var(--accent); }
         .cam-time { color: var(--text-secondary); font-size: 10px; font-weight: 500; }
+        /* Which model produced the count. Amber when the grounding service is
+           down and YOLO has taken over, so a silent degradation is visible. */
+        .cam-detector { margin-left: auto; margin-right: 10px; font-family: 'JetBrains Mono', monospace;
+                        font-size: 9px; letter-spacing: 0.3px; color: var(--accent);
+                        border: 1px solid currentColor; border-radius: 3px; padding: 1px 5px; opacity: .85; }
+        .cam-detector:empty { display: none; }
+        .cam-detector.fallback { color: #f59e0b; }
 
         .context-col {
             width: 340px;
@@ -498,6 +505,7 @@ async function init() {
                 </div>
                 <div class="cam-overlay">
                     <div class="person-count"><div class="person-icon"></div><span id="cnt-${cam.id}">0</span></div>
+                    <span class="cam-detector" id="det-${cam.id}"></span>
                     <span class="cam-time" id="ts-${cam.id}">--:--</span>
                 </div>
             `;
@@ -573,6 +581,17 @@ async function pollStatus() {
         const live = c.healthy && !offline;
         if (badge) { badge.className = `cam-badge ${live?'badge-live':'badge-offline'}`; badge.textContent = live?'LIVE':'OFFLINE'; }
         if (ts && c.timestamp) ts.textContent = offline ? '--:--' : (c.timestamp.split(' ')[1] || c.timestamp);
+        // Two models can produce this number and they trade off automatically,
+        // so the card says which one did rather than leaving it to be guessed.
+        const det = document.getElementById(`det-${c.id}`);
+        if (det) {
+            const fallback = c.detector === 'yolov8n';
+            det.textContent = offline || !c.detector ? '' : c.detector;
+            det.className = `cam-detector${fallback ? ' fallback' : ''}`;
+            det.title = fallback
+                ? 'Grounding service unavailable — falling back to YOLOv8n'
+                : 'Open-vocabulary grounding model';
+        }
     });
     document.getElementById('stat-crowd').textContent = reporting ? total : '--';
     document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();

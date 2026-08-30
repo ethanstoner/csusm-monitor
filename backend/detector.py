@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 
-from backend.config import DETECTION_INTERVAL, FFMPEG_TIMEOUT, TIMEZONE, SNAPSHOTS_DIR, MAX_SNAPSHOTS, CONFIDENCE_THRESHOLD, MIN_FRAME_BRIGHTNESS, MIN_BOX_AREA
+from backend.config import DETECTION_BACKEND, DETECTION_INTERVAL, FFMPEG_TIMEOUT, TIMEZONE, SNAPSHOTS_DIR, MAX_SNAPSHOTS, CONFIDENCE_THRESHOLD, MIN_FRAME_BRIGHTNESS, MIN_BOX_AREA, VLM_PROBE_INTERVAL
 
 logger = logging.getLogger(__name__)
 
@@ -222,10 +222,96 @@ def save_detection_snapshot(camera_id: str, frame: np.ndarray, boxes: list[dict]
     return filename
 
 
+YOLO_SOURCE = "yolov8n"
+VLM_SOURCE = "LocateAnything-3B"
+_VALID_BACKENDS = ("auto", "vlm", "yolo")
+
+
+class PersonCounters:
+    """Counts people with the grounding model, falling back to YOLO.
+
+    LocateAnything-3B is the primary detector. It is not better at counting
+    people — measured against hand-labelled ground truth the two are
+    indistinguishable, and it costs ~69x more per frame (see bench/README.md).
+    It is primary because it is the same weights that answer everything else,
+    so one model serves the whole product instead of one model per question.
+
+    YOLOv8n stays as the fallback rather than being deleted, because the
+    grounding model needs a Linux host with an NVIDIA GPU and a dashboard that
+    shows nothing without one is worse than a dashboard running YOLO.
+    """
+
+    def __init__(self, backend: str = DETECTION_BACKEND, client=None,
+                 probe_interval: float = VLM_PROBE_INTERVAL):
+        if backend not in _VALID_BACKENDS:
+            raise ValueError(
+                f"DETECTION_BACKEND must be one of {_VALID_BACKENDS}, got {backend!r}"
+            )
+        self.backend = backend
+        self.probe_interval = probe_interval
+        self.active_source: str | None = None
+        self._client = client
+        self._available = True      # optimistic: try once before writing it off
+        self._probed_at = 0.0
+        self._logged_state: bool | None = None
+
+    @property
+    def client(self):
+        """Built lazily so importing this module never requires the VLM config."""
+        if self._client is None:
+            from backend.vlm import LocateAnythingClient
+            self._client = LocateAnythingClient()
+        return self._client
+
+    def _should_try_vlm(self) -> bool:
+        """True unless a recent probe failed and the backoff has not expired."""
+        if self.backend == "yolo":
+            return False
+        if self._available:
+            return True
+        return (time.time() - self._probed_at) >= self.probe_interval
+
+    def _note_vlm_state(self, available: bool, error: str | None = None) -> None:
+        self._available = available
+        self._probed_at = time.time()
+        if self._logged_state == available:
+            return  # only log transitions, not every cycle
+        self._logged_state = available
+        if available:
+            logger.info("Grounding service reachable — counting people with %s", VLM_SOURCE)
+        elif self.backend == "auto":
+            logger.warning("Grounding service unavailable (%s) — falling back to %s",
+                           error, YOLO_SOURCE)
+        else:
+            logger.warning("Grounding service unavailable (%s) and backend is 'vlm' "
+                           "— this cycle produces no reading", error)
+
+    def count_people(self, frame) -> tuple[int, list[dict], str] | None:
+        """Return (count, boxes, source), or None if no backend could answer."""
+        if self._should_try_vlm():
+            result = self.client.locate(frame, "person")
+            if result is not None:
+                self._note_vlm_state(True)
+                self.active_source = VLM_SOURCE
+                return result["count"], result["boxes"], VLM_SOURCE
+            self._note_vlm_state(False, getattr(self.client, "last_error", None))
+
+        if self.backend == "vlm":
+            # Asked for the grounding model specifically. A reading silently
+            # produced by a different detector is worse than no reading, because
+            # the stored row looks identical either way.
+            self.active_source = None
+            return None
+
+        count, boxes = detect_people(frame)
+        self.active_source = YOLO_SOURCE
+        return count, boxes, YOLO_SOURCE
+
+
 class DetectionWorker:
     """Background worker that captures frames and detects people for one camera."""
 
-    def __init__(self, camera_id: str, stream_url: str, db_conn):
+    def __init__(self, camera_id: str, stream_url: str, db_conn, counters: PersonCounters | None = None):
         self.camera_id = camera_id
         self.stream_url = stream_url
         self.db_conn = db_conn
@@ -234,6 +320,31 @@ class DetectionWorker:
         self._thread: threading.Thread | None = None
         self._stop_event = threading.Event()
         self._filter = StaticObjectFilter()
+        self.counters = counters if counters is not None else PersonCounters()
+
+    def apply_filters(self, boxes: list[dict], source: str) -> list[dict]:
+        """Post-process boxes for the detector that produced them.
+
+        StaticObjectFilter was built and validated against YOLO's specific
+        failure mode — calling signs and poles people at a 0.45 threshold. It
+        suppresses anything that holds still, so pointing it at a grounding
+        model would equally suppress a person sitting at a table: a real
+        detection removed to fix a problem that model may not have. It stays on
+        the path it was measured on.
+        """
+        if source != YOLO_SOURCE:
+            return boxes
+        return self._filter.filter_boxes(boxes)
+
+    def should_record(self, source: str) -> bool:
+        """Whether a reading from `source` belongs in the trend history.
+
+        The warm-up discard exists because StaticObjectFilter cannot tell a
+        person from a sign until it has history. There is no filter on the
+        grounding path, so there is nothing to warm up and no reason to throw
+        away its first minute of real readings.
+        """
+        return True if source != YOLO_SOURCE else self._filter.is_warm
 
     def start(self):
         """Start the detection loop in a background thread."""
@@ -292,19 +403,24 @@ class DetectionWorker:
                 else:
                     self.consecutive_failures = 0
                     record_camera_health(self.camera_id, ok=True)
-                    count, boxes = detect_people(frame)
-                    # Suppress stationary false positives (signs, poles)
-                    boxes = self._filter.filter_boxes(boxes)
+                    result = self.counters.count_people(frame)
+                    if result is None:
+                        # backend="vlm" with no service. Not a stream failure, so
+                        # it must not push the camera into capture backoff.
+                        logger.warning("[%s] No detection backend available — skipping",
+                                       self.camera_id)
+                        self._stop_event.wait(max(0, self.next_interval() - (time.time() - start_time)))
+                        continue
+                    count, boxes, source = result
+                    boxes = self.apply_filters(boxes, source)
                     count = len(boxes)
                     now = datetime.now(TZ)
-                    # Until the filter has history it cannot tell a person from a
-                    # sign, so these counts are inflated. Show them live, but keep
-                    # them out of the history every trend is computed from.
-                    if self._filter.is_warm:
-                        insert_detection(self.db_conn, self.camera_id, count, now)
+                    recorded = self.should_record(source)
+                    if recorded:
+                        insert_detection(self.db_conn, self.camera_id, count, now, source=source)
                         if count > 0:
                             save_detection_snapshot(self.camera_id, frame, boxes, count, now)
-                        logger.info("[%s] Detected %d people", self.camera_id, count)
+                        logger.info("[%s] Detected %d people (%s)", self.camera_id, count, source)
                     else:
                         seen, needed = self._filter.warmup_progress
                         logger.info(
@@ -318,7 +434,8 @@ class DetectionWorker:
                             "boxes": boxes,
                             "count": count,
                             "timestamp": now.isoformat(),
-                            "recorded": self._filter.is_warm,
+                            "recorded": recorded,
+                            "source": source,
                         }
             except Exception as e:
                 self.consecutive_failures += 1

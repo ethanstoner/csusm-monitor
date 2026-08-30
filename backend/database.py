@@ -25,6 +25,19 @@ def init_db(db_path: Path) -> sqlite3.Connection:
     """)
     conn.execute("CREATE INDEX IF NOT EXISTS idx_detections_camera_time ON detections(camera, timestamp)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_detections_trends ON detections(camera, day_of_week, hour)")
+
+    # Two detectors write here now — a grounding model when the GPU service is
+    # up, YOLOv8n when it is not. Without provenance per row, a heatmap bucket
+    # averaged across both is uninterpretable after the fact, and the switch
+    # would be invisible in exactly the data it changes.
+    columns = {r[1] for r in conn.execute("PRAGMA table_info(detections)")}
+    if "source" not in columns:
+        conn.execute("ALTER TABLE detections ADD COLUMN source TEXT")
+        # Anything already in the table predates the split, so it can only have
+        # come from YOLO. Labelling it rather than leaving it NULL keeps the
+        # breakdown query honest about old data instead of silent.
+        conn.execute("UPDATE detections SET source = 'yolov8n' WHERE source IS NULL")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_detections_source ON detections(camera, source)")
     conn.execute("""
         CREATE TABLE IF NOT EXISTS cameras (
             id         TEXT PRIMARY KEY,
@@ -101,16 +114,41 @@ def init_db(db_path: Path) -> sqlite3.Connection:
     return conn
 
 
-def insert_detection(conn: sqlite3.Connection, camera: str, count: int, ts: datetime) -> None:
-    """Insert a detection result. Stores timestamp as naive Pacific local time string."""
+def insert_detection(conn: sqlite3.Connection, camera: str, count: int, ts: datetime,
+                     source: str = "unknown") -> None:
+    """Insert a detection result. Stores timestamp as naive Pacific local time string.
+
+    `source` names the model that produced the count. It defaults to "unknown"
+    rather than to YOLO: a caller that forgets to say should show up as a gap in
+    provenance, not as a confident claim about which detector ran.
+    """
     pacific_ts = ts.replace(tzinfo=TZ) if ts.tzinfo is None else ts.astimezone(TZ)
     # Store as naive local time so SQLite date/time functions work correctly
     naive_str = pacific_ts.strftime("%Y-%m-%d %H:%M:%S")
     conn.execute(
-        "INSERT INTO detections (camera, count, timestamp, day_of_week, hour) VALUES (?, ?, ?, ?, ?)",
-        (camera, count, naive_str, pacific_ts.weekday(), pacific_ts.hour),
+        "INSERT INTO detections (camera, count, timestamp, day_of_week, hour, source)"
+        " VALUES (?, ?, ?, ?, ?, ?)",
+        (camera, count, naive_str, pacific_ts.weekday(), pacific_ts.hour, source),
     )
     conn.commit()
+
+
+def get_detection_sources(conn: sqlite3.Connection, camera: str, days: int = 30) -> list[dict]:
+    """How many readings each detector contributed for a camera, newest first.
+
+    Lets the dashboard say "this week's average is 80% YOLO, 20% grounding
+    model" instead of presenting a number computed from two different things as
+    though it came from one.
+    """
+    cutoff = (datetime.now(TZ) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+    rows = conn.execute("""
+        SELECT COALESCE(source, 'unknown') AS src, COUNT(*) AS samples
+        FROM detections
+        WHERE camera = ? AND timestamp >= ?
+        GROUP BY src
+        ORDER BY samples DESC, src
+    """, (camera, cutoff)).fetchall()
+    return [{"source": r[0], "samples": r[1]} for r in rows]
 
 
 def insert_observation(conn: sqlite3.Connection, camera: str, label: str, count: int,

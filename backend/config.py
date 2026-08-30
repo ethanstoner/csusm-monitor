@@ -32,6 +32,21 @@ CAMPUS_LON = -117.1597
 # --- Data paths ---
 GTFS_DIR = Path(__file__).parent.parent / "data" / "gtfs"
 
+# --- Person-detection backend ---
+# "auto"  — use LocateAnything-3B when the grounding service answers, and fall
+#           back to YOLOv8n the moment it does not. This is the default: the
+#           grounding model is the better product (it can be asked anything) but
+#           it needs a Linux host with an NVIDIA GPU, and a dashboard that shows
+#           nothing at all without one is worse than a dashboard running YOLO.
+# "vlm"   — grounding model only. No fallback; a cycle with no service is a gap.
+# "yolo"  — YOLOv8n only, the pre-2026-08 behaviour.
+DETECTION_BACKEND = os.getenv("DETECTION_BACKEND", "auto")
+
+# How long a failed grounding-service probe is trusted before trying again.
+# Without this, every cycle on a machine with no GPU pays a connection attempt
+# and its timeout before falling back.
+VLM_PROBE_INTERVAL = float(os.getenv("VLM_PROBE_INTERVAL", "60"))
+
 # --- Open-vocabulary detection (LocateAnything-3B, out of process) ---
 # Off unless a grounding service is configured. The weights are NVIDIA-licensed
 # for academic and non-profit research only, so this cannot be the default

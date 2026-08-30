@@ -16,6 +16,7 @@ from backend.database import (
     cleanup_old_data,
     get_best_times,
     get_daily_totals,
+    get_detection_sources,
     get_heatmap_data,
     get_hourly_averages,
     get_latest_counts,
@@ -62,7 +63,8 @@ async def lifespan(app: FastAPI):
         logger.info("Cleaned up %d old detection rows", deleted)
 
     if START_WORKERS:
-        # Start local YOLO detection workers for each camera
+        # One detection worker per camera. Which model each one actually uses is
+        # decided per cycle by PersonCounters (DETECTION_BACKEND), not here.
         from backend.detector import DetectionWorker
         for cam_id, cam in CAMERAS.items():
             worker = DetectionWorker(cam_id, cam["stream_url"], _db_conn)
@@ -168,10 +170,12 @@ async def get_status():
             healthy = False
         # Use live count from local detector or FrigateListener, fall back to last DB value
         live_count = r["count"] or 0
+        detector = None
         from backend.detector import latest_detections, _detections_lock
         with _detections_lock:
             if r["id"] in latest_detections:
                 live_count = latest_detections[r["id"]]["count"]
+                detector = latest_detections[r["id"]].get("source")
         if _frigate_listener is not None:
             with _frigate_listener._counts_lock:
                 if r["id"] in _frigate_listener.latest_counts:
@@ -190,6 +194,9 @@ async def get_status():
             "healthy": healthy,
             "stream_status": health["stream_status"],
             "last_error": health["last_error"],
+            # Which model produced this count. Two can, and they trade off
+            # automatically, so the dashboard should never have to guess.
+            "detector": detector,
         })
     return {"cameras": cameras}
 
@@ -438,6 +445,17 @@ async def get_camera_hours(camera_id: str):
 async def get_daily(camera: str = Query(...), days: int = Query(default=30)):
     data = get_daily_totals(_db_conn, camera, days)
     return {"camera": camera, "days": days, "data": data}
+
+
+@app.get("/api/history/sources")
+async def detector_sources(camera: str = Query(...), days: int = Query(default=30)):
+    """Which detectors produced a camera's stored history, and how much of it.
+
+    A trend line averaged across two models is only honest if you can see the
+    mix behind it.
+    """
+    return {"camera": camera, "days": days,
+            "data": get_detection_sources(_db_conn, camera, days)}
 
 
 @app.get("/api/observations")

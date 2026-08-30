@@ -21,18 +21,30 @@ Reproduce with `bench/yolo_bench.py`, `bench/la3b_bench.py` and
 ## The headline
 
 LocateAnything-3B does something YOLOv8n cannot do at all — count a category
-nobody trained a class for, asked in English — and it costs **two to three
-orders of magnitude** more per frame to do it. That is the whole trade, and it
-is why the model went in as a third backend on a five-minute interval rather
-than as a replacement for the five-second person loop.
+nobody trained a class for, asked in English — and it costs **roughly 69× more
+per frame** to do it.
 
 | | YOLOv8n | LocateAnything-3B (1440px) |
 |---|---|---|
-| Median latency / frame | **17.6 ms** | **1,308 ms** |
-| p95 latency | 20.8 ms | 1,408 ms |
-| Peak VRAM | negligible | 13.7 GB |
+| Median latency / frame | **17.6 ms** | **1,215 ms** |
+| p95 latency | 20.8 ms | 1,331 ms |
+| Peak VRAM | negligible | 14.5 GB |
+| Person-count accuracy (180 labelled frames) | 180/180 | 180/180 |
 | Categories | 1 (`person`, filtered from COCO's 80) | anything you can name |
 | Adding a category | retrain or fine-tune | edit a string in `config.py` |
+| Runs without a GPU | yes | no |
+
+**The grounding model is the primary detector anyway, and these numbers are the
+argument for how.** It is not more accurate — on person counting the two are
+indistinguishable — so it cannot be justified on quality. It is justified on
+capability: the same weights answer every other question, which turns a
+single-purpose occupancy counter into something you can interrogate. The cost of
+that is 69× the latency and a hard dependency on a Linux host with an NVIDIA
+GPU, which is exactly why YOLOv8n stayed in the codebase as an automatic
+fallback rather than being deleted.
+
+The rest of this page is the evidence, including four defects that had to be
+fixed before any of it could be trusted.
 
 ---
 
@@ -215,8 +227,14 @@ Seven people, all unoccluded, all in daylight, none smaller than ~200 px tall.
 A 3B grounding model matching a 6 MB detector on that is not evidence it is
 better; it is evidence the scene did not stress either. What it does establish
 is the direction of the trade — LocateAnything is **69× slower for an identical
-answer** — which is exactly the argument for keeping YOLO on the hot path and
-the VLM on a 300-second cold path for questions YOLO cannot answer at all.
+answer** — and that is the number the architecture is built around: the
+grounding model is primary for what it uniquely enables, and YOLO stays wired in
+as an automatic fallback because 17.6 ms on any machine beats 1,215 ms on one
+machine when the GPU service is not there.
+
+One consequence worth stating plainly: because the two backends alternate rather
+than run together, the live system can never A/B them on the same frame. That is
+what this harness is for.
 
 There is a second result hiding in it. `detect_people` here runs **without**
 `StaticObjectFilter`, and raw YOLOv8n produced **zero false positives across

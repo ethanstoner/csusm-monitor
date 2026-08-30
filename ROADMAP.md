@@ -8,9 +8,10 @@ to be worth doing.
 
 ## Open-vocabulary detection via LocateAnything-3B
 
-**Status:** shipped as an optional third backend, off by default. The latency
-question that gated the design is answered; the accuracy question that would
-justify touching `StaticObjectFilter` is not.
+**Status:** shipped as the **primary** person detector, with YOLOv8n as an
+automatic fallback. Every question this section originally gated the design on
+has been measured; what remains open is listed at the bottom and is about
+conditions the benchmark sets do not cover, not about the design.
 
 ### What it is
 
@@ -54,21 +55,38 @@ irreproducible, and full recall requires more VRAM than the GPU has.
 
 ### The shape it took
 
-Exactly the split the earlier draft of this section proposed, and the latency
-numbers vindicated it:
+An earlier draft of this section argued for keeping YOLO as the hot path and
+running the grounding model cold. That was revised once the numbers were in.
+Two of the three reasons for it did not survive:
 
-- **YOLOv8n stays the hot path** for person counts on the 5s cycle. Trend
-  history has months of data computed with it, and swapping the model
-  underneath a heatmap silently changes what the historical average means.
-- **LocateAnything runs cold** — `OPEN_VOCAB_INTERVAL`, default 300s — in a
-  separate process (`services/locate_anything/server.py`) reached over HTTP, so
-  it can be slow, restarted, or absent without the monitor noticing.
-- **Its results get their own table.** `detections.count` carries no label and
-  every trend query reads it as people; a bicycle count sharing that column
-  would change what the heatmap means without changing the query that draws it.
-  Open-vocabulary readings go to `observations(camera, label, count, …)`.
-- **It reuses the frame the YOLO worker already captured**, so there is no
-  second ffmpeg and both models score identical pixels.
+- *"Trend history has months of data computed with YOLO."* It does not any more
+  — the 30-day retention sweep removed it. There was nothing left to protect.
+- *"1.2 s does not fit a 5-second cycle."* It fits comfortably, for the number
+  of cameras this actually has.
+- *"It needs a Linux host with a GPU."* This one held, and is why the fallback
+  exists rather than why the switch does not.
+
+What shipped:
+
+- **LocateAnything-3B is the primary person detector**, chosen per cycle by
+  `PersonCounters`, running out-of-process
+  (`services/locate_anything/server.py`) over HTTP so it can be slow, restarted
+  or absent without taking the monitor with it.
+- **YOLOv8n is the automatic fallback**, not a deleted predecessor. 17.6 ms on
+  any machine beats 1,215 ms on one machine when the GPU service is not there,
+  and a portfolio repo that shows an empty dashboard to anyone without a 4090
+  is not a working portfolio repo.
+- **Every row records which model produced it** (`detections.source`), because
+  a detector that changes underneath a heatmap has to leave a trail.
+  `/api/history/sources` reports the mix; the dashboard names the live one.
+- **`StaticObjectFilter` stays on the YOLO path only.** It suppresses whatever
+  holds still, which is right for YOLO's failure mode and wrong for a model
+  that may not share it — on a grounding model it would equally erase a person
+  sitting at a table.
+- **Open-vocabulary queries get their own table and their own slow loop.**
+  `detections.count` carries no label and every trend query reads it as people;
+  a bicycle count sharing that column would change what the heatmap means
+  without changing the query that draws it.
 
 ### The licence, which does not go away
 
