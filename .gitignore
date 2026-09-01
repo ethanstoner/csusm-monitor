@@ -10,9 +10,23 @@ __pycache__/
 .pytest_cache/
 .playwright-mcp/
 *.pt
+*.safetensors
+*.onnx
 *.png
 !assets/*.png
+# Same rule as *.png, for the same reason: a stray frame from a university
+# camera must not become committable just because it landed outside data/ or
+# bench/frames*/. The evidence images under assets/ are the deliberate exception.
+*.jpg
+*.jpeg
+!assets/*.jpg
 data/gtfs/
+
+# Internal notes. These are ignored globally on the machine this was built on,
+# which protects exactly one working copy — a fresh clone, CI, or a second
+# machine would happily commit them back.
+CLAUDE.md
+PROJECT_STATUS.md
 
 # Benchmark inputs and per-run artefacts. The captured frames are tens of MB of
 # university camera footage, and the annotated frames and contact sheets all
