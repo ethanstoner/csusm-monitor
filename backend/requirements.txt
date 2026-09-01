@@ -5,6 +5,11 @@ httpx==0.28.1
 ultralytics>=8.1
 opencv-python-headless>=4.9
 numpy>=1.26
+# Windows ships no IANA time zone database, so zoneinfo cannot resolve TIMEZONE
+# and every module importing config dies at import time. Linux usually has one
+# system-wide, which is why CI never caught this; depending on it unconditionally
+# costs ~450KB and removes the assumption from slim containers too.
+tzdata
 
 # dev / test
 pytest==8.3.5
