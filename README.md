@@ -238,7 +238,9 @@ cd csusm-monitor
 docker compose up -d
 ```
 
-That's it — opens the dashboard at [http://localhost:8000](http://localhost:8000). Brings up the FastAPI backend, Frigate NVR, and Mosquitto MQTT broker as a single stack. The YOLO model weights are baked into the image at build time.
+That's it — opens the dashboard at [http://localhost:8000](http://localhost:8000). The compose file brings up the FastAPI backend on its own, with the YOLOv8n weights baked into the image at build time. Detection runs on the YOLO fallback path here: LocateAnything-3B needs an NVIDIA GPU and is not part of this stack.
+
+The Frigate and Mosquitto configs under `frigate/` and `mosquitto/` are for running that optional third backend yourself; they are not wired into `docker-compose.yml`.
 
 ### Local development (no Docker)
 
