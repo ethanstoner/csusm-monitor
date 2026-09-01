@@ -8,9 +8,14 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
+        # Windows is not decoration here: it ships no IANA time zone database,
+        # so a missing tzdata dependency breaks every clone on it while an
+        # ubuntu-only matrix stays green. That is exactly how it shipped once.
+        os: [ubuntu-latest, windows-latest]
         python-version: ["3.12"]
 
     steps:
