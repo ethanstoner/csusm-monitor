@@ -255,8 +255,14 @@ start.bat
 
 # Option B: Manual
 python -m venv venv
-venv/bin/pip install -r backend/requirements.txt   # or venv\Scripts\pip on Windows
-python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000
+
+# Linux / macOS
+venv/bin/pip install -r backend/requirements.txt
+venv/bin/python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000
+
+# Windows
+venv\Scripts\pip install -r backend\requirements.txt
+venv\Scripts\python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000
 ```
 
 Open [http://localhost:8000](http://localhost:8000)
