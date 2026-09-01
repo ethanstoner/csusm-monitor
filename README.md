@@ -338,13 +338,15 @@ csusm-monitor/
 │   ├── test_config.py        # Configuration validation
 │   ├── test_database.py      # SQLite schema & query tests
 │   ├── test_detector.py      # StaticObjectFilter + worker lifecycle tests
+│   ├── test_backend_selection.py # Detector choice, fallback, probe caching
 │   ├── test_frigate_listener.py  # MQTT listener unit tests
 │   ├── test_vlm.py           # Box decoding, service failure modes, worker
 │   └── test_integration.py   # End-to-end smoke test
 ├── Dockerfile                # Backend container (Python + ffmpeg + YOLO)
 ├── .dockerignore             # Docker build exclusions
-├── docker-compose.yml        # Full stack: monitor + Frigate + Mosquitto
+├── docker-compose.yml        # Monitor service
 ├── start.bat                 # One-click Windows launcher
+├── ROADMAP.md                # What is next, and what it would have to be worth
 └── .env.example              # Environment variable template
 ```
 
