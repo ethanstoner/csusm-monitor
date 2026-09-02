@@ -1,8 +1,11 @@
 """Smoke test: app starts with mocked FrigateListener, APIs respond, data flows to DB."""
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
+
+from backend.config import TIMEZONE
 
 
 def make_msg(topic, payload):
@@ -61,7 +64,11 @@ def test_full_pipeline(live_client):
     assert resp.status_code == 200
     assert len(resp.json()["cameras"]) == 2
 
-    today = datetime.now().strftime("%Y-%m-%d")
+    # Detections are stored as naive Pacific (database.insert_detection), so the
+    # date to ask for is today *there*, not on whatever clock the runner keeps.
+    # CI runs in UTC, where every run between midnight and ~08:00 UTC is still
+    # the previous day in California and this query came back empty.
+    today = datetime.now(ZoneInfo(TIMEZONE)).strftime("%Y-%m-%d")
     resp = live_client.get(f"/api/history/timeline?camera=starbucks&date={today}")
     assert resp.status_code == 200
     assert len(resp.json()["data"]) > 0
